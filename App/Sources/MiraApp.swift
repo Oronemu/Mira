@@ -1,0 +1,212 @@
+import SwiftUI
+import BackgroundTasks
+import CoreKit
+import AIKit
+import Utilities
+import DesignSystem
+import Telemetry
+import FeatureOnboarding
+
+@main
+struct MiraApp: App {
+    @UIApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
+    @State private var container: ServiceContainer
+    @State private var lockState = LockState()
+    @State private var appearanceState = AppearanceState()
+    @State private var hasOnboarded: Bool = OnboardingStore().isCompleted
+    @State private var screenShieldEnabled: Bool = ScreenShieldSettingsStore().load().isEnabled
+    @Environment(\.scenePhase) private var scenePhase
+
+    init() {
+        // Firebase must be configured before any Firebase SDK is touched,
+        // including the service implementations built inside `live()`.
+        FirebaseBootstrap.configure()
+        let container = ServiceContainer.live()
+        _container = State(initialValue: container)
+        // Apply the user's diagnostics consent. Info.plist defaults both
+        // Analytics and Crashlytics to OFF, so without this call Firebase
+        // stays silent. The runtime flip happens synchronously in init to
+        // avoid any window where automatic collection could fire before
+        // consent has been applied.
+        let diagnostics = DiagnosticsSettingsStore().load()
+        if diagnostics.hasAnswered {
+            container.analyticsService.setEnabled(diagnostics.analyticsEnabled)
+            container.crashReporter.setEnabled(diagnostics.crashReportingEnabled)
+        }
+        registerBackgroundTasks(container: container)
+        // Touch the background URL session singleton so its delegate
+        // exists *before* iOS replays any queued
+        // `URLSession.background` events. Doing this lazily is too
+        // late — the events arrive between AppDelegate setup and the
+        // first scene update.
+        _ = BackgroundDownloadSession.shared
+    }
+
+    var body: some Scene {
+        WindowGroup {
+            ZStack {
+                if hasOnboarded {
+                    RootView()
+                        .environment(\.entryRepository, container.entryRepository)
+                        .environment(\.insightRepository, container.insightRepository)
+                        .environment(\.askMiraRepository, container.askMiraRepository)
+                        .environment(\.aiProvider, container.aiProvider)
+                        .environment(\.aiService, container.aiService)
+                        .environment(\.embeddingProvider, container.embeddingProvider)
+                        .environment(\.photoStoring, container.photoStoring)
+                        .environment(\.analyticsService, container.analyticsService)
+                        .environment(\.crashReporter, container.crashReporter)
+                        .environment(\.pushNotificationService, container.pushNotificationService)
+                        .environment(\.remoteConfigService, container.remoteConfigService)
+                        .environment(\.modelDownloadCoordinator, container.modelDownloadCoordinator)
+                        .environment(\.syncService, container.syncService)
+                    if lockState.isLocked {
+                        LockScreenView(state: lockState)
+                            .transition(.opacity)
+                    }
+                    if shouldShowShield && !lockState.isLocked {
+                        PrivacyShieldView()
+                            .transition(.opacity)
+                    }
+                } else {
+                    OnboardingView {
+                        OnboardingStore().isCompleted = true
+                        withAnimation { hasOnboarded = true }
+                    }
+                    .transition(.opacity)
+                }
+            }
+            .environment(\.appearanceState, appearanceState)
+            .preferredColorScheme(appearanceState.colorScheme)
+            .tint(MiraPalette.mood(level: appearanceState.accent.rawValue))
+            .task { bootstrapTelemetry() }
+            .task { await bootstrapRemoteKey() }
+            .task { await backfillEmbeddings() }
+            .task { await bootstrapNotifications() }
+            .task { await bootstrapSync() }
+            .onChange(of: scenePhase) { _, newPhase in
+                lockState.handle(scenePhase: newPhase)
+                if newPhase == .active {
+                    screenShieldEnabled = ScreenShieldSettingsStore().load().isEnabled
+                }
+            }
+            .animation(.easeInOut(duration: 0.15), value: shouldShowShield)
+            .animation(.easeInOut(duration: 0.25), value: appearanceState.theme)
+            .animation(.easeInOut(duration: 0.25), value: appearanceState.accent)
+        }
+    }
+
+    private var shouldShowShield: Bool {
+        screenShieldEnabled && hasOnboarded && scenePhase != .active
+    }
+
+    private func registerBackgroundTasks(container: ServiceContainer) {
+        // Capture the dependencies we need inside the handler. Container
+        // itself is a value type over Sendable members.
+        let aiProvider = container.aiProvider
+        let entryRepository = container.entryRepository
+        let insightRepository = container.insightRepository
+        let syncService = container.syncService
+        BackgroundTaskService().registerReflectionHandler { task in
+            let work = Task {
+                do {
+                    if let insight = try await ReflectionService().generate(
+                        aiProvider: aiProvider,
+                        entryRepository: entryRepository,
+                        insightRepository: insightRepository
+                    ) {
+                        await NotificationService().postReflectionReady(insightID: insight.id)
+                    }
+                    task.setTaskCompleted(success: true)
+                } catch {
+                    task.setTaskCompleted(success: false)
+                }
+                let frequency = ReflectionSettingsStore().load().frequency
+                try? BackgroundTaskService().scheduleReflection(for: frequency)
+            }
+            task.expirationHandler = { work.cancel() }
+        }
+        BackgroundTaskService().registerSyncRefreshHandler { task in
+            let work = Task {
+                await syncService.sync()
+                task.setTaskCompleted(success: true)
+                // Chain the next refresh so the pipeline keeps catching
+                // up even when silent pushes are suppressed.
+                try? BackgroundTaskService().scheduleSyncRefresh()
+            }
+            task.expirationHandler = { work.cancel() }
+        }
+    }
+
+    /// Hand the push service to the `UIApplicationDelegate` so it can
+    /// forward the APNs token, then seed default remote-config values so
+    /// reads return sensible results before the first fetch completes.
+    private func bootstrapTelemetry() {
+        appDelegate.configure(
+            pushService: container.pushNotificationService,
+            syncService: container.syncService
+        )
+        let remoteConfig = container.remoteConfigService
+        Task.detached {
+            await remoteConfig.setDefaults([:])
+            _ = try? await remoteConfig.fetchAndActivate()
+        }
+        // Kick APNs registration so iOS hands the device token to
+        // `AppDelegate.didRegisterForRemoteNotificationsWithDeviceToken`,
+        // where it's logged and forwarded to Firebase. The first FCM
+        // token is logged from `tokenRefreshes()` below, which fires
+        // both on initial issuance and on every subsequent rotation
+        // (restore, reinstall, data reset).
+        let pushService = container.pushNotificationService
+        Task { await pushService.registerForRemoteNotifications() }
+        Task {
+            for await token in pushService.tokenRefreshes() {
+                MiraLog.logger(.general).info("FCM token refreshed: \(token, privacy: .public)")
+            }
+        }
+    }
+
+    private func bootstrapNotifications() async {
+        // Do not request notification authorization here — the onboarding
+        // flow asks for it contextually when the user taps the permission
+        // card. Scheduling the reflection BGTask is independent of
+        // notification auth: if permission is denied, the post is silently
+        // dropped, and the schedule is fine to keep in place.
+        let frequency = ReflectionSettingsStore().load().frequency
+        try? BackgroundTaskService().scheduleReflection(for: frequency)
+    }
+
+    private func bootstrapRemoteKey() async {
+        let settings = AISettingsStore().load()
+        guard settings.provider == .remote else { return }
+        let key = (try? await AIKeychain().apiKey(for: settings.remote.provider)) ?? ""
+        await container.aiService.reloadProviders(settings: settings, apiKey: key)
+    }
+
+    /// If the user already has iCloud sync switched on (from a previous
+    /// launch), start the pusher's change-stream observer and run an
+    /// initial push+pull. When it's off, the sync service stays inert
+    /// until SyncSettingsView flips the toggle.
+    private func bootstrapSync() async {
+        guard SyncSettingsStore().load().isEnabled else {
+            BackgroundTaskService().cancelSyncRefresh()
+            return
+        }
+        await container.syncService.setEnabled(true)
+        try? BackgroundTaskService().scheduleSyncRefresh()
+    }
+
+    /// Backfills embeddings for entries that predate the indexing feature
+    /// or that were saved before the provider could embed them. Silent on
+    /// failure — search just misses older entries until next launch.
+    private func backfillEmbeddings() async {
+        let service = EmbeddingIndexingService()
+        let stream = service.backfill(
+            using: container.embeddingProvider,
+            repository: container.entryRepository
+        )
+        do {
+            for try await _ in stream {}
+        } catch {}
+    }
+}

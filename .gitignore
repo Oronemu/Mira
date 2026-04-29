@@ -1,0 +1,35 @@
+# macOS
+.DS_Store
+
+# Xcode
+xcuserdata/
+build/
+DerivedData/
+*.hmap
+*.xcuserstate
+
+# Tuist (generated artefacts; source of truth lives in *.swift manifests)
+Derived/
+*.xcodeproj
+*.xcworkspace
+!Tuist/*.xcworkspace
+
+# Swift Package Manager
+.build/
+.swiftpm/
+Packages/
+Package.resolved
+
+# Tools
+*.log
+.env
+.env.*
+!.env.example
+
+# Firebase config — contains project-specific keys; each fork must provide its own
+App/Resources/GoogleService-Info.plist
+
+# Internal project docs / agent context — kept locally, not published
+docs/
+CLAUDE.md
+.claude/

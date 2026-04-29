@@ -1,0 +1,252 @@
+import SwiftUI
+import CoreKit
+import Utilities
+import DesignSystem
+
+public struct InsightsListView: View {
+    @Environment(\.insightRepository) private var repository
+    @Environment(\.entryRepository) private var entryRepository
+    @Environment(\.aiProvider) private var aiProvider
+
+    @State private var state: InsightsListState?
+    @State private var pendingDeletionID: UUID?
+
+    private let onSelectInsight: (UUID) -> Void
+
+    public init(onSelectInsight: @escaping (UUID) -> Void) {
+        self.onSelectInsight = onSelectInsight
+    }
+
+    public var body: some View {
+        ZStack {
+            AmbientBackground(moodLevels: ambientMoodLevels, intensity: 0.7)
+
+            Group {
+                if let state {
+                    scroll(state: state)
+                } else {
+                    ProgressView()
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                }
+            }
+        }
+        .toolbarTitleDisplayMode(.inline)
+        .toolbarBackground(.hidden, for: .navigationBar)
+        .task {
+            if state == nil {
+                state = InsightsListState(
+                    repository: repository,
+                    entryRepository: entryRepository,
+                    aiProvider: aiProvider
+                )
+            }
+            await state?.refreshChart()
+            await state?.observe()
+        }
+        .confirmationDialog(
+            "Delete this reflection?",
+            isPresented: deletionPresented,
+            titleVisibility: .visible
+        ) {
+            Button("Delete", role: .destructive) {
+                if let id = pendingDeletionID, let state {
+                    Task { await state.delete(id: id) }
+                }
+                pendingDeletionID = nil
+            }
+            Button("Cancel", role: .cancel) { pendingDeletionID = nil }
+        }
+    }
+
+    // MARK: - Scroll
+
+    private func scroll(state: InsightsListState) -> some View {
+        ScrollView {
+            LazyVStack(alignment: .leading, spacing: 24) {
+                hero(state: state)
+
+                MoodChartView(entries: state.entriesForChart)
+
+                if let error = state.errorMessage {
+                    ErrorPill(error)
+                        .frame(maxWidth: .infinity)
+                        .transition(.scale(scale: 0.9).combined(with: .opacity))
+                }
+
+                if state.insights.isEmpty {
+                    emptyState(state: state)
+                        .padding(.top, 32)
+                } else {
+                    VStack(alignment: .leading, spacing: 10) {
+                        Text("Reflections").eyebrowStyle()
+                        VStack(spacing: 12) {
+                            ForEach(state.insights) { insight in
+                                InsightCard(insight: insight) {
+                                    onSelectInsight(insight.id)
+                                }
+                                .contextMenu {
+                                    Button(role: .destructive) {
+                                        pendingDeletionID = insight.id
+                                    } label: {
+                                        Label("Delete", systemImage: "trash")
+                                    }
+                                }
+                                .transition(.asymmetric(
+                                    insertion: .move(edge: .trailing).combined(with: .opacity),
+                                    removal: .opacity.combined(with: .scale(scale: 0.95))
+                                ))
+                            }
+                        }
+                    }
+                }
+
+                Color.clear.frame(height: 96)
+            }
+            .padding(.horizontal, 18)
+            .padding(.top, 4)
+            .animation(.spring(duration: 0.4, bounce: 0.15),
+                       value: state.insights.map(\.id))
+            .animation(.spring(duration: 0.3, bounce: 0.2),
+                       value: state.errorMessage)
+        }
+        .scrollIndicators(.hidden)
+    }
+
+    // MARK: - Hero
+
+    private func hero(state: InsightsListState) -> some View {
+        let count = state.insights.count
+        let month = Date.now.formatted(.dateTime.month(.wide).year())
+        return VStack(alignment: .leading, spacing: 6) {
+            Text("Reflections")
+                .font(MiraTypography.hero)
+                .foregroundStyle(MiraPalette.primaryText)
+            Text("\(count) reflections · \(month)")
+                .eyebrowStyle()
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.top, 8)
+    }
+
+    // MARK: - Empty
+
+    private func emptyState(state: InsightsListState) -> some View {
+        VStack(spacing: 16) {
+            Image(systemName: "sparkles")
+                .font(.system(size: 32, weight: .light))
+                .foregroundStyle(MiraPalette.secondaryText.opacity(0.7))
+            Text("No reflections yet")
+                .font(MiraTypography.displayTitle)
+                .foregroundStyle(MiraPalette.primaryText)
+            Text("Weekly reflections arrive on Sunday evenings.")
+                .font(MiraTypography.body)
+                .foregroundStyle(MiraPalette.secondaryText)
+                .multilineTextAlignment(.center)
+
+            generateButton(state: state)
+                .padding(.top, 4)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.horizontal, 20)
+    }
+
+    private func generateButton(state: InsightsListState) -> some View {
+        Button {
+            Task { await state.generateNow() }
+        } label: {
+            HStack(spacing: 8) {
+                if state.isGenerating {
+                    ProgressView().controlSize(.small)
+                } else {
+                    Image(systemName: "sparkles")
+                        .font(.system(size: 13, weight: .semibold))
+                }
+                Text("Generate now")
+                    .font(.system(size: 15, weight: .semibold))
+            }
+            .foregroundStyle(MiraPalette.primaryText)
+            .padding(.vertical, 14)
+            .padding(.horizontal, 28)
+            .contentShape(Capsule())
+        }
+        .buttonStyle(.plain)
+        .background(
+            Capsule().fill(MiraPalette.mood(level: 3).opacity(0.25))
+        )
+        .glassEffect(.regular.interactive(), in: Capsule())
+        .disabled(state.isGenerating)
+        .sensoryFeedback(.impact(weight: .light), trigger: state.isGenerating)
+        .accessibilityLabel("Generate reflection now")
+    }
+
+    // MARK: - Helpers
+
+    private var deletionPresented: Binding<Bool> {
+        Binding(
+            get: { pendingDeletionID != nil },
+            set: { if !$0 { pendingDeletionID = nil } }
+        )
+    }
+
+    /// Ambient tint for the screen — follows the overall mood average across
+    /// entries so the reflections feel anchored in the user's current period.
+    private var ambientMoodLevels: [Int] {
+        guard let state,
+              let average = MoodAnalytics.averageMood(entries: state.entriesForChart)
+        else {
+            return [3]
+        }
+        return [max(1, min(5, Int(round(average))))]
+    }
+}
+
+// MARK: - Insight card
+
+private struct InsightCard: View {
+    let insight: InsightSnapshot
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            HStack(alignment: .top, spacing: 12) {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text(insight.createdAt, format: .dateTime.day().month(.abbreviated).year())
+                        .eyebrowStyle()
+                    Text(insight.title)
+                        .font(.system(size: 17, weight: .semibold, design: .serif))
+                        .foregroundStyle(MiraPalette.primaryText)
+                        .lineLimit(2)
+                        .multilineTextAlignment(.leading)
+                    Text(attributedPreview(insight.body))
+                        .font(MiraTypography.entryBody)
+                        .foregroundStyle(MiraPalette.primaryText.opacity(0.75))
+                        .lineLimit(3)
+                        .lineSpacing(2)
+                        .multilineTextAlignment(.leading)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+
+                Image(systemName: "arrow.right")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundStyle(MiraPalette.secondaryText)
+                    .padding(.top, 4)
+            }
+            .padding(16)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .contentShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+            .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+            .shadow(color: .black.opacity(0.05), radius: 14, x: 0, y: 6)
+        }
+        .buttonStyle(PressableCardStyle())
+    }
+
+    /// AI reflections may include markdown — render as AttributedString so
+    /// the preview doesn't show raw `**` / `*` characters.
+    private func attributedPreview(_ text: String) -> AttributedString {
+        (try? AttributedString(
+            markdown: text,
+            options: .init(interpretedSyntax: .inlineOnlyPreservingWhitespace)
+        )) ?? AttributedString(text)
+    }
+}
+

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+    Template for Firebase configuration.
+
+    To use this project you must create your own Firebase project and download
+    the real GoogleService-Info.plist from the Firebase Console:
+
+        https://console.firebase.google.com/
+
+    Place the downloaded file at: App/Resources/GoogleService-Info.plist
+    (the real file is gitignored — only this template is tracked).
+-->
+<plist version="1.0">
+<dict>
+    <key>API_KEY</key>
+    <string>YOUR_FIREBASE_API_KEY</string>
+    <key>GCM_SENDER_ID</key>
+    <string>YOUR_SENDER_ID</string>
+    <key>PLIST_VERSION</key>
+    <string>1</string>
+    <key>BUNDLE_ID</key>
+    <string>com.yourcompany.Mira</string>
+    <key>PROJECT_ID</key>
+    <string>your-firebase-project-id</string>
+    <key>STORAGE_BUCKET</key>
+    <string>your-firebase-project-id.firebasestorage.app</string>
+    <key>IS_ADS_ENABLED</key>
+    <false/>
+    <key>IS_ANALYTICS_ENABLED</key>
+    <false/>
+    <key>IS_APPINVITE_ENABLED</key>
+    <true/>
+    <key>IS_GCM_ENABLED</key>
+    <true/>
+    <key>IS_SIGNIN_ENABLED</key>
+    <true/>
+    <key>GOOGLE_APP_ID</key>
+    <string>1:000000000000:ios:0000000000000000000000</string>
+</dict>
+</plist>
