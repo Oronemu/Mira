@@ -31,10 +31,10 @@ public final class OnboardingState {
     public private(set) var biometricStatus: PermissionStatus = .notAsked
 
     /// Diagnostics consent toggles, bound directly by the onboarding
-    /// page. Defaults to OFF; the final values are persisted when the
-    /// user advances past `.diagnostics`.
-    public var analyticsEnabled: Bool = false
-    public var crashReportingEnabled: Bool = false
+    /// page. Defaults to ON so the user sees an opt-out — final values
+    /// are persisted when the user advances past `.diagnostics`.
+    public var analyticsEnabled: Bool = true
+    public var crashReportingEnabled: Bool = true
 
     public init() {}
 
