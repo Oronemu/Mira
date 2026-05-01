@@ -38,6 +38,7 @@ struct RootView: View {
                 .animation(.spring(response: 0.48, dampingFraction: 0.88), value: isTabBarVisible)
                 .ignoresSafeArea(.keyboard)
         }
+        .ignoresSafeArea(.keyboard, edges: .bottom)
         .onOpenURL(perform: handleDeepLink)
     }
 
