@@ -78,21 +78,40 @@ public struct InsightsListView: View {
 
     // MARK: - Scroll
 
+    @ViewBuilder
     private func scroll(state: InsightsListState) -> some View {
-        ScrollView {
-            LazyVStack(alignment: .leading, spacing: 24) {
+        if state.insights.isEmpty {
+            // Empty path stays out of ScrollView so the placeholder can
+            // anchor at the visual center of the screen rather than at
+            // the top of an empty scroll view.
+            VStack(spacing: 0) {
                 hero(state: state)
-
                 if let error = state.errorMessage {
                     ErrorPill(error)
                         .frame(maxWidth: .infinity)
                         .transition(.scale(scale: 0.9).combined(with: .opacity))
+                        .padding(.top, 16)
                 }
+                Spacer(minLength: 0)
+                emptyState(state: state)
+                Spacer(minLength: 0)
+                Color.clear.frame(height: 96)
+            }
+            .padding(.horizontal, 18)
+            .padding(.top, 4)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .animation(.spring(duration: 0.3, bounce: 0.2), value: state.errorMessage)
+        } else {
+            ScrollView {
+                LazyVStack(alignment: .leading, spacing: 24) {
+                    hero(state: state)
 
-                if state.insights.isEmpty {
-                    emptyState(state: state)
-                        .padding(.top, 32)
-                } else {
+                    if let error = state.errorMessage {
+                        ErrorPill(error)
+                            .frame(maxWidth: .infinity)
+                            .transition(.scale(scale: 0.9).combined(with: .opacity))
+                    }
+
                     VStack(alignment: .leading, spacing: 10) {
                         Text("Reflections").eyebrowStyle()
                         VStack(spacing: 12) {
@@ -114,18 +133,18 @@ public struct InsightsListView: View {
                             }
                         }
                     }
-                }
 
-                Color.clear.frame(height: 96)
+                    Color.clear.frame(height: 96)
+                }
+                .padding(.horizontal, 18)
+                .padding(.top, 4)
+                .animation(.spring(duration: 0.4, bounce: 0.15),
+                           value: state.insights.map(\.id))
+                .animation(.spring(duration: 0.3, bounce: 0.2),
+                           value: state.errorMessage)
             }
-            .padding(.horizontal, 18)
-            .padding(.top, 4)
-            .animation(.spring(duration: 0.4, bounce: 0.15),
-                       value: state.insights.map(\.id))
-            .animation(.spring(duration: 0.3, bounce: 0.2),
-                       value: state.errorMessage)
+            .scrollIndicators(.hidden)
         }
-        .scrollIndicators(.hidden)
     }
 
     // MARK: - Hero
