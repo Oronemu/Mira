@@ -7,6 +7,10 @@ public struct NotificationSettingsView: View {
     @Environment(\.entryRepository) private var entryRepository
     @Environment(\.remoteConfigService) private var remoteConfigService
     @State private var prefs: NotificationPreferences = NotificationPreferencesStore().load()
+    @State private var pendingEvening: Int = 0
+    @State private var pendingInactivity: Int = 0
+    @State private var authorizationLabel: String = "—"
+    @State private var debugStatus: String?
 
     public init() {}
 
@@ -18,6 +22,7 @@ public struct NotificationSettingsView: View {
                 VStack(alignment: .leading, spacing: 24) {
                     eveningSection
                     inactivitySection
+                    debugSection
 
                     Text("Local pushes only — they never leave this device. Times use your phone's clock.")
                         .font(.system(size: 12))
@@ -37,8 +42,12 @@ public struct NotificationSettingsView: View {
         .hideTabBar()
         .onChange(of: prefs) { _, newValue in
             NotificationPreferencesStore().save(newValue)
-            Task { await reschedule(newValue) }
+            Task {
+                await reschedule(newValue)
+                await refreshDiagnostics()
+            }
         }
+        .task { await refreshDiagnostics() }
     }
 
     // MARK: - Sections
@@ -92,6 +101,79 @@ public struct NotificationSettingsView: View {
         }
     }
 
+    private var debugSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("Diagnostics").eyebrowStyle()
+
+            VStack(alignment: .leading, spacing: 12) {
+                diagnosticRow(label: "Permission", value: authorizationLabel)
+                diagnosticRow(label: "Evening pending", value: "\(pendingEvening)")
+                diagnosticRow(label: "Inactivity pending", value: "\(pendingInactivity)")
+
+                Button {
+                    Task {
+                        await NotificationService().scheduleDebugTest(after: 10)
+                        debugStatus = "Test push will fire in ~10 seconds. Background the app to see it."
+                        await refreshDiagnostics()
+                    }
+                } label: {
+                    HStack(spacing: 8) {
+                        Image(systemName: "paperplane")
+                        Text("Send test push (10 s)")
+                    }
+                    .font(.system(size: 14, weight: .medium))
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 10)
+                    .background(MiraPalette.mood(level: 3).opacity(0.18))
+                    .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                    .foregroundStyle(MiraPalette.primaryText)
+                }
+                .buttonStyle(.plain)
+
+                if let debugStatus {
+                    Text(debugStatus)
+                        .font(.system(size: 12))
+                        .foregroundStyle(MiraPalette.secondaryText)
+                }
+            }
+            .padding(14)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+        }
+    }
+
+    private func diagnosticRow(label: String, value: String) -> some View {
+        HStack {
+            Text(label)
+                .font(.system(size: 13))
+                .foregroundStyle(MiraPalette.secondaryText)
+            Spacer()
+            Text(value)
+                .font(.system(size: 13, weight: .medium, design: .monospaced))
+                .foregroundStyle(MiraPalette.primaryText)
+        }
+    }
+
+    private func refreshDiagnostics() async {
+        let service = NotificationService()
+        let evening = await service.pendingCount(prefix: "mira.notify.evening")
+        let inactivity = await service.pendingCount(prefix: "mira.notify.inactivity")
+        let status = await service.authorizationStatus()
+        let label: String = switch status {
+        case .authorized: "authorized"
+        case .denied: "denied"
+        case .notDetermined: "notDetermined"
+        case .provisional: "provisional"
+        case .ephemeral: "ephemeral"
+        @unknown default: "unknown"
+        }
+        await MainActor.run {
+            self.pendingEvening = evening
+            self.pendingInactivity = inactivity
+            self.authorizationLabel = label
+        }
+    }
+
     // MARK: - Helpers
 
     private func rowLabel(title: LocalizedStringKey, subtitle: LocalizedStringKey) -> some View {
@@ -110,10 +192,15 @@ public struct NotificationSettingsView: View {
     private var eveningTimeBinding: Binding<Date> {
         Binding(
             get: {
-                var comps = DateComponents()
+                // Anchor to today so Calendar gets a fully-specified date —
+                // hour/minute alone resolve to year 0001 with whatever
+                // historical timezone offset that era had, which can drift
+                // the displayed minute by a non-trivial amount.
+                let calendar = Calendar.current
+                var comps = calendar.dateComponents([.year, .month, .day], from: Date())
                 comps.hour = prefs.evening.hour
                 comps.minute = prefs.evening.minute
-                return Calendar.current.date(from: comps) ?? Date()
+                return calendar.date(from: comps) ?? Date()
             },
             set: { newValue in
                 let comps = Calendar.current.dateComponents([.hour, .minute], from: newValue)

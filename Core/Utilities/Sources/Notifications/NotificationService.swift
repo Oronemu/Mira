@@ -18,6 +18,41 @@ public struct NotificationService: Sendable {
         }
     }
 
+    /// Current authorization status — useful in UI to surface "permission
+    /// denied" hints when toggles look enabled but pushes never arrive.
+    public func authorizationStatus() async -> UNAuthorizationStatus {
+        await UNUserNotificationCenter.current().notificationSettings().authorizationStatus
+    }
+
+    /// Number of currently pending notification requests with the given
+    /// identifier prefix. Diagnostic helper — surfaces "did anything
+    /// actually get scheduled?" in the Settings debug panel.
+    public func pendingCount(prefix: String) async -> Int {
+        let pending = await UNUserNotificationCenter.current().pendingNotificationRequests()
+        return pending.filter { $0.identifier == prefix || $0.identifier.hasPrefix(prefix + ".") }.count
+    }
+
+    /// Submits a one-shot push N seconds from now, used by the Settings
+    /// debug button to verify end-to-end delivery without waiting for
+    /// the user-configured time. Identifier is unique per call so it
+    /// never collides with the rolling-window pushes.
+    public func scheduleDebugTest(after seconds: TimeInterval = 10) async {
+        let content = UNMutableNotificationContent()
+        content.title = "Test push"
+        content.body = "If you see this, scheduling works."
+        content.sound = .default
+
+        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: max(1, seconds), repeats: false)
+        let id = "mira.notify.debug.\(UUID().uuidString)"
+        let request = UNNotificationRequest(identifier: id, content: content, trigger: trigger)
+        do {
+            try await UNUserNotificationCenter.current().add(request)
+            MiraLog.logger(.general).info("notif debug test scheduled in \(seconds, privacy: .public)s, id=\(id, privacy: .public)")
+        } catch {
+            MiraLog.logger(.general).error("notif debug test add failed: \(error.localizedDescription, privacy: .public)")
+        }
+    }
+
     public func postReflectionReady(insightID: UUID) async {
         let content = UNMutableNotificationContent()
         content.title = String(localized: "Reflection ready")
@@ -67,6 +102,9 @@ public struct NotificationService: Sendable {
             now: now
         ) else { return }
 
+        var added = 0
+        var failed = 0
+        var firstFailure: String?
         for offset in 0..<daysAhead {
             guard let triggerDate = calendar.date(byAdding: .day, value: offset, to: firstSlot) else { continue }
             let comps = calendar.dateComponents([.year, .month, .day, .hour, .minute], from: triggerDate)
@@ -86,7 +124,23 @@ public struct NotificationService: Sendable {
 
             let trigger = UNCalendarNotificationTrigger(dateMatching: comps, repeats: false)
             let request = UNNotificationRequest(identifier: id, content: content, trigger: trigger)
-            try? await center.add(request)
+            do {
+                try await center.add(request)
+                added += 1
+            } catch {
+                failed += 1
+                if firstFailure == nil { firstFailure = error.localizedDescription }
+            }
+        }
+        let firstISO = ISO8601DateFormatter().string(from: firstSlot)
+        if failed == 0 {
+            MiraLog.logger(.general).info(
+                "notif evening scheduled: added=\(added, privacy: .public), firstSlot=\(firstISO, privacy: .public)"
+            )
+        } else {
+            MiraLog.logger(.general).error(
+                "notif evening partial: added=\(added, privacy: .public), failed=\(failed, privacy: .public), firstError=\(firstFailure ?? "?", privacy: .public)"
+            )
         }
     }
 
@@ -143,7 +197,17 @@ public struct NotificationService: Sendable {
         let comps = calendar.dateComponents([.year, .month, .day, .hour, .minute], from: triggerDate)
         let trigger = UNCalendarNotificationTrigger(dateMatching: comps, repeats: false)
         let request = UNNotificationRequest(identifier: id, content: content, trigger: trigger)
-        try? await center.add(request)
+        let triggerISO = ISO8601DateFormatter().string(from: triggerDate)
+        do {
+            try await center.add(request)
+            MiraLog.logger(.general).info(
+                "notif inactivity scheduled: trigger=\(triggerISO, privacy: .public)"
+            )
+        } catch {
+            MiraLog.logger(.general).error(
+                "notif inactivity add failed: \(error.localizedDescription, privacy: .public), trigger=\(triggerISO, privacy: .public)"
+            )
+        }
     }
 
     public func cancelInactivity() async {
