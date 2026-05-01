@@ -18,41 +18,6 @@ public struct NotificationService: Sendable {
         }
     }
 
-    /// Current authorization status — useful in UI to surface "permission
-    /// denied" hints when toggles look enabled but pushes never arrive.
-    public func authorizationStatus() async -> UNAuthorizationStatus {
-        await UNUserNotificationCenter.current().notificationSettings().authorizationStatus
-    }
-
-    /// Number of currently pending notification requests with the given
-    /// identifier prefix. Diagnostic helper — surfaces "did anything
-    /// actually get scheduled?" in the Settings debug panel.
-    public func pendingCount(prefix: String) async -> Int {
-        let pending = await UNUserNotificationCenter.current().pendingNotificationRequests()
-        return pending.filter { $0.identifier == prefix || $0.identifier.hasPrefix(prefix + ".") }.count
-    }
-
-    /// Submits a one-shot push N seconds from now, used by the Settings
-    /// debug button to verify end-to-end delivery without waiting for
-    /// the user-configured time. Identifier is unique per call so it
-    /// never collides with the rolling-window pushes.
-    public func scheduleDebugTest(after seconds: TimeInterval = 10) async {
-        let content = UNMutableNotificationContent()
-        content.title = "Test push"
-        content.body = "If you see this, scheduling works."
-        content.sound = .default
-
-        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: max(1, seconds), repeats: false)
-        let id = "mira.notify.debug.\(UUID().uuidString)"
-        let request = UNNotificationRequest(identifier: id, content: content, trigger: trigger)
-        do {
-            try await UNUserNotificationCenter.current().add(request)
-            MiraLog.logger(.general).info("notif debug test scheduled in \(seconds, privacy: .public)s, id=\(id, privacy: .public)")
-        } catch {
-            MiraLog.logger(.general).error("notif debug test add failed: \(error.localizedDescription, privacy: .public)")
-        }
-    }
-
     public func postReflectionReady(insightID: UUID) async {
         let content = UNMutableNotificationContent()
         content.title = String(localized: "Reflection ready")
