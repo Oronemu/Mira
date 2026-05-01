@@ -6890,6 +6890,230 @@
         "en": { "stringUnit": { "state": "translated", "value": "Up to date" } },
         "ru": { "stringUnit": { "state": "translated", "value": "Актуально" } }
       }
+    },
+    "%@ edge ahead": {
+      "comment": "Stats — weekday subtitle, %@ is a weekday name (e.g. Saturdays)",
+      "extractionState": "manual",
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "%@ edge ahead" } },
+        "ru": { "stringUnit": { "state": "translated", "value": "%@ — впереди" } }
+      }
+    },
+    "%lld days with an entry": {
+      "comment": "Stats — year heatmap subtitle, count of days with at least one entry",
+      "extractionState": "manual",
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "%lld days with an entry" } },
+        "ru": { "stringUnit": { "state": "translated", "value": "%lld дней с записью" } }
+      }
+    },
+    "Add a mood to see your trend": {
+      "comment": "Stats — empty mood-trend subtitle",
+      "extractionState": "manual",
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Add a mood to see your trend" } },
+        "ru": { "stringUnit": { "state": "translated", "value": "Добавь настроение, чтобы увидеть тренд" } }
+      }
+    },
+    "Avg %@ · %lld entries": {
+      "comment": "Stats — mood trend subtitle: avg score and entry count",
+      "extractionState": "manual",
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Avg %1$@ · %2$lld entries" } },
+        "ru": { "stringUnit": { "state": "translated", "value": "Среднее %1$@ · %2$lld записей" } }
+      }
+    },
+    "Best days": {
+      "comment": "Stats — weekday mood card title",
+      "extractionState": "manual",
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Best days" } },
+        "ru": { "stringUnit": { "state": "translated", "value": "Лучшие дни" } }
+      }
+    },
+    "Best so far": {
+      "comment": "Stats — best-streak label",
+      "extractionState": "manual",
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Best so far" } },
+        "ru": { "stringUnit": { "state": "translated", "value": "Лучший рекорд" } }
+      }
+    },
+    "days": {
+      "comment": "Stats — unit label after a streak count or inside the streak ring",
+      "extractionState": "manual",
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "days" } },
+        "ru": { "stringUnit": { "state": "translated", "value": "дней" } }
+      }
+    },
+    "How you've been": {
+      "comment": "Stats — mood trend hero card title",
+      "extractionState": "manual",
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "How you've been" } },
+        "ru": { "stringUnit": { "state": "translated", "value": "Как ты себя чувствовал" } }
+      }
+    },
+    "How your moods vary across the week": {
+      "comment": "Stats — weekday neutral subtitle",
+      "extractionState": "manual",
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "How your moods vary across the week" } },
+        "ru": { "stringUnit": { "state": "translated", "value": "Как меняется твоё настроение по дням недели" } }
+      }
+    },
+    "in the last 30 days": {
+      "comment": "Stats — counter subtitle for month range",
+      "extractionState": "manual",
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "in the last 30 days" } },
+        "ru": { "stringUnit": { "state": "translated", "value": "за последние 30 дней" } }
+      }
+    },
+    "in the last 365 days": {
+      "comment": "Stats — counter subtitle for year range",
+      "extractionState": "manual",
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "in the last 365 days" } },
+        "ru": { "stringUnit": { "state": "translated", "value": "за последние 365 дней" } }
+      }
+    },
+    "in the last 7 days": {
+      "comment": "Stats — counter subtitle for week range",
+      "extractionState": "manual",
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "in the last 7 days" } },
+        "ru": { "stringUnit": { "state": "translated", "value": "за последние 7 дней" } }
+      }
+    },
+    "less": {
+      "comment": "Stats — heatmap legend, lower-end label",
+      "extractionState": "manual",
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "less" } },
+        "ru": { "stringUnit": { "state": "translated", "value": "меньше" } }
+      }
+    },
+    "Log entries with a mood to see weekly patterns.": {
+      "comment": "Stats — weekday empty state",
+      "extractionState": "manual",
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Log entries with a mood to see weekly patterns." } },
+        "ru": { "stringUnit": { "state": "translated", "value": "Отмечай настроение в записях, чтобы увидеть недельные паттерны." } }
+      }
+    },
+    "Mira conversations": {
+      "comment": "Stats — Mira conversations counter title",
+      "extractionState": "manual",
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Mira conversations" } },
+        "ru": { "stringUnit": { "state": "translated", "value": "Бесед с Мирой" } }
+      }
+    },
+    "Month": {
+      "comment": "Stats range picker — last 30 days",
+      "extractionState": "manual",
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Month" } },
+        "ru": { "stringUnit": { "state": "translated", "value": "Месяц" } }
+      }
+    },
+    "more": {
+      "comment": "Stats — heatmap legend, upper-end label",
+      "extractionState": "manual",
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "more" } },
+        "ru": { "stringUnit": { "state": "translated", "value": "больше" } }
+      }
+    },
+    "Open stats": {
+      "comment": "Insights toolbar — opens the Stats screen",
+      "extractionState": "manual",
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Open stats" } },
+        "ru": { "stringUnit": { "state": "translated", "value": "Открыть статистику" } }
+      }
+    },
+    "PATTERNS · %@": {
+      "comment": "Stats — eyebrow above the screen title (%@ = month and year)",
+      "extractionState": "manual",
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "PATTERNS · %@" } },
+        "ru": { "stringUnit": { "state": "translated", "value": "ПАТТЕРНЫ · %@" } }
+      }
+    },
+    "received total": {
+      "comment": "Stats — Reflections counter subtitle",
+      "extractionState": "manual",
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "received total" } },
+        "ru": { "stringUnit": { "state": "translated", "value": "всего получено" } }
+      }
+    },
+    "since %@": {
+      "comment": "Stats — when the best streak began (%@ = formatted date)",
+      "extractionState": "manual",
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "since %@" } },
+        "ru": { "stringUnit": { "state": "translated", "value": "с %@" } }
+      }
+    },
+    "since you started": {
+      "comment": "Stats — Mira conversations counter subtitle",
+      "extractionState": "manual",
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "since you started" } },
+        "ru": { "stringUnit": { "state": "translated", "value": "с самого начала" } }
+      }
+    },
+    "Steady": {
+      "comment": "Stats — mood counter label for entries with mood 3",
+      "extractionState": "manual",
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Steady" } },
+        "ru": { "stringUnit": { "state": "translated", "value": "Ровно" } }
+      }
+    },
+    "Week": {
+      "comment": "Stats range picker — last 7 days",
+      "extractionState": "manual",
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Week" } },
+        "ru": { "stringUnit": { "state": "translated", "value": "Неделя" } }
+      }
+    },
+    "Words written": {
+      "comment": "Stats — words written counter title",
+      "extractionState": "manual",
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Words written" } },
+        "ru": { "stringUnit": { "state": "translated", "value": "Слов написано" } }
+      }
+    },
+    "Year": {
+      "comment": "Stats range picker — last 365 days",
+      "extractionState": "manual",
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Year" } },
+        "ru": { "stringUnit": { "state": "translated", "value": "Год" } }
+      }
+    },
+    "Your patterns": {
+      "comment": "Stats — screen hero title",
+      "extractionState": "manual",
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Your patterns" } },
+        "ru": { "stringUnit": { "state": "translated", "value": "Твои паттерны" } }
+      }
+    },
+    "Your year": {
+      "comment": "Stats — year heatmap title",
+      "extractionState": "manual",
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Your year" } },
+        "ru": { "stringUnit": { "state": "translated", "value": "Твой год" } }
+      }
     }
   },
   "version": "1.0"
