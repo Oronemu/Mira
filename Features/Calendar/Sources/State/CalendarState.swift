@@ -12,15 +12,18 @@ public final class CalendarState {
     public let availableMonths: [Date]
     private let repository: any EntryRepository
     private let calendar: Calendar
+    private let analyticsService: any AnalyticsService
 
     public init(
         repository: any EntryRepository,
         calendar: Calendar = .current,
         currentMonth: Date = .now,
-        monthsBack: Int = 12
+        monthsBack: Int = 12,
+        analyticsService: any AnalyticsService = UnimplementedAnalyticsService()
     ) {
         self.repository = repository
         self.calendar = calendar
+        self.analyticsService = analyticsService
         let normalised = calendar.startOfMonth(currentMonth)
         self.currentMonth = normalised
 
@@ -77,6 +80,10 @@ public final class CalendarState {
         let normalised = calendar.startOfMonth(prev)
         guard availableMonths.contains(normalised) else { return }
         currentMonth = normalised
+        analyticsService.log(
+            event: "calendar_month_changed",
+            parameters: ["direction": .string("previous")]
+        )
     }
 
     public func goToNextMonth() {
@@ -84,6 +91,10 @@ public final class CalendarState {
         let normalised = calendar.startOfMonth(next)
         guard availableMonths.contains(normalised) else { return }
         currentMonth = normalised
+        analyticsService.log(
+            event: "calendar_month_changed",
+            parameters: ["direction": .string("next")]
+        )
     }
 
     // MARK: - Month aggregates

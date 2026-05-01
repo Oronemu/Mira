@@ -5,6 +5,8 @@ import Utilities
 
 public struct EntryListView: View {
     @Environment(\.entryRepository) private var repository
+    @Environment(\.analyticsService) private var analyticsService
+    @Environment(\.crashReporter) private var crashReporter
 
     @State private var state: EntryListState?
     @State private var searchText: String = ""
@@ -53,7 +55,12 @@ public struct EntryListView: View {
         }
         .task {
             if state == nil {
-                state = EntryListState(repository: repository, initialQuery: initialQuery)
+                state = EntryListState(
+                    repository: repository,
+                    initialQuery: initialQuery,
+                    analyticsService: analyticsService,
+                    crashReporter: crashReporter
+                )
             }
             await state?.observe()
         }

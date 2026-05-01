@@ -148,6 +148,7 @@ struct MiraApp: App {
             pushService: container.pushNotificationService,
             syncService: container.syncService
         )
+        seedAnalyticsUserProperties()
         let remoteConfig = container.remoteConfigService
         Task.detached {
             await remoteConfig.setDefaults([:])
@@ -166,6 +167,43 @@ struct MiraApp: App {
                 MiraLog.logger(.general).info("FCM token refreshed: \(token, privacy: .public)")
             }
         }
+    }
+
+    /// Snapshots the user-facing settings that gate or shape behavior into
+    /// Firebase user properties. Re-set on every cold launch so the cohort
+    /// view reflects whatever the user did last session — settings screens
+    /// also re-set their own slice when the user flips a toggle.
+    private func seedAnalyticsUserProperties() {
+        let analytics = container.analyticsService
+        let aiSettings = AISettingsStore().load()
+        analytics.setUserProperty(
+            String(describing: aiSettings.provider),
+            forName: "ai_provider"
+        )
+        analytics.setUserProperty(
+            String(describing: aiSettings.remote.provider),
+            forName: "remote_ai_provider"
+        )
+        analytics.setUserProperty(
+            LocalModelManager.shared.currentModelID,
+            forName: "local_model_id"
+        )
+        analytics.setUserProperty(
+            SyncSettingsStore().load().isEnabled ? "on" : "off",
+            forName: "sync_enabled"
+        )
+        analytics.setUserProperty(
+            String(describing: BiometricSettingsStore().load().mode),
+            forName: "biometric_mode"
+        )
+        analytics.setUserProperty(
+            String(describing: ReflectionSettingsStore().load().frequency),
+            forName: "reflection_frequency"
+        )
+        analytics.setUserProperty(
+            ScreenShieldSettingsStore().load().isEnabled ? "on" : "off",
+            forName: "screen_shield_enabled"
+        )
     }
 
     private func bootstrapNotifications() async {

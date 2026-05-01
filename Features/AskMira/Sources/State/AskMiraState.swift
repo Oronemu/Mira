@@ -117,6 +117,7 @@ public final class AskMiraState {
         do {
             try await repository.deleteAllChats()
             startNewChat()
+            analyticsService.log(event: "ask_mira_all_chats_deleted")
         } catch {
             errorMessage = error.localizedDescription
         }
@@ -127,6 +128,7 @@ public final class AskMiraState {
         guard !trimmed.isEmpty else { return }
         do {
             try await repository.renameChat(id: id, title: trimmed)
+            analyticsService.log(event: "ask_mira_chat_renamed")
         } catch {
             errorMessage = error.localizedDescription
         }
@@ -247,6 +249,13 @@ public final class AskMiraState {
         do {
             try await repository.saveTurn(turn, chatID: chatID)
             HapticsService().play(.success)
+            analyticsService.log(
+                event: "ask_mira_turn_completed",
+                parameters: [
+                    "is_first_turn": .bool(isFirstTurn),
+                    "reference_count": .int(streamingReferenceIDs.count),
+                ]
+            )
         } catch {
             errorMessage = error.localizedDescription
             HapticsService().play(.error)

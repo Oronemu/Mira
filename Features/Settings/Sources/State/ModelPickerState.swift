@@ -1,6 +1,7 @@
 import Foundation
 import Observation
 import AIKit
+import CoreKit
 
 @MainActor
 @Observable
@@ -20,6 +21,8 @@ public final class ModelPickerState {
     public private(set) var errors: [String: String] = [:]
 
     private let coordinator: ModelDownloadCoordinator
+    private let analyticsService: any AnalyticsService
+    private let crashReporter: any CrashReporter
 
     /// Fired after any state-changing action (select / remove). Download
     /// completion is wired inside `ServiceContainer` and doesn't need to
@@ -28,9 +31,13 @@ public final class ModelPickerState {
 
     public init(
         coordinator: ModelDownloadCoordinator,
+        analyticsService: any AnalyticsService = UnimplementedAnalyticsService(),
+        crashReporter: any CrashReporter = UnimplementedCrashReporter(),
         reloadService: @escaping @Sendable () async -> Void = {}
     ) {
         self.coordinator = coordinator
+        self.analyticsService = analyticsService
+        self.crashReporter = crashReporter
         self.reloadService = reloadService
         self.currentModelID = LocalModelManager.shared.currentModelID
     }
@@ -86,16 +93,28 @@ public final class ModelPickerState {
         currentModelID = model.id
         LocalModelManager.shared.setCurrentModel(id: model.id)
         await reloadService()
+        analyticsService.log(
+            event: "local_model_selected",
+            parameters: ["model_id": .string(model.id)]
+        )
     }
 
     public func download(_ model: LocalModel) {
         errors[model.id] = nil
         coordinator.startDownload(model)
+        analyticsService.log(
+            event: "local_model_download_started",
+            parameters: ["model_id": .string(model.id)]
+        )
     }
 
     public func cancelActiveDownload() {
         guard let id = activeDownloadID else { return }
         coordinator.cancel(id)
+        analyticsService.log(
+            event: "local_model_download_cancelled",
+            parameters: ["model_id": .string(id)]
+        )
     }
 
     public func remove(_ model: LocalModel) async {
@@ -107,8 +126,13 @@ public final class ModelPickerState {
             if model.id == currentModelID {
                 await reloadService()
             }
+            analyticsService.log(
+                event: "local_model_removed",
+                parameters: ["model_id": .string(model.id)]
+            )
         } catch {
             errors[model.id] = error.localizedDescription
+            crashReporter.recordError(error, reason: "model_picker.remove")
         }
     }
 }

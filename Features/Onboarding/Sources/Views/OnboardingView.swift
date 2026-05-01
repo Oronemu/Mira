@@ -208,9 +208,15 @@ public struct OnboardingView: View {
                 persistDiagnosticsConsent()
             }
             if isLast {
+                analyticsService.log(event: "onboarding_completed")
                 onFinish()
             } else {
+                let from = state.current
                 state.advance()
+                analyticsService.log(
+                    event: "onboarding_step_advanced",
+                    parameters: ["from": .string(stepName(from))]
+                )
             }
         } label: {
             HStack(spacing: 8) {
@@ -260,6 +266,25 @@ public struct OnboardingView: View {
         DiagnosticsSettingsStore().save(settings)
         analyticsService.setEnabled(state.analyticsEnabled)
         crashReporter.setEnabled(state.crashReportingEnabled)
+        // Logged after `setEnabled` so an opt-in is captured; an opt-out
+        // never reaches the backend, which is the desired privacy contract.
+        analyticsService.log(
+            event: "onboarding_diagnostics_consent",
+            parameters: [
+                "analytics": .bool(state.analyticsEnabled),
+                "crash": .bool(state.crashReportingEnabled),
+            ]
+        )
+    }
+
+    private func stepName(_ step: OnboardingState.Step) -> String {
+        switch step {
+        case .welcome:     "welcome"
+        case .privacy:     "privacy"
+        case .ai:          "ai"
+        case .diagnostics: "diagnostics"
+        case .permissions: "permissions"
+        }
     }
 
     private func refreshNotificationStatus() async {
@@ -289,6 +314,10 @@ public struct OnboardingView: View {
                 // after the prompt returns. Trust the immediate result
                 // first, then refresh for authoritative state.
                 state.setNotificationStatus(granted ? .granted : .denied)
+                analyticsService.log(
+                    event: "onboarding_notification_permission_set",
+                    parameters: ["granted": .bool(granted)]
+                )
                 if granted {
                     await MainActor.run {
                         UINotificationFeedbackGenerator().notificationOccurred(.success)
@@ -311,11 +340,19 @@ public struct OnboardingView: View {
             var settings = BiometricSettingsStore().load()
             settings.mode = .soft
             BiometricSettingsStore().save(settings)
+            analyticsService.log(
+                event: "onboarding_biometric_permission_set",
+                parameters: ["granted": .bool(true)]
+            )
         } catch {
             // Declined, cancelled, lockout, etc. — all treated as a
             // conscious "no" for onboarding purposes. The user can retry
             // by tapping the card again, or proceed past the step.
             state.setBiometricStatus(.denied)
+            analyticsService.log(
+                event: "onboarding_biometric_permission_set",
+                parameters: ["granted": .bool(false)]
+            )
         }
     }
 }

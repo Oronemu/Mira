@@ -7,6 +7,8 @@ public struct EntryDetailView: View {
     @Environment(\.entryRepository) private var repository
     @Environment(\.photoStoring) private var photoStore
     @Environment(\.embeddingProvider) private var embeddingProvider
+    @Environment(\.analyticsService) private var analyticsService
+    @Environment(\.crashReporter) private var crashReporter
 
     @State private var state: EntryDetailState?
     @State private var draft: EntryDraftState?
@@ -540,7 +542,9 @@ public struct EntryDetailView: View {
             snapshot: snapshot,
             repository: repository,
             photoStore: photoStore,
-            embeddingProvider: embeddingProvider
+            embeddingProvider: embeddingProvider,
+            analyticsService: analyticsService,
+            crashReporter: crashReporter
         )
         // Mount the overlay's Group at the hidden offset first, then flip
         // `isEditing` on the next tick so the spring animates from off-screen

@@ -33,6 +33,8 @@ public final class EntryEditorState {
     private let repository: any EntryRepository
     private let photoStore: any PhotoStoring
     private let embeddingProvider: any EmbeddingProvider
+    private let analyticsService: any AnalyticsService
+    private let crashReporter: any CrashReporter
     private let clock: @Sendable () -> Date
 
     public init(
@@ -40,12 +42,16 @@ public final class EntryEditorState {
         repository: any EntryRepository,
         photoStore: any PhotoStoring,
         embeddingProvider: any EmbeddingProvider,
+        analyticsService: any AnalyticsService = UnimplementedAnalyticsService(),
+        crashReporter: any CrashReporter = UnimplementedCrashReporter(),
         clock: @escaping @Sendable () -> Date = { .now }
     ) {
         self.mode = mode
         self.repository = repository
         self.photoStore = photoStore
         self.embeddingProvider = embeddingProvider
+        self.analyticsService = analyticsService
+        self.crashReporter = crashReporter
         self.clock = clock
         switch mode {
         case .new:
@@ -271,8 +277,10 @@ public final class EntryEditorState {
         do {
             let snapshot = try await photoStore.save(data)
             photos.append(snapshot)
+            analyticsService.log(event: "entry_photo_attached")
         } catch {
             errorMessage = error.localizedDescription
+            crashReporter.recordError(error, reason: "entry_editor.attach_photo")
         }
     }
 
@@ -305,6 +313,7 @@ public final class EntryEditorState {
         )
         stickers.append(instance)
         selectedStickerID = instance.id
+        analyticsService.log(event: "entry_sticker_added")
     }
 
     public func updateSticker(_ updated: EntryStickerInstance) {
@@ -373,6 +382,20 @@ public final class EntryEditorState {
         do {
             try await repository.save(snapshot)
             HapticsService().play(.success)
+            switch mode {
+            case .new:
+                analyticsService.log(
+                    event: "entry_created",
+                    parameters: [
+                        "has_mood": .bool(mood != nil),
+                        "tag_count": .int(tags.count),
+                        "photo_count": .int(photos.count),
+                        "sticker_count": .int(stickers.count),
+                    ]
+                )
+            case .edit:
+                analyticsService.log(event: "entry_edited")
+            }
             let id = snapshot.id
             let plain = snapshot.plainContent
             let repository = repository
@@ -390,6 +413,7 @@ public final class EntryEditorState {
         } catch {
             errorMessage = error.localizedDescription
             HapticsService().play(.error)
+            crashReporter.recordError(error, reason: "entry_editor.save")
             return false
         }
     }
@@ -425,10 +449,12 @@ public final class EntryEditorState {
                 try? await photoStore.delete(relativePath: photo.relativePath)
             }
             HapticsService().play(.warning)
+            analyticsService.log(event: "entry_deleted", parameters: ["source": .string("editor")])
             return true
         } catch {
             errorMessage = error.localizedDescription
             HapticsService().play(.error)
+            crashReporter.recordError(error, reason: "entry_editor.delete")
             return false
         }
     }

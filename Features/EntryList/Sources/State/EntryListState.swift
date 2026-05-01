@@ -20,10 +20,19 @@ public final class EntryListState {
 
     private var allEntries: [EntrySnapshot] = []
     private let repository: any EntryRepository
+    private let analyticsService: any AnalyticsService
+    private let crashReporter: any CrashReporter
 
-    public init(repository: any EntryRepository, initialQuery: EntryQuery = .all) {
+    public init(
+        repository: any EntryRepository,
+        initialQuery: EntryQuery = .all,
+        analyticsService: any AnalyticsService = UnimplementedAnalyticsService(),
+        crashReporter: any CrashReporter = UnimplementedCrashReporter()
+    ) {
         self.repository = repository
         self.query = initialQuery
+        self.analyticsService = analyticsService
+        self.crashReporter = crashReporter
     }
 
     /// Long-running observation. Drive from the View's `.task` modifier
@@ -44,8 +53,10 @@ public final class EntryListState {
     public func delete(id: UUID) async {
         do {
             try await repository.delete(id: id)
+            analyticsService.log(event: "entry_deleted", parameters: ["source": .string("list")])
         } catch {
             errorMessage = error.localizedDescription
+            crashReporter.recordError(error, reason: "entry_list.delete")
         }
     }
 
@@ -106,6 +117,7 @@ public final class EntryListState {
     public func deleteSelected() async {
         let ids = selection
         guard !ids.isEmpty else { return }
+        let count = ids.count
         await withTaskGroup(of: Error?.self) { group in
             for id in ids {
                 group.addTask { [repository] in
@@ -120,9 +132,14 @@ public final class EntryListState {
             for await error in group {
                 if let error {
                     errorMessage = error.localizedDescription
+                    crashReporter.recordError(error, reason: "entry_list.bulk_delete")
                 }
             }
         }
+        analyticsService.log(
+            event: "entries_bulk_deleted",
+            parameters: ["count": .int(count)]
+        )
         selection.removeAll()
         isSelectionMode = false
     }

@@ -37,6 +37,8 @@ public final class EntryDraftState {
     private let repository: any EntryRepository
     private let photoStore: any PhotoStoring
     private let embeddingProvider: any EmbeddingProvider
+    private let analyticsService: any AnalyticsService
+    private let crashReporter: any CrashReporter
     private let clock: @Sendable () -> Date
 
     public init(
@@ -44,6 +46,8 @@ public final class EntryDraftState {
         repository: any EntryRepository,
         photoStore: any PhotoStoring,
         embeddingProvider: any EmbeddingProvider,
+        analyticsService: any AnalyticsService = UnimplementedAnalyticsService(),
+        crashReporter: any CrashReporter = UnimplementedCrashReporter(),
         clock: @escaping @Sendable () -> Date = { .now }
     ) {
         self.entryID = snapshot.id
@@ -65,6 +69,8 @@ public final class EntryDraftState {
         self.repository = repository
         self.photoStore = photoStore
         self.embeddingProvider = embeddingProvider
+        self.analyticsService = analyticsService
+        self.crashReporter = crashReporter
         self.clock = clock
     }
 
@@ -254,8 +260,10 @@ public final class EntryDraftState {
         do {
             let snapshot = try await photoStore.save(data)
             photos.append(snapshot)
+            analyticsService.log(event: "entry_photo_attached")
         } catch {
             errorMessage = error.localizedDescription
+            crashReporter.recordError(error, reason: "entry_draft.attach_photo")
         }
     }
 
@@ -286,6 +294,7 @@ public final class EntryDraftState {
         )
         stickers.append(instance)
         selectedStickerID = instance.id
+        analyticsService.log(event: "entry_sticker_added")
     }
 
     public func updateSticker(_ updated: EntryStickerInstance) {
@@ -354,6 +363,7 @@ public final class EntryDraftState {
         do {
             try await repository.save(snapshot)
             HapticsService().play(.success)
+            analyticsService.log(event: "entry_edited", parameters: ["source": .string("detail")])
             let id = snapshot.id
             let plain = snapshot.plainContent
             let repository = repository
@@ -371,6 +381,7 @@ public final class EntryDraftState {
         } catch {
             errorMessage = error.localizedDescription
             HapticsService().play(.error)
+            crashReporter.recordError(error, reason: "entry_draft.save")
             return false
         }
     }
@@ -403,10 +414,12 @@ public final class EntryDraftState {
                 try? await photoStore.delete(relativePath: photo.relativePath)
             }
             HapticsService().play(.warning)
+            analyticsService.log(event: "entry_deleted", parameters: ["source": .string("detail")])
             return true
         } catch {
             errorMessage = error.localizedDescription
             HapticsService().play(.error)
+            crashReporter.recordError(error, reason: "entry_draft.delete")
             return false
         }
     }

@@ -104,6 +104,12 @@ public final class SettingsState {
         diagnostics.hasAnswered = true
         diagnosticsStore.save(diagnostics)
         analyticsService.setEnabled(enabled)
+        // Logged after `setEnabled` so a flip-to-on captures the toggle event
+        // itself; flip-to-off won't be transmitted (collection is now off).
+        analyticsService.log(
+            event: "diagnostics_consent_set",
+            parameters: ["channel": .string("analytics"), "enabled": .bool(enabled)]
+        )
     }
 
     public func setCrashReportingEnabled(_ enabled: Bool) {
@@ -111,6 +117,10 @@ public final class SettingsState {
         diagnostics.hasAnswered = true
         diagnosticsStore.save(diagnostics)
         crashReporter.setEnabled(enabled)
+        analyticsService.log(
+            event: "diagnostics_consent_set",
+            parameters: ["channel": .string("crash"), "enabled": .bool(enabled)]
+        )
     }
 
     /// Live download status derived from the coordinator so the UI
@@ -136,6 +146,11 @@ public final class SettingsState {
         localModelError = nil
         LocalModelManager.shared.setCurrentModel(id: model.id)
         await refreshLocalModelStatus()
+        analyticsService.setUserProperty(model.id, forName: "local_model_id")
+        analyticsService.log(
+            event: "settings_local_model_changed",
+            parameters: ["model_id": .string(model.id)]
+        )
     }
 
     public func refresh() async {
@@ -169,10 +184,18 @@ public final class SettingsState {
     public func downloadLocalModel() {
         localModelError = nil
         coordinator.startDownload(localModel)
+        analyticsService.log(
+            event: "local_model_download_started",
+            parameters: ["model_id": .string(localModel.id), "source": .string("settings")]
+        )
     }
 
     public func cancelLocalModelDownload() {
         coordinator.cancel(localModel.id)
+        analyticsService.log(
+            event: "local_model_download_cancelled",
+            parameters: ["model_id": .string(localModel.id), "source": .string("settings")]
+        )
     }
 
     public func removeLocalModel() async {
@@ -182,8 +205,13 @@ public final class SettingsState {
             coordinator.markRemoved(localModel.id)
             await service.reloadProviders(settings: settings, apiKey: remoteKeyForCurrentProvider())
             isAIAvailable = await service.isAvailable
+            analyticsService.log(
+                event: "local_model_removed",
+                parameters: ["model_id": .string(localModel.id), "source": .string("settings")]
+            )
         } catch {
             localModelError = error.localizedDescription
+            crashReporter.recordError(error, reason: "settings.remove_local_model")
         }
     }
 
@@ -199,6 +227,12 @@ public final class SettingsState {
         next.mode = mode
         biometric = next
         biometricStore.save(next)
+        let modeName = String(describing: mode)
+        analyticsService.setUserProperty(modeName, forName: "biometric_mode")
+        analyticsService.log(
+            event: "settings_biometric_changed",
+            parameters: ["mode": .string(modeName)]
+        )
     }
 
     public func setScreenShieldEnabled(_ isEnabled: Bool) {
@@ -206,6 +240,10 @@ public final class SettingsState {
         next.isEnabled = isEnabled
         screenShield = next
         screenShieldStore.save(next)
+        analyticsService.log(
+            event: "settings_screenshield_toggled",
+            parameters: ["enabled": .bool(isEnabled)]
+        )
     }
 
     public func setSyncEnabled(_ isEnabled: Bool) async {
@@ -216,6 +254,10 @@ public final class SettingsState {
             let status = await syncService.accountStatus()
             guard status == .available else {
                 syncStatus = .failed(Self.message(for: status))
+                analyticsService.log(
+                    event: "settings_sync_blocked",
+                    parameters: ["reason": .string(String(describing: status))]
+                )
                 return
             }
         }
@@ -225,6 +267,11 @@ public final class SettingsState {
         syncStore.save(next)
         await syncService.setEnabled(isEnabled)
         syncStatus = await syncService.status
+        analyticsService.setUserProperty(isEnabled ? "on" : "off", forName: "sync_enabled")
+        analyticsService.log(
+            event: "settings_sync_toggled",
+            parameters: ["enabled": .bool(isEnabled)]
+        )
     }
 
     private static func message(for status: CloudKitAccountStatus) -> String {
@@ -248,14 +295,21 @@ public final class SettingsState {
         defer { isSyncing = false }
         await syncService.sync()
         syncStatus = await syncService.status
+        analyticsService.log(event: "settings_sync_now")
     }
 
     public func exportMarkdown() async -> URL? {
         do {
             let entries = try await entryRepository.fetch(matching: .all)
-            return try ExportService().exportMarkdown(entries: entries)
+            let url = try ExportService().exportMarkdown(entries: entries)
+            analyticsService.log(
+                event: "settings_export",
+                parameters: ["format": .string("markdown"), "entry_count": .int(entries.count)]
+            )
+            return url
         } catch {
             reflectionError = error.localizedDescription
+            crashReporter.recordError(error, reason: "settings.export_markdown")
             return nil
         }
     }
@@ -264,9 +318,15 @@ public final class SettingsState {
     public func exportPDF() async -> URL? {
         do {
             let entries = try await entryRepository.fetch(matching: .all)
-            return try ExportService().exportPDF(entries: entries)
+            let url = try ExportService().exportPDF(entries: entries)
+            analyticsService.log(
+                event: "settings_export",
+                parameters: ["format": .string("pdf"), "entry_count": .int(entries.count)]
+            )
+            return url
         } catch {
             reflectionError = error.localizedDescription
+            crashReporter.recordError(error, reason: "settings.export_pdf")
             return nil
         }
     }
@@ -277,6 +337,12 @@ public final class SettingsState {
         reflection = next
         reflectionStore.save(next)
         try? BackgroundTaskService().scheduleReflection(for: frequency)
+        let frequencyName = String(describing: frequency)
+        analyticsService.setUserProperty(frequencyName, forName: "reflection_frequency")
+        analyticsService.log(
+            event: "settings_reflection_frequency_changed",
+            parameters: ["frequency": .string(frequencyName)]
+        )
     }
 
     public func generateReflectionNow(locale: Locale = .autoupdatingCurrent) async {
@@ -291,10 +357,16 @@ public final class SettingsState {
                 entryRepository: entryRepository,
                 insightRepository: insightRepository
             )
+            analyticsService.log(
+                event: "insight_generated",
+                parameters: ["source": .string("settings")]
+            )
         } catch let error as AIError {
             reflectionError = error.errorDescription
+            crashReporter.recordError(error, reason: "settings.reflection.ai_error")
         } catch {
             reflectionError = error.localizedDescription
+            crashReporter.recordError(error, reason: "settings.reflection")
         }
     }
 
@@ -302,6 +374,12 @@ public final class SettingsState {
         var next = settings
         next.provider = provider
         await persist(next, apiKey: draftAPIKey)
+        let providerName = String(describing: provider)
+        analyticsService.setUserProperty(providerName, forName: "ai_provider")
+        analyticsService.log(
+            event: "settings_provider_changed",
+            parameters: ["provider": .string(providerName)]
+        )
     }
 
     public func setRemoteProvider(_ provider: RemoteConfig.Provider) async {
@@ -316,6 +394,12 @@ public final class SettingsState {
         var next = settings
         next.remote = config
         await persist(next, apiKey: draftAPIKey)
+        let providerName = String(describing: provider)
+        analyticsService.setUserProperty(providerName, forName: "remote_ai_provider")
+        analyticsService.log(
+            event: "settings_remote_provider_changed",
+            parameters: ["provider": .string(providerName)]
+        )
     }
 
     public func setModel(_ model: String) async {
@@ -325,6 +409,10 @@ public final class SettingsState {
         var next = settings
         next.remote = config
         await persist(next, apiKey: draftAPIKey)
+        analyticsService.log(
+            event: "settings_remote_model_changed",
+            parameters: ["model": .string(model)]
+        )
     }
 
     public func saveAPIKey() async {
@@ -336,8 +424,16 @@ public final class SettingsState {
             } else {
                 try await keychain.setAPIKey(draftAPIKey, for: draftRemoteConfig.provider)
             }
+            analyticsService.log(
+                event: "settings_api_key_saved",
+                parameters: [
+                    "provider": .string(String(describing: draftRemoteConfig.provider)),
+                    "cleared": .bool(draftAPIKey.isEmpty),
+                ]
+            )
         } catch {
             testResult = .failure(error.localizedDescription)
+            crashReporter.recordError(error, reason: "settings.save_api_key")
             return
         }
         if settings.provider == .remote {
@@ -367,10 +463,31 @@ public final class SettingsState {
             let stream = try await probe.stream(request)
             for try await _ in stream { break }
             testResult = .ok
+            analyticsService.log(
+                event: "settings_test_connection",
+                parameters: [
+                    "provider": .string(String(describing: draftRemoteConfig.provider)),
+                    "result": .string("ok"),
+                ]
+            )
         } catch let error as AIError {
             testResult = .failure(error.errorDescription ?? String(localized: "Request failed"))
+            analyticsService.log(
+                event: "settings_test_connection",
+                parameters: [
+                    "provider": .string(String(describing: draftRemoteConfig.provider)),
+                    "result": .string("ai_error"),
+                ]
+            )
         } catch {
             testResult = .failure(error.localizedDescription)
+            analyticsService.log(
+                event: "settings_test_connection",
+                parameters: [
+                    "provider": .string(String(describing: draftRemoteConfig.provider)),
+                    "result": .string("error"),
+                ]
+            )
         }
     }
 

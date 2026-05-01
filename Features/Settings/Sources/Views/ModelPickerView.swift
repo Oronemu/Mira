@@ -7,6 +7,8 @@ import Utilities
 public struct ModelPickerView: View {
     @Environment(\.aiService) private var aiService
     @Environment(\.modelDownloadCoordinator) private var coordinator
+    @Environment(\.analyticsService) private var analyticsService
+    @Environment(\.crashReporter) private var crashReporter
 
     @State private var state: ModelPickerState?
     @State private var currentIndex: Int = 0
@@ -42,7 +44,12 @@ public struct ModelPickerView: View {
         .hideTabBar()
         .task {
             if state == nil {
-                state = ModelPickerState(coordinator: coordinator, reloadService: reloadService)
+                state = ModelPickerState(
+                    coordinator: coordinator,
+                    analyticsService: analyticsService,
+                    crashReporter: crashReporter,
+                    reloadService: reloadService
+                )
                 if let state, let index = state.catalog.firstIndex(where: { state.isCurrent($0) }) {
                     currentIndex = index
                 }

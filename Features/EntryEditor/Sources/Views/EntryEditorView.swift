@@ -7,6 +7,8 @@ public struct EntryEditorView: View {
     @Environment(\.entryRepository) private var repository
     @Environment(\.photoStoring) private var photoStore
     @Environment(\.embeddingProvider) private var embeddingProvider
+    @Environment(\.analyticsService) private var analyticsService
+    @Environment(\.crashReporter) private var crashReporter
     @Environment(\.dismiss) private var dismiss
 
     @State private var state: EntryEditorState?
@@ -181,7 +183,9 @@ public struct EntryEditorView: View {
                     mode: mode,
                     repository: repository,
                     photoStore: photoStore,
-                    embeddingProvider: embeddingProvider
+                    embeddingProvider: embeddingProvider,
+                    analyticsService: analyticsService,
+                    crashReporter: crashReporter
                 )
                 if case .new = mode {
                     try? await Task.sleep(for: .milliseconds(220))

@@ -5,6 +5,7 @@ import DesignSystem
 
 public struct CalendarView: View {
     @Environment(\.entryRepository) private var repository
+    @Environment(\.analyticsService) private var analyticsService
 
     @State private var state: CalendarState?
 
@@ -32,7 +33,7 @@ public struct CalendarView: View {
         .toolbarBackground(.hidden, for: .navigationBar)
         .task {
             if state == nil {
-                state = CalendarState(repository: repository)
+                state = CalendarState(repository: repository, analyticsService: analyticsService)
             }
             await state?.observe()
         }

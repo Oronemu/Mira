@@ -7,6 +7,8 @@ public struct InsightsListView: View {
     @Environment(\.insightRepository) private var repository
     @Environment(\.entryRepository) private var entryRepository
     @Environment(\.aiProvider) private var aiProvider
+    @Environment(\.analyticsService) private var analyticsService
+    @Environment(\.crashReporter) private var crashReporter
 
     @State private var state: InsightsListState?
     @State private var pendingDeletionID: UUID?
@@ -37,7 +39,9 @@ public struct InsightsListView: View {
                 state = InsightsListState(
                     repository: repository,
                     entryRepository: entryRepository,
-                    aiProvider: aiProvider
+                    aiProvider: aiProvider,
+                    analyticsService: analyticsService,
+                    crashReporter: crashReporter
                 )
             }
             await state?.refreshChart()
