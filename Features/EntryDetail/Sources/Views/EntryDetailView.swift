@@ -239,17 +239,33 @@ public struct EntryDetailView: View {
                     .frame(height: 330)
                 }
 
-                EntryContentRenderer(content: snapshot.content)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .overlay(alignment: .topLeading) {
-                        StickerOverlayView(
-                            stickers: snapshot.stickers,
-                            selectedID: .constant(nil),
-                            interactive: false,
-                            onUpdate: { _ in },
-                            onRemove: { _ in }
-                        )
-                    }
+                // Sticker `y` is stored as an offset from the top of the
+                // editing canvas (which has a date eyebrow + spacing above
+                // the text). Mirror that same eyebrow inset here as an
+                // invisible placeholder so the overlay's coordinate
+                // origin matches what the user placed in the editor —
+                // otherwise stickers render lower than the text they
+                // were anchored to.
+                VStack(alignment: .leading, spacing: 12) {
+                    Text(verbatim: " ")
+                        .eyebrowStyle()
+                        .padding(.horizontal, 24)
+                        .padding(.top, 8)
+                        .opacity(0)
+                        .accessibilityHidden(true)
+
+                    EntryContentRenderer(content: snapshot.content)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
+                .overlay(alignment: .topLeading) {
+                    StickerOverlayView(
+                        stickers: snapshot.stickers,
+                        selectedID: .constant(nil),
+                        interactive: false,
+                        onUpdate: { _ in },
+                        onRemove: { _ in }
+                    )
+                }
 
                 if !snapshot.tags.isEmpty {
                     tagRow(snapshot)
