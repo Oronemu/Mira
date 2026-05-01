@@ -6876,6 +6876,20 @@
         "en": { "stringUnit": { "state": "translated", "value": "Delete selected" } },
         "ru": { "stringUnit": { "state": "translated", "value": "Удалить выбранные" } }
       }
+    },
+    "Just now": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Just now" } },
+        "ru": { "stringUnit": { "state": "translated", "value": "Только что" } }
+      }
+    },
+    "Up to date": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Up to date" } },
+        "ru": { "stringUnit": { "state": "translated", "value": "Актуально" } }
+      }
     }
   },
   "version": "1.0"

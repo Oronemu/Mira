@@ -142,7 +142,7 @@ public struct SyncSettingsView: View {
     private func statusValue(_ status: SyncStatus) -> some View {
         switch status {
         case .idle:
-            Text("Idle")
+            Text("Up to date")
                 .font(.system(size: 13, weight: .medium))
                 .foregroundStyle(MiraPalette.secondaryText)
         case .syncing:
@@ -150,9 +150,14 @@ public struct SyncSettingsView: View {
                 .font(.system(size: 13, weight: .medium))
                 .foregroundStyle(MiraPalette.secondaryText)
         case .succeeded(let date):
-            Text(date, format: .relative(presentation: .numeric))
-                .font(.system(size: 13, weight: .medium))
-                .foregroundStyle(MiraPalette.mood(level: 5))
+            // Refresh once a minute so "just now" rolls forward into
+            // "a minute ago", "5 minutes ago", etc. without requiring
+            // the user to re-enter the screen.
+            TimelineView(.periodic(from: .now, by: 60)) { context in
+                Text(relativeSyncText(date: date, now: context.date))
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundStyle(MiraPalette.mood(level: 5))
+            }
         case .failed(let message):
             Text(message)
                 .font(.system(size: 12, weight: .medium))
@@ -160,5 +165,17 @@ public struct SyncSettingsView: View {
                 .lineLimit(2)
                 .multilineTextAlignment(.trailing)
         }
+    }
+
+    /// Renders the "time since last sync" label. Within a 10-second
+    /// window we say "Just now" — the system formatter would otherwise
+    /// round to "in 0 seconds" right after a successful sync (and even
+    /// invert the sign on minor clock skew).
+    private func relativeSyncText(date: Date, now: Date) -> String {
+        let elapsed = now.timeIntervalSince(date)
+        if elapsed < 10 {
+            return String(localized: "Just now")
+        }
+        return date.formatted(.relative(presentation: .named))
     }
 }
