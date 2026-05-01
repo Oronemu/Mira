@@ -31,6 +31,13 @@ public struct SettingsView: View {
                         ) { ReflectionSettingsView() }
 
                         SettingsCategoryLink(
+                            icon: "bell",
+                            title: "Reminders",
+                            subtitle: "Local pushes — daily check-in and a nudge if you've been quiet",
+                            moodLevel: 5
+                        ) { NotificationSettingsView() }
+
+                        SettingsCategoryLink(
                             icon: "lock",
                             title: "Privacy",
                             subtitle: "Biometric lock on this device",

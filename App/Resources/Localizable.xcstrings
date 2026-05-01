@@ -6757,6 +6757,76 @@
           }
         }
       }
+    },
+    "A small prompt to write down the day": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "A small prompt to write down the day" } },
+        "ru": { "stringUnit": { "state": "translated", "value": "Лёгкий повод записать день" } }
+      }
+    },
+    "After a few days without an entry": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "After a few days without an entry" } },
+        "ru": { "stringUnit": { "state": "translated", "value": "Если несколько дней нет записей" } }
+      }
+    },
+    "Daily check-in": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Daily check-in" } },
+        "ru": { "stringUnit": { "state": "translated", "value": "Каждый день" } }
+      }
+    },
+    "Evening reminder": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Evening reminder" } },
+        "ru": { "stringUnit": { "state": "translated", "value": "Вечернее напоминание" } }
+      }
+    },
+    "Gentle nudge": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Gentle nudge" } },
+        "ru": { "stringUnit": { "state": "translated", "value": "Мягкий пинг" } }
+      }
+    },
+    "If you've been quiet": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "If you've been quiet" } },
+        "ru": { "stringUnit": { "state": "translated", "value": "Если ты пропадаешь" } }
+      }
+    },
+    "Local pushes — daily check-in and a nudge if you've been quiet": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Local pushes — daily check-in and a nudge if you've been quiet" } },
+        "ru": { "stringUnit": { "state": "translated", "value": "Локальные напоминания — вечерний пинг и привет, если давно не было" } }
+      }
+    },
+    "Local pushes only — they never leave this device. Times use your phone's clock.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Local pushes only — they never leave this device. Times use your phone's clock." } },
+        "ru": { "stringUnit": { "state": "translated", "value": "Это локальные уведомления — они не покидают устройство. Время — местное." } }
+      }
+    },
+    "Reminders": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Reminders" } },
+        "ru": { "stringUnit": { "state": "translated", "value": "Напоминания" } }
+      }
+    },
+    "Time": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Time" } },
+        "ru": { "stringUnit": { "state": "translated", "value": "Время" } }
+      }
     }
   },
   "version": "1.0"

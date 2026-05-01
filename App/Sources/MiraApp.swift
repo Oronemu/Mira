@@ -83,11 +83,13 @@ struct MiraApp: App {
             .task { await bootstrapRemoteKey() }
             .task { await backfillEmbeddings() }
             .task { await bootstrapNotifications() }
+            .task { await bootstrapLocalNotifications() }
             .task { await bootstrapSync() }
             .onChange(of: scenePhase) { _, newPhase in
                 lockState.handle(scenePhase: newPhase)
                 if newPhase == .active {
                     screenShieldEnabled = ScreenShieldSettingsStore().load().isEnabled
+                    Task { await bootstrapLocalNotifications() }
                 }
             }
             .animation(.easeInOut(duration: 0.15), value: shouldShowShield)
@@ -174,6 +176,44 @@ struct MiraApp: App {
         // dropped, and the schedule is fine to keep in place.
         let frequency = ReflectionSettingsStore().load().frequency
         try? BackgroundTaskService().scheduleReflection(for: frequency)
+    }
+
+    /// Refreshes the rolling evening-reminder window and the inactivity
+    /// nudge. Re-run on every scene activation so timezone changes,
+    /// freshly added entries, and Remote Config overrides take effect
+    /// without waiting for the next launch.
+    private func bootstrapLocalNotifications() async {
+        let prefs = NotificationPreferencesStore().load()
+        let catalog = NotificationCopyCatalog(remoteConfig: container.remoteConfigService)
+        let service = NotificationService()
+
+        if prefs.evening.isEnabled {
+            await service.scheduleEveningRolling(
+                time: DateComponents(hour: prefs.evening.hour, minute: prefs.evening.minute),
+                copy: catalog
+            )
+        } else {
+            await service.cancelEveningRolling()
+        }
+
+        if prefs.inactivity.isEnabled {
+            let lastEntry = await fetchLastEntryDate()
+            await service.scheduleInactivity(
+                lastEntry: lastEntry,
+                thresholdDays: prefs.inactivity.thresholdDays,
+                time: DateComponents(hour: prefs.inactivity.hour, minute: prefs.inactivity.minute),
+                copy: catalog
+            )
+        } else {
+            await service.cancelInactivity()
+        }
+    }
+
+    private func fetchLastEntryDate() async -> Date? {
+        var query = EntryQuery.all
+        query.limit = 1
+        let snapshots = try? await container.entryRepository.fetch(matching: query)
+        return snapshots?.first?.createdAt
     }
 
     private func bootstrapRemoteKey() async {
