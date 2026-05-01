@@ -8,7 +8,6 @@ import AIKit
 @Observable
 public final class InsightsListState {
     public private(set) var insights: [InsightSnapshot] = []
-    public private(set) var entriesForChart: [EntrySnapshot] = []
     public private(set) var isGenerating: Bool = false
     public private(set) var errorMessage: String?
 
@@ -36,10 +35,6 @@ public final class InsightsListState {
         for await snapshot in repository.observeAll() {
             insights = snapshot.sorted { $0.createdAt > $1.createdAt }
         }
-    }
-
-    public func refreshChart() async {
-        entriesForChart = (try? await entryRepository.fetch(matching: .all)) ?? []
     }
 
     public func generateNow(locale: Locale = .autoupdatingCurrent) async {

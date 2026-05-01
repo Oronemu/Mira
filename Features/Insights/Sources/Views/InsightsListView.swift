@@ -14,9 +14,14 @@ public struct InsightsListView: View {
     @State private var pendingDeletionID: UUID?
 
     private let onSelectInsight: (UUID) -> Void
+    private let onOpenStats: () -> Void
 
-    public init(onSelectInsight: @escaping (UUID) -> Void) {
+    public init(
+        onSelectInsight: @escaping (UUID) -> Void,
+        onOpenStats: @escaping () -> Void = {}
+    ) {
         self.onSelectInsight = onSelectInsight
+        self.onOpenStats = onOpenStats
     }
 
     public var body: some View {
@@ -34,6 +39,16 @@ public struct InsightsListView: View {
         }
         .toolbarTitleDisplayMode(.inline)
         .toolbarBackground(.hidden, for: .navigationBar)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button(action: onOpenStats) {
+                    Image(systemName: "chart.bar.xaxis")
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundStyle(MiraPalette.primaryText.opacity(0.85))
+                }
+                .accessibilityLabel(Text("Open stats", comment: "Insights toolbar — opens the Stats screen"))
+            }
+        }
         .task {
             if state == nil {
                 state = InsightsListState(
@@ -44,7 +59,6 @@ public struct InsightsListView: View {
                     crashReporter: crashReporter
                 )
             }
-            await state?.refreshChart()
             await state?.observe()
         }
         .confirmationDialog(
@@ -68,8 +82,6 @@ public struct InsightsListView: View {
         ScrollView {
             LazyVStack(alignment: .leading, spacing: 24) {
                 hero(state: state)
-
-                MoodChartView(entries: state.entriesForChart)
 
                 if let error = state.errorMessage {
                     ErrorPill(error)
@@ -192,16 +204,10 @@ public struct InsightsListView: View {
         )
     }
 
-    /// Ambient tint for the screen — follows the overall mood average across
-    /// entries so the reflections feel anchored in the user's current period.
-    private var ambientMoodLevels: [Int] {
-        guard let state,
-              let average = MoodAnalytics.averageMood(entries: state.entriesForChart)
-        else {
-            return [3]
-        }
-        return [max(1, min(5, Int(round(average))))]
-    }
+    /// Ambient tint for the screen — follows the user's average accent so
+    /// the reflections feel anchored in the same palette as the rest of
+    /// the app. Stats screen carries the per-period mood ambient now.
+    private var ambientMoodLevels: [Int] { [3] }
 }
 
 // MARK: - Insight card
