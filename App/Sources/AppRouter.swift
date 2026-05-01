@@ -9,6 +9,7 @@ final class AppRouter {
         case editor(EditorMode)
         case dayList(Date)
         case insight(UUID)
+        case stats
     }
 
     enum EditorMode: Hashable {
@@ -32,6 +33,10 @@ final class AppRouter {
 
     func openInsight(_ id: UUID) {
         path.append(.insight(id))
+    }
+
+    func openStats() {
+        path.append(.stats)
     }
 
     func pop() {

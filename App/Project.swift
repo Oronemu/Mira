@@ -57,6 +57,7 @@ let project = Project(
                 .project(target: "FeatureInsights", path: "../Features/Insights"),
                 .project(target: "FeatureOnboarding", path: "../Features/Onboarding"),
                 .project(target: "FeatureSettings", path: "../Features/Settings"),
+                .project(target: "FeatureStats", path: "../Features/Stats"),
                 .project(target: "MiraWidgets", path: "../Widgets"),
             ],
             settings: .settings(base: [

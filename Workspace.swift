@@ -19,6 +19,7 @@ let workspace = Workspace(
         "Features/Insights",
         "Features/Onboarding",
         "Features/Settings",
+        "Features/Stats",
         "Widgets",
     ]
 )

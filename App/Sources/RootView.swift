@@ -8,6 +8,7 @@ import FeatureEntryDetail
 import FeatureAskMira
 import FeatureInsights
 import FeatureSettings
+import FeatureStats
 
 struct RootView: View {
     @Environment(\.appearanceState) private var appearanceState
@@ -115,12 +116,15 @@ struct RootView: View {
 
     private var insightsTab: some View {
         NavigationStack(path: $insightsRouter.path) {
-            InsightsListView(onSelectInsight: { id in insightsRouter.openInsight(id) })
-                .safeAreaPadding(.bottom, MiraTabBarLayout.reservedHeight)
-                .ignoresSafeArea(.keyboard)
-                .navigationDestination(for: AppRouter.Route.self) { route in
-                    routeView(route, router: insightsRouter)
-                }
+            InsightsListView(
+                onSelectInsight: { id in insightsRouter.openInsight(id) },
+                onOpenStats: { insightsRouter.openStats() }
+            )
+            .safeAreaPadding(.bottom, MiraTabBarLayout.reservedHeight)
+            .ignoresSafeArea(.keyboard)
+            .navigationDestination(for: AppRouter.Route.self) { route in
+                routeView(route, router: insightsRouter)
+            }
         }
     }
 
@@ -155,6 +159,8 @@ struct RootView: View {
                 insightID: id,
                 onSelectEntry: { entryID in router.openDetail(entryID) }
             )
+        case .stats:
+            StatsView()
         }
     }
 
