@@ -33,6 +33,7 @@ public struct StatsView: View {
         .navigationTitle("")
         .toolbarTitleDisplayMode(.inline)
         .toolbarBackground(.hidden, for: .navigationBar)
+        .hideTabBar()
         .task {
             if state == nil {
                 state = StatsState(
