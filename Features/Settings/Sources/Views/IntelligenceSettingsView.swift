@@ -175,15 +175,14 @@ public struct IntelligenceSettingsView: View {
         VStack(alignment: .leading, spacing: 16) {
             VStack(alignment: .leading, spacing: 10) {
                 Text("Service").eyebrowStyle()
-                Picker("Service", selection: Binding(
-                    get: { state.draftRemoteConfig.provider },
-                    set: { newValue in Task { await state.setRemoteProvider(newValue) } }
-                )) {
-                    ForEach(RemoteConfig.Provider.allCases, id: \.self) { provider in
-                        Text(provider.displayName).tag(provider)
-                    }
-                }
-                .pickerStyle(.segmented)
+                GlassPillPicker(
+                    options: RemoteConfig.Provider.allCases,
+                    selection: Binding(
+                        get: { state.draftRemoteConfig.provider },
+                        set: { newValue in Task { await state.setRemoteProvider(newValue) } }
+                    ),
+                    label: { $0.displayName }
+                )
             }
 
             fieldBlock(title: "Model") {
