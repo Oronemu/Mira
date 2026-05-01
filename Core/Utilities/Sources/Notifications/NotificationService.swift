@@ -24,6 +24,10 @@ public struct NotificationService: Sendable {
         content.body = String(localized: "Your weekly reflection is waiting in Mira.")
         content.userInfo = ["insightID": insightID.uuidString]
         content.sound = .default
+        // Personal reminders need to break through Sleep / DnD / Wind Down,
+        // which silently swallow .active-level pushes — the journaling
+        // window is exactly the time most users have a Focus active.
+        content.interruptionLevel = .timeSensitive
 
         let request = UNNotificationRequest(
             identifier: "mira.reflection.\(insightID.uuidString)",
@@ -86,6 +90,7 @@ public struct NotificationService: Sendable {
             content.title = value.title
             content.body = value.body
             content.sound = .default
+            content.interruptionLevel = .timeSensitive
 
             let trigger = UNCalendarNotificationTrigger(dateMatching: comps, repeats: false)
             let request = UNNotificationRequest(identifier: id, content: content, trigger: trigger)
@@ -158,6 +163,7 @@ public struct NotificationService: Sendable {
         content.title = value.title
         content.body = value.body
         content.sound = .default
+        content.interruptionLevel = .timeSensitive
 
         let comps = calendar.dateComponents([.year, .month, .day, .hour, .minute], from: triggerDate)
         let trigger = UNCalendarNotificationTrigger(dateMatching: comps, repeats: false)
