@@ -5,14 +5,29 @@ import DesignSystem
 public struct EntryRowCard: View {
     private let entry: EntrySnapshot
     private let namespace: Namespace.ID?
+    private let isSelectionMode: Bool
+    private let isSelected: Bool
 
-    public init(entry: EntrySnapshot, namespace: Namespace.ID? = nil) {
+    public init(
+        entry: EntrySnapshot,
+        namespace: Namespace.ID? = nil,
+        isSelectionMode: Bool = false,
+        isSelected: Bool = false
+    ) {
         self.entry = entry
         self.namespace = namespace
+        self.isSelectionMode = isSelectionMode
+        self.isSelected = isSelected
     }
 
     public var body: some View {
         HStack(alignment: .top, spacing: 14) {
+            if isSelectionMode {
+                checkbox
+                    .padding(.top, 2)
+                    .transition(.scale(scale: 0.6).combined(with: .opacity))
+            }
+
             MoodAccent(level: entry.mood?.rawValue)
                 .frame(maxHeight: .infinity)
 
@@ -33,8 +48,23 @@ public struct EntryRowCard: View {
             }
         }
         .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+        .overlay {
+            if isSelected {
+                RoundedRectangle(cornerRadius: 20, style: .continuous)
+                    .stroke(MiraPalette.mood(level: 4), lineWidth: 1.5)
+            }
+        }
         .shadow(color: .black.opacity(0.05), radius: 14, x: 0, y: 6)
         .transitionSource(id: entry.id, in: namespace)
+        .animation(.spring(duration: 0.25), value: isSelectionMode)
+        .animation(.spring(duration: 0.2), value: isSelected)
+    }
+
+    private var checkbox: some View {
+        Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
+            .font(.system(size: 22, weight: .regular))
+            .symbolRenderingMode(.hierarchical)
+            .foregroundStyle(isSelected ? MiraPalette.mood(level: 4) : MiraPalette.secondaryText)
     }
 
     private var header: some View {

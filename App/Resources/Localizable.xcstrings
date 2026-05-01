@@ -6827,6 +6827,55 @@
         "en": { "stringUnit": { "state": "translated", "value": "Time" } },
         "ru": { "stringUnit": { "state": "translated", "value": "Время" } }
       }
+    },
+    "Select": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Select" } },
+        "ru": { "stringUnit": { "state": "translated", "value": "Выбрать" } }
+      }
+    },
+    "Select All": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Select All" } },
+        "ru": { "stringUnit": { "state": "translated", "value": "Выбрать всё" } }
+      }
+    },
+    "Deselect All": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Deselect All" } },
+        "ru": { "stringUnit": { "state": "translated", "value": "Снять выбор" } }
+      }
+    },
+    "Delete entry?": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Delete entry?" } },
+        "ru": { "stringUnit": { "state": "translated", "value": "Удалить запись?" } }
+      }
+    },
+    "Delete selected entries?": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Delete selected entries?" } },
+        "ru": { "stringUnit": { "state": "translated", "value": "Удалить выбранные записи?" } }
+      }
+    },
+    "This can't be undone.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "This can't be undone." } },
+        "ru": { "stringUnit": { "state": "translated", "value": "Это нельзя отменить." } }
+      }
+    },
+    "Delete selected": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Delete selected" } },
+        "ru": { "stringUnit": { "state": "translated", "value": "Удалить выбранные" } }
+      }
     }
   },
   "version": "1.0"

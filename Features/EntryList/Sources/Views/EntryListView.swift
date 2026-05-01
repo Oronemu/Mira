@@ -11,6 +11,7 @@ public struct EntryListView: View {
     @State private var pendingDeletionID: UUID?
     @State private var showFilters = false
     @State private var visibleSectionID: String?
+    @State private var showBulkDeleteConfirm = false
     @Namespace private var rowNamespace
 
     private let initialQuery: EntryQuery
@@ -65,12 +66,39 @@ public struct EntryListView: View {
                 }
             }
         }
+        .alert(
+            bulkDeleteTitle,
+            isPresented: $showBulkDeleteConfirm
+        ) {
+            Button("Delete", role: .destructive) {
+                if let state {
+                    Task { await state.deleteSelected() }
+                }
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("This can't be undone.")
+        }
+    }
+
+    private var bulkDeleteTitle: LocalizedStringKey {
+        let count = state?.selectionCount ?? 0
+        return count > 1 ? "Delete selected entries?" : "Delete entry?"
     }
 
     // MARK: - Toolbar
 
     @ToolbarContentBuilder
     private var toolbarContent: some ToolbarContent {
+        if let state, state.isSelectionMode {
+            selectionToolbar(state: state)
+        } else {
+            normalToolbar
+        }
+    }
+
+    @ToolbarContentBuilder
+    private var normalToolbar: some ToolbarContent {
         ToolbarItem(placement: .topBarLeading) {
             Button {
                 showFilters = true
@@ -90,6 +118,42 @@ public struct EntryListView: View {
                     .foregroundStyle(MiraPalette.primaryText)
             }
             .accessibilityLabel("New entry")
+        }
+    }
+
+    @ToolbarContentBuilder
+    private func selectionToolbar(state: EntryListState) -> some ToolbarContent {
+        ToolbarItem(placement: .topBarLeading) {
+            Button {
+                state.exitSelection()
+            } label: {
+                Text("Cancel").foregroundStyle(MiraPalette.primaryText)
+            }
+        }
+        ToolbarItem(placement: .topBarTrailing) {
+            Button {
+                if state.allVisibleSelected {
+                    state.deselectAll()
+                } else {
+                    state.selectAllVisible()
+                }
+            } label: {
+                Text(state.allVisibleSelected ? "Deselect All" : "Select All")
+                    .foregroundStyle(MiraPalette.primaryText)
+            }
+        }
+
+        ToolbarSpacer(.fixed, placement: .topBarTrailing)
+
+        ToolbarItem(placement: .topBarTrailing) {
+            Button {
+                showBulkDeleteConfirm = true
+            } label: {
+                Image(systemName: "trash")
+                    .foregroundStyle(state.selectionCount > 0 ? Color.red : MiraPalette.secondaryText.opacity(0.5))
+            }
+            .disabled(state.selectionCount == 0)
+            .accessibilityLabel("Delete selected")
         }
     }
 
@@ -170,12 +234,28 @@ public struct EntryListView: View {
 
             ForEach(section.entries) { entry in
                 Button {
-                    onSelectEntry(entry.id)
+                    if state.isSelectionMode {
+                        state.toggle(id: entry.id)
+                    } else {
+                        onSelectEntry(entry.id)
+                    }
                 } label: {
-                    EntryRowCard(entry: entry, namespace: rowNamespace)
+                    EntryRowCard(
+                        entry: entry,
+                        namespace: rowNamespace,
+                        isSelectionMode: state.isSelectionMode,
+                        isSelected: state.selection.contains(entry.id)
+                    )
                 }
                 .buttonStyle(PressableCardStyle())
                 .contextMenu {
+                    if !state.isSelectionMode {
+                        Button {
+                            state.enterSelection(with: entry.id)
+                        } label: {
+                            Label("Select", systemImage: "checkmark.circle")
+                        }
+                    }
                     Button(role: .destructive) {
                         pendingDeletionID = entry.id
                     } label: {
@@ -186,10 +266,9 @@ public struct EntryListView: View {
                     insertion: .move(edge: .trailing).combined(with: .opacity),
                     removal: .opacity.combined(with: .scale(scale: 0.95))
                 ))
-                .confirmationDialog(
+                .alert(
                     "Delete this entry?",
-                    isPresented: deletionPresented,
-                    titleVisibility: .visible
+                    isPresented: deletionPresented
                 ) {
                     Button("Delete", role: .destructive) {
                         if let id = pendingDeletionID {
@@ -200,6 +279,8 @@ public struct EntryListView: View {
                     Button("Cancel", role: .cancel) {
                         pendingDeletionID = nil
                     }
+                } message: {
+                    Text("This can't be undone.")
                 }
             }
         }
