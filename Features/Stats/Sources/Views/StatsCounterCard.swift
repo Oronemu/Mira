@@ -20,6 +20,8 @@ struct StatsCounterCard: View {
                     .foregroundStyle(MiraPalette.mood(level: moodLevel).opacity(0.9))
                 Text(title)
                     .eyebrowStyle()
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.7)
             }
 
             Text(value)
@@ -27,6 +29,11 @@ struct StatsCounterCard: View {
                 .foregroundStyle(MiraPalette.primaryText)
                 .lineLimit(1)
                 .minimumScaleFactor(0.6)
+
+            // Spacer pins the subtitle to the bottom so two cards in an
+            // HStack with different intrinsic content heights still line
+            // their subtitles up at the same Y.
+            Spacer(minLength: 0)
 
             Text(subtitle)
                 .font(.system(size: 12))
@@ -36,7 +43,7 @@ struct StatsCounterCard: View {
                 .multilineTextAlignment(.leading)
         }
         .padding(16)
-        .frame(maxWidth: .infinity, alignment: .leading)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
         .shadow(color: .black.opacity(0.04), radius: 12, x: 0, y: 5)
     }

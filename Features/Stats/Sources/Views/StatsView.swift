@@ -106,20 +106,34 @@ public struct StatsView: View {
     // MARK: - Range picker
 
     private func rangePicker(state: StatsState) -> some View {
-        StatsRangePicker(
+        GlassPillPicker(
+            options: StatisticsCalculator.Range.allCases,
             selection: Binding(
                 get: { state.range },
                 set: { state.range = $0 }
             ),
-            moodLevel: state.ambientMoodLevel
+            tint: MiraPalette.mood(level: state.ambientMoodLevel),
+            label: rangeLabel
         )
         .padding(.bottom, 4)
+    }
+
+    private func rangeLabel(_ range: StatisticsCalculator.Range) -> String {
+        switch range {
+        case .week:  String(localized: "Week", comment: "Stats range picker — last 7 days")
+        case .month: String(localized: "Month", comment: "Stats range picker — last 30 days")
+        case .year:  String(localized: "Year", comment: "Stats range picker — last 365 days")
+        }
     }
 
     // MARK: - Engagement row
 
     private func engagementRow(state: StatsState) -> some View {
-        HStack(spacing: 10) {
+        // `.fixedSize(vertical: true)` lets the HStack adopt the taller
+        // child's intrinsic height, then `maxHeight: .infinity` on each
+        // card stretches the shorter one to match — keeps subtitle Ys
+        // aligned even when one title wraps in a longer locale (e.g. RU).
+        HStack(alignment: .top, spacing: 10) {
             StatsCounterCard(
                 icon: "text.alignleft",
                 value: formatted(state.totalWords),
@@ -135,6 +149,7 @@ public struct StatsView: View {
                 moodLevel: state.ambientMoodLevel
             )
         }
+        .fixedSize(horizontal: false, vertical: true)
     }
 
     private func askMiraCard(state: StatsState) -> some View {
