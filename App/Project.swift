@@ -48,6 +48,7 @@ let project = Project(
                 .project(target: "AIKit", path: "../Core/AIKit"),
                 .project(target: "DesignSystem", path: "../Core/DesignSystem"),
                 .project(target: "Persistence", path: "../Core/Persistence"),
+                .project(target: "Subscriptions", path: "../Core/Subscriptions"),
                 .project(target: "Telemetry", path: "../Core/Telemetry"),
                 .project(target: "FeatureEntryList", path: "../Features/EntryList"),
                 .project(target: "FeatureEntryEditor", path: "../Features/EntryEditor"),

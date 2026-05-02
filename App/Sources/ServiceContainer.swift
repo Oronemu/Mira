@@ -3,6 +3,7 @@ import CoreKit
 import Persistence
 import Utilities
 import AIKit
+import Subscriptions
 import Telemetry
 
 /// Composition root. Holds every long-lived service / repository the app uses.
@@ -21,6 +22,7 @@ struct ServiceContainer {
     let remoteConfigService: any RemoteConfigService
     let modelDownloadCoordinator: ModelDownloadCoordinator
     let syncService: SyncService
+    let subscriptionService: any SubscriptionService
 
     var aiProvider: any AIProvider { aiService }
 
@@ -63,7 +65,11 @@ struct ServiceContainer {
                 pushNotificationService: FirebasePushNotificationService(),
                 remoteConfigService: FirebaseRemoteConfigService(),
                 modelDownloadCoordinator: coordinator,
-                syncService: syncService
+                syncService: syncService,
+                // Phase 1: in-memory service so paywall plumbing works on
+                // simulator without StoreKit. Replaced by
+                // `StoreKitSubscriptionService` in Phase 2.
+                subscriptionService: InMemorySubscriptionService()
             )
         } catch {
             // Persistent stores must succeed for the app to be usable.

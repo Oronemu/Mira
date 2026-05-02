@@ -197,4 +197,5 @@ struct RootView: View {
         .environment(\.aiProvider, UnimplementedAIProvider())
         .environment(\.embeddingProvider, UnimplementedEmbeddingProvider())
         .environment(\.photoStoring, UnimplementedPhotoStoring())
+        .environment(\.subscriptionService, UnimplementedSubscriptionService())
 }

@@ -60,6 +60,7 @@ struct MiraApp: App {
                         .environment(\.remoteConfigService, container.remoteConfigService)
                         .environment(\.modelDownloadCoordinator, container.modelDownloadCoordinator)
                         .environment(\.syncService, container.syncService)
+                        .environment(\.subscriptionService, container.subscriptionService)
                     if lockState.isLocked {
                         LockScreenView(state: lockState)
                             .transition(.opacity)

@@ -9,6 +9,7 @@ let workspace = Workspace(
         "Core/AIKit",
         "Core/Persistence",
         "Core/DesignSystem",
+        "Core/Subscriptions",
         "Core/TestSupport",
         "Core/Telemetry",
         "Features/EntryList",
