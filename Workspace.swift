@@ -19,6 +19,7 @@ let workspace = Workspace(
         "Features/AskMira",
         "Features/Insights",
         "Features/Onboarding",
+        "Features/Paywall",
         "Features/Settings",
         "Features/Stats",
         "Widgets",
