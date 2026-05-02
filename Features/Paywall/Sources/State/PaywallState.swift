@@ -42,7 +42,7 @@ public final class PaywallState {
         self.subscriptionService = subscriptionService
     }
 
-    deinit {
+    isolated deinit {
         statusObservation?.cancel()
     }
 

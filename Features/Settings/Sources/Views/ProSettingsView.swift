@@ -12,7 +12,7 @@ public struct ProSettingsView: View {
     @Environment(\.paywallPresenter) private var paywallPresenter
     @Environment(\.openURL) private var openURL
 
-    @State private var status: SubscriptionStatus = .unknown
+    @State private var status: CoreKit.SubscriptionStatus = .unknown
     @State private var isRestoring = false
     @State private var feedback: String?
     @State private var showingRedeem = false
@@ -70,7 +70,7 @@ public struct ProSettingsView: View {
         }
     }
 
-    private func activeCard(pro: SubscriptionStatus.Pro) -> some View {
+    private func activeCard(pro: CoreKit.SubscriptionStatus.Pro) -> some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack(spacing: 8) {
                 Image(systemName: "checkmark.seal.fill")
@@ -293,7 +293,7 @@ public struct ProSettingsView: View {
 
     // MARK: - Copy helpers
 
-    private func planTitle(pro: SubscriptionStatus.Pro) -> String {
+    private func planTitle(pro: CoreKit.SubscriptionStatus.Pro) -> String {
         switch pro.plan {
         case .monthly: String(localized: "Monthly plan")
         case .yearly: String(localized: "Yearly plan")
@@ -310,7 +310,7 @@ public struct ProSettingsView: View {
             : String(format: String(localized: "Renews on %@"), formatted)
     }
 
-    private func sourceCopy(source: SubscriptionStatus.Pro.Source) -> String {
+    private func sourceCopy(source: CoreKit.SubscriptionStatus.Pro.Source) -> String {
         switch source {
         case .appStore: String(localized: "Subscribed via App Store")
         case .testFlight: String(localized: "TestFlight build — Pro granted automatically")
