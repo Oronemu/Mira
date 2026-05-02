@@ -149,6 +149,20 @@ public actor StoreKitSubscriptionService: SubscriptionService {
         publish(resolved)
     }
 
+    public func latestSignedTransaction() async -> String? {
+        for await result in Transaction.currentEntitlements {
+            guard case .verified(let transaction) = result else { continue }
+            guard productIDs.contains(transaction.productID) else { continue }
+            guard transaction.productType == .autoRenewable else { continue }
+            if transaction.revocationDate != nil { continue }
+            // The JWS lives on the VerificationResult, not on the
+            // Transaction value. Re-extract from the result we just
+            // pattern-matched.
+            return result.jwsRepresentation
+        }
+        return nil
+    }
+
     // MARK: - Private
 
     private func loadProductsIfNeeded() async throws -> [String: Product] {

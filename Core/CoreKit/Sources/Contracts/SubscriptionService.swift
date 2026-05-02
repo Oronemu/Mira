@@ -54,4 +54,12 @@ public protocol SubscriptionService: Sendable {
     /// Forces a fresh fetch of entitlements. Cheap to call repeatedly —
     /// implementations should debounce internally.
     func refresh() async
+
+    /// JWS for the currently active StoreKit transaction, if any. The
+    /// hosted AI client passes this to the Cloudflare Worker so the
+    /// server can verify the user really paid before forwarding to
+    /// Anthropic. Returns `nil` for free users, mock/in-memory
+    /// implementations, and any state where StoreKit hasn't issued a
+    /// verified transaction yet.
+    func latestSignedTransaction() async -> String?
 }

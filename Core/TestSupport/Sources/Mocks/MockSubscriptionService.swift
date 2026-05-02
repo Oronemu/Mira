@@ -94,6 +94,16 @@ public actor MockSubscriptionService: SubscriptionService {
         refreshCallCount += 1
     }
 
+    public func latestSignedTransaction() async -> String? { stubbedSignedTransaction }
+
+    private var stubbedSignedTransaction: String?
+
+    /// Test hook — pre-load the JWS that `latestSignedTransaction()`
+    /// will return without paying for a real StoreKit transaction.
+    public func setSignedTransaction(_ jws: String?) {
+        stubbedSignedTransaction = jws
+    }
+
     /// Test hook — flips the status without running through a purchase
     /// path. Useful for setting up "user is already Pro" preconditions.
     public func setStatus(_ status: SubscriptionStatus) {

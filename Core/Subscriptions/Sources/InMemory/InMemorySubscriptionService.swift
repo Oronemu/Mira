@@ -114,6 +114,12 @@ public actor InMemorySubscriptionService: SubscriptionService {
         publish(currentStatus)
     }
 
+    public func latestSignedTransaction() async -> String? {
+        // No StoreKit involvement; the hosted AI path won't authenticate
+        // via this service — InMemory is for paywall plumbing only.
+        nil
+    }
+
     /// Test/debug hook. Forces a status without going through a purchase
     /// path; used by `MockSubscriptionService` and the in-app dev toggle.
     public func setStatus(_ status: SubscriptionStatus) {

@@ -31,4 +31,6 @@ public struct UnimplementedSubscriptionService: SubscriptionService {
     }
 
     public func refresh() async {}
+
+    public func latestSignedTransaction() async -> String? { nil }
 }
