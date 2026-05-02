@@ -66,15 +66,22 @@ struct ServiceContainer {
                 remoteConfigService: FirebaseRemoteConfigService(),
                 modelDownloadCoordinator: coordinator,
                 syncService: syncService,
-                // Phase 1: in-memory service so paywall plumbing works on
-                // simulator without StoreKit. Replaced by
-                // `StoreKitSubscriptionService` in Phase 2.
-                subscriptionService: InMemorySubscriptionService()
+                subscriptionService: makeSubscriptionService()
             )
         } catch {
             // Persistent stores must succeed for the app to be usable.
             fatalError("Failed to bootstrap ServiceContainer: \(error)")
         }
+    }
+
+    /// Constructs the live subscription service and primes it with the
+    /// user's current entitlement + the Transaction.updates listener.
+    /// Returning the actor synchronously keeps `live()` non-async; the
+    /// async bootstrap runs in a detached Task.
+    private static func makeSubscriptionService() -> StoreKitSubscriptionService {
+        let service = StoreKitSubscriptionService()
+        Task { await service.bootstrap() }
+        return service
     }
 
     /// Builds the sync stack: CloudKit database adapter, encrypted

@@ -80,5 +80,10 @@ let project = Project(
                 "OTHER_LDFLAGS": "$(inherited) -ObjC",
             ])
         ),
+    ],
+    additionalFiles: [
+        // StoreKit Configuration for local testing — attach via
+        // Edit Scheme → Run → Options → StoreKit Configuration.
+        "Resources/Mira.storekit",
     ]
 )
