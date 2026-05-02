@@ -83,6 +83,7 @@ public struct SettingsView: View {
         .navigationTitle("")
         .toolbarTitleDisplayMode(.inline)
         .toolbarBackground(.hidden, for: .navigationBar)
+        .collapsibleHeroTitle("Settings")
     }
 }
 

@@ -33,6 +33,7 @@ public struct SyncSettingsView: View {
         .toolbarTitleDisplayMode(.inline)
         .toolbarBackground(.hidden, for: .navigationBar)
         .hideTabBar()
+        .collapsibleHeroTitle("iCloud sync")
         .task {
             if state == nil {
                 state = SettingsState(

@@ -35,6 +35,7 @@ public struct AboutSettingsView: View {
         .toolbarTitleDisplayMode(.inline)
         .toolbarBackground(.hidden, for: .navigationBar)
         .hideTabBar()
+        .staticHeroTitle("About")
     }
 
     // MARK: - Hero

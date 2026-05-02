@@ -34,6 +34,7 @@ public struct StatsView: View {
         .toolbarTitleDisplayMode(.inline)
         .toolbarBackground(.hidden, for: .navigationBar)
         .hideTabBar()
+        .collapsibleHeroTitle("Your patterns")
         .task {
             if state == nil {
                 state = StatsState(

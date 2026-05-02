@@ -16,6 +16,11 @@ public struct NotificationSettingsView: View {
 
             ScrollView {
                 VStack(alignment: .leading, spacing: 24) {
+                    SettingsHero(
+                        title: "Reminders",
+                        subtitle: "Local pushes — daily check-in and a nudge if you've been quiet"
+                    )
+
                     eveningSection
                     inactivitySection
 
@@ -35,6 +40,7 @@ public struct NotificationSettingsView: View {
         .toolbarTitleDisplayMode(.inline)
         .toolbarBackground(.hidden, for: .navigationBar)
         .hideTabBar()
+        .collapsibleHeroTitle("Reminders")
         .onChange(of: prefs) { _, newValue in
             NotificationPreferencesStore().save(newValue)
             Task { await reschedule(newValue) }

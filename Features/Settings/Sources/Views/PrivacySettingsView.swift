@@ -33,6 +33,7 @@ public struct PrivacySettingsView: View {
         .toolbarTitleDisplayMode(.inline)
         .toolbarBackground(.hidden, for: .navigationBar)
         .hideTabBar()
+        .collapsibleHeroTitle("Privacy")
         .task {
             if state == nil {
                 state = SettingsState(

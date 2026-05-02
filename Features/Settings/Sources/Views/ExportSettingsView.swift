@@ -40,6 +40,7 @@ public struct ExportSettingsView: View {
         .toolbarTitleDisplayMode(.inline)
         .toolbarBackground(.hidden, for: .navigationBar)
         .hideTabBar()
+        .collapsibleHeroTitle("Export")
         .task {
             if state == nil {
                 state = SettingsState(

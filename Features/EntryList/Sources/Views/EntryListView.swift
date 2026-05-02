@@ -43,10 +43,11 @@ public struct EntryListView: View {
                 }
             }
         }
-        .navigationTitle("Journal")
+        .navigationTitle("")
         .toolbarTitleDisplayMode(.inline)
         .toolbarBackground(.hidden, for: .navigationBar)
         .toolbar { toolbarContent }
+        .collapsibleHeroTitle(Text("Journal"), subtitle: journalSubtitleText)
         .searchable(text: $searchText, placement: .navigationBarDrawer, prompt: "Search entries")
         .task(id: searchText) {
             try? await Task.sleep(for: .milliseconds(300))
@@ -91,6 +92,12 @@ public struct EntryListView: View {
     private var bulkDeleteTitle: LocalizedStringKey {
         let count = state?.selectionCount ?? 0
         return count > 1 ? "Delete selected entries?" : "Delete entry?"
+    }
+
+    private var journalSubtitleText: Text {
+        let total = state?.sections.reduce(0) { $0 + $1.entries.count } ?? 0
+        let month = Date.now.formatted(.dateTime.month(.wide).year())
+        return Text("\(total) entries · \(month)")
     }
 
     // MARK: - Toolbar

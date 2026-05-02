@@ -32,6 +32,7 @@ public struct ReflectionSettingsView: View {
         .toolbarTitleDisplayMode(.inline)
         .toolbarBackground(.hidden, for: .navigationBar)
         .hideTabBar()
+        .collapsibleHeroTitle("Reflections")
         .task {
             if state == nil {
                 state = SettingsState(
@@ -50,6 +51,11 @@ public struct ReflectionSettingsView: View {
     private func content(state: SettingsState) -> some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 24) {
+                SettingsHero(
+                    title: "Reflections",
+                    subtitle: "How often Mira drafts a reflection for you"
+                )
+
                 VStack(spacing: 10) {
                     SettingsOptionCard(
                         icon: "moon.zzz",

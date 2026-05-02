@@ -49,6 +49,10 @@ public struct InsightsListView: View {
                 .accessibilityLabel(Text("Open stats", comment: "Insights toolbar — opens the Stats screen"))
             }
         }
+        .collapsibleHeroTitle(
+            Text("Reflections"),
+            subtitle: insightsSubtitleText
+        )
         .task {
             if state == nil {
                 state = InsightsListState(
@@ -145,6 +149,12 @@ public struct InsightsListView: View {
             }
             .scrollIndicators(.hidden)
         }
+    }
+
+    private var insightsSubtitleText: Text {
+        let count = state?.insights.count ?? 0
+        let month = Date.now.formatted(.dateTime.month(.wide).year())
+        return Text("\(count) reflections · \(month)")
     }
 
     // MARK: - Hero

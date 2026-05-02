@@ -36,6 +36,7 @@ public struct AppearanceSettingsView: View {
         .toolbarTitleDisplayMode(.inline)
         .toolbarBackground(.hidden, for: .navigationBar)
         .hideTabBar()
+        .collapsibleHeroTitle("Appearance")
     }
 
     // MARK: - Theme
