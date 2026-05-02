@@ -79,7 +79,7 @@ public struct IntelligenceSettingsView: View {
     private var hero: some View {
         SettingsHero(
             title: "Intelligence",
-            subtitle: "How Mira generates reflections and writing prompts"
+            subtitle: "How Mira generates reflections and answers your questions"
         )
     }
 
@@ -90,7 +90,7 @@ public struct IntelligenceSettingsView: View {
             SettingsOptionCard(
                 icon: "moon.zzz",
                 title: "Off",
-                subtitle: "No AI features. Writing prompts and reflections are disabled.",
+                subtitle: "No AI features. Reflections and Ask Mira are disabled.",
                 moodLevel: 3,
                 isSelected: state.settings.provider == .off
             ) {

@@ -266,19 +266,18 @@
         }
       }
     },
-    "A small on-device model runs locally for writing prompts and reflections. Remote providers are opt-in and use your own API key.": {
-      "extractionState": "stale",
+    "A small on-device model runs locally for reflections and Ask Mira. Remote providers are opt-in and use your own API key.": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "A small on-device model runs locally for writing prompts and reflections. Remote providers are opt-in and use your own API key."
+            "value": "A small on-device model runs locally for reflections and Ask Mira. Remote providers are opt-in and use your own API key."
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Небольшая модель работает прямо на устройстве — для идей и размышлений. Удалённые провайдеры подключаются по желанию и используют ваш API-ключ."
+            "value": "Небольшая модель работает прямо на устройстве — для размышлений и Ask Mira. Удалённые провайдеры подключаются по желанию и используют ваш API-ключ."
           }
         }
       }
@@ -2407,23 +2406,6 @@
         }
       }
     },
-    "Give me a prompt": {
-      "extractionState": "stale",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Give me a prompt"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Дай подсказку"
-          }
-        }
-      }
-    },
     "Good": {
       "extractionState": "stale",
       "localizations": {
@@ -2560,19 +2542,18 @@
         }
       }
     },
-    "How Mira generates reflections and writing prompts": {
-      "extractionState": "stale",
+    "How Mira generates reflections and answers your questions": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "How Mira generates reflections and writing prompts"
+            "value": "How Mira generates reflections and answers your questions"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Как Mira создаёт рефлексии и подсказки для письма"
+            "value": "Как Mira создаёт рефлексии и отвечает на вопросы"
           }
         }
       }
@@ -3631,19 +3612,18 @@
         }
       }
     },
-    "No AI features. Writing prompts and reflections are disabled.": {
-      "extractionState": "stale",
+    "No AI features. Reflections and Ask Mira are disabled.": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "No AI features. Writing prompts and reflections are disabled."
+            "value": "No AI features. Reflections and Ask Mira are disabled."
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "AI-функции выключены. Подсказки и рефлексии недоступны."
+            "value": "AI-функции выключены. Рефлексии и Ask Mira недоступны."
           }
         }
       }

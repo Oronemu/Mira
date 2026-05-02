@@ -4,23 +4,6 @@ import CoreKit
 /// Centralised prompt catalog. Every user-facing prompt passes through
 /// here so that wording changes don't require hunting across features.
 public enum PromptTemplates {
-    /// Returns a short writing-prompt-generation request for the given
-    /// locale. The model is asked to produce one question in the caller's
-    /// language, kept concise for a journaling UI.
-    public static func writingPrompt(locale: Locale = .autoupdatingCurrent) -> AIRequest {
-        let language = localeLanguage(locale)
-        let system = Self.writingPromptSystem(language: language)
-        let user = Self.writingPromptUser(language: language)
-        return AIRequest(
-            messages: [
-                AIMessage(role: .system, content: system),
-                AIMessage(role: .user, content: user),
-            ],
-            temperature: 0.9,
-            maxTokens: 120
-        )
-    }
-
     /// Builds an ask-style prompt that grounds the model's answer in the
     /// user's own journal entries. `context` is a pre-formatted block
     /// (typically from `RAGPipeline.formatContext`) with `[n]` headers.
@@ -388,37 +371,4 @@ public enum PromptTemplates {
         return .en
     }
 
-    static func writingPromptSystem(language: Language) -> String {
-        switch language {
-        case .en:
-            return """
-            You are a warm, curious journaling companion. Suggest a single \
-            idea the user could capture in their journal today — something \
-            worth sharing: a small moment from the day, a feeling they \
-            haven't named yet, a thought circling in their head, a tiny \
-            win, a doubt, a person on their mind. Frame it as a soft \
-            invitation to write, not a strict question. Keep it concrete, \
-            human, and under 25 words. No lists, no quotes, no preambles \
-            — respond with the invitation only.
-            """
-        case .ru:
-            return """
-            Ты — тёплый, любопытный помощник по ведению дневника. Подскажи \
-            одну идею, которую пользователь мог бы записать в дневник \
-            сегодня — чем стоит поделиться: маленький момент дня, \
-            неназванное чувство, мысль, которая крутится в голове, тихая \
-            победа, сомнение, человек, о котором думается. Сформулируй \
-            это как мягкое приглашение написать, а не строгий вопрос. \
-            Конкретно, по-человечески, до 25 слов. Без списков, кавычек \
-            и вступлений — только само приглашение.
-            """
-        }
-    }
-
-    static func writingPromptUser(language: Language) -> String {
-        switch language {
-        case .en: "Suggest something I could write about in my journal today."
-        case .ru: "Подскажи, о чём я мог бы написать в дневнике сегодня."
-        }
-    }
 }
