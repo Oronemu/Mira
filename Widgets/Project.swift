@@ -35,7 +35,7 @@ let project = Project(
                 "SWIFT_VERSION": "6.0",
                 "IPHONEOS_DEPLOYMENT_TARGET": "26.0",
                 "CODE_SIGN_STYLE": "Automatic",
-                "DEVELOPMENT_TEAM": "",
+                "DEVELOPMENT_TEAM": "NWH8D69Z95",
             ])
         ),
     ]

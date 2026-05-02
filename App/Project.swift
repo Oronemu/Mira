@@ -67,7 +67,7 @@ let project = Project(
                 "SWIFT_VERSION": "6.0",
                 "TARGETED_DEVICE_FAMILY": "1",
                 "IPHONEOS_DEPLOYMENT_TARGET": "26.0",
-                "DEVELOPMENT_TEAM": "",
+                "DEVELOPMENT_TEAM": "NWH8D69Z95",
                 "CODE_SIGN_STYLE": "Automatic",
                 "MARKETING_VERSION": "0.4.0",
                 "CURRENT_PROJECT_VERSION": "39",
