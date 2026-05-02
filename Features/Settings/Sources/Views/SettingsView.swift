@@ -1,7 +1,12 @@
 import SwiftUI
+import CoreKit
 import DesignSystem
 
 public struct SettingsView: View {
+    @Environment(\.subscriptionService) private var subscriptionService
+    @Environment(\.paywallPresenter) private var paywallPresenter
+    @State private var status: SubscriptionStatus = .unknown
+
     public init() {}
 
     public var body: some View {
@@ -14,6 +19,8 @@ public struct SettingsView: View {
                         title: "Settings",
                         subtitle: "Tune how Mira looks, thinks, and protects your journal"
                     )
+
+                    proBanner
 
                     VStack(spacing: 10) {
                         SettingsCategoryLink(
@@ -84,6 +91,68 @@ public struct SettingsView: View {
         .toolbarTitleDisplayMode(.inline)
         .toolbarBackground(.hidden, for: .navigationBar)
         .collapsibleHeroTitle("Settings")
+        .task {
+            status = await subscriptionService.status
+            for await snapshot in subscriptionService.statusUpdates {
+                status = snapshot
+            }
+        }
+    }
+
+    // MARK: - Pro banner
+
+    @ViewBuilder
+    private var proBanner: some View {
+        if status.isPro {
+            NavigationLink {
+                ProSettingsView()
+            } label: {
+                proRow(
+                    icon: "checkmark.seal.fill",
+                    title: String(localized: "Mira Pro"),
+                    subtitle: String(localized: "Active — manage your subscription")
+                )
+            }
+            .buttonStyle(.plain)
+        } else {
+            Button {
+                paywallPresenter.present(.general)
+            } label: {
+                proRow(
+                    icon: "sparkles",
+                    title: String(localized: "Unlock Mira Pro"),
+                    subtitle: String(localized: "Hosted AI, advanced stats, themes, and more")
+                )
+            }
+            .buttonStyle(.plain)
+        }
+    }
+
+    private func proRow(icon: String, title: String, subtitle: String) -> some View {
+        HStack(alignment: .center, spacing: 14) {
+            Image(systemName: icon)
+                .font(.system(size: 18, weight: .semibold))
+                .foregroundStyle(.tint)
+                .frame(width: 44, height: 44)
+                .background(Circle().fill(.tint.opacity(0.12)))
+
+            VStack(alignment: .leading, spacing: 3) {
+                Text(title).font(MiraTypography.headline)
+                Text(subtitle).font(MiraTypography.caption).foregroundStyle(.secondary)
+            }
+
+            Spacer(minLength: 0)
+
+            Image(systemName: "chevron.right")
+                .font(.system(size: 12, weight: .semibold))
+                .foregroundStyle(.secondary)
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 14)
+        .background(
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .fill(.tint.opacity(0.08))
+        )
     }
 }
 
