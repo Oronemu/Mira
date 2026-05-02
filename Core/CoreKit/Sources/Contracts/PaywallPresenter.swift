@@ -7,10 +7,13 @@ import Foundation
 /// The App layer owns the concrete implementation and presents
 /// `PaywallView` from its root via `.sheet`. Features simply call
 /// `present(_:)` and forget.
-@MainActor
-public protocol PaywallPresenter: Sendable, AnyObject {
+public protocol PaywallPresenter: Sendable {
     /// Raises the paywall in the app's root, replacing any context that
     /// was already showing. Idempotent if the user is already Pro — the
     /// implementation may short-circuit.
-    func present(_ context: PaywallContext)
+    ///
+    /// `@MainActor` lives on the method, not the protocol, so conforming
+    /// types can be value types (e.g. the no-op default) and so the
+    /// `EnvironmentKey.defaultValue` initialiser stays nonisolated.
+    @MainActor func present(_ context: PaywallContext)
 }
