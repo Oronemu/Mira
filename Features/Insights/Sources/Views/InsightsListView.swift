@@ -9,6 +9,8 @@ public struct InsightsListView: View {
     @Environment(\.aiProvider) private var aiProvider
     @Environment(\.analyticsService) private var analyticsService
     @Environment(\.crashReporter) private var crashReporter
+    @Environment(\.subscriptionService) private var subscriptionService
+    @Environment(\.paywallPresenter) private var paywallPresenter
 
     @State private var state: InsightsListState?
     @State private var pendingDeletionID: UUID?
@@ -197,7 +199,7 @@ public struct InsightsListView: View {
 
     private func generateButton(state: InsightsListState) -> some View {
         Button {
-            Task { await state.generateNow() }
+            generateWithProGate(state: state)
         } label: {
             HStack(spacing: 8) {
                 if state.isGenerating {
@@ -222,6 +224,23 @@ public struct InsightsListView: View {
         .disabled(state.isGenerating)
         .sensoryFeedback(.impact(weight: .light), trigger: state.isGenerating)
         .accessibilityLabel("Generate reflection now")
+    }
+
+    /// Wraps `state.generateNow()` with the Pro gate. The on-device
+    /// provider stays free; users on Remote without Pro see the paywall
+    /// instead of triggering a provider-failure error.
+    private func generateWithProGate(state: InsightsListState) {
+        Task {
+            let provider = AISettingsStore().load().provider
+            if provider == .remote {
+                let isPro = await subscriptionService.isEntitled(to: .hostedAI)
+                guard isPro else {
+                    paywallPresenter.present(.feature(.hostedAI))
+                    return
+                }
+            }
+            await state.generateNow()
+        }
     }
 
     // MARK: - Helpers

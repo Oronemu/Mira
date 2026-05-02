@@ -6,6 +6,7 @@ import Utilities
 import DesignSystem
 import Telemetry
 import FeatureOnboarding
+import FeaturePaywall
 
 @main
 struct MiraApp: App {
@@ -13,6 +14,7 @@ struct MiraApp: App {
     @State private var container: ServiceContainer
     @State private var lockState = LockState()
     @State private var appearanceState = AppearanceState()
+    @State private var paywallPresenter = AppPaywallPresenter()
     @State private var hasOnboarded: Bool = OnboardingStore().isCompleted
     @State private var screenShieldEnabled: Bool = ScreenShieldSettingsStore().load().isEnabled
     @Environment(\.scenePhase) private var scenePhase
@@ -61,6 +63,14 @@ struct MiraApp: App {
                         .environment(\.modelDownloadCoordinator, container.modelDownloadCoordinator)
                         .environment(\.syncService, container.syncService)
                         .environment(\.subscriptionService, container.subscriptionService)
+                        .environment(\.paywallPresenter, paywallPresenter)
+                        .sheet(item: Binding(
+                            get: { paywallPresenter.pendingContext },
+                            set: { paywallPresenter.pendingContext = $0 }
+                        )) { context in
+                            PaywallView(context: context)
+                                .environment(\.subscriptionService, container.subscriptionService)
+                        }
                     if lockState.isLocked {
                         LockScreenView(state: lockState)
                             .transition(.opacity)
@@ -110,8 +120,24 @@ struct MiraApp: App {
         let entryRepository = container.entryRepository
         let insightRepository = container.insightRepository
         let syncService = container.syncService
+        let subscriptionService = container.subscriptionService
         BackgroundTaskService().registerReflectionHandler { task in
             let work = Task {
+                // Pro gate: weekly reflection on the hosted/remote provider
+                // is a Pro feature. Free users on the on-device provider
+                // keep getting reflections. If the user picked Remote but
+                // hasn't subscribed, skip silently — they'll see the
+                // paywall the next time they touch an AI surface.
+                let aiSettings = AISettingsStore().load()
+                if aiSettings.provider == .remote {
+                    let isPro = await subscriptionService.isEntitled(to: .hostedAI)
+                    guard isPro else {
+                        task.setTaskCompleted(success: true)
+                        let frequency = ReflectionSettingsStore().load().frequency
+                        try? BackgroundTaskService().scheduleReflection(for: frequency)
+                        return
+                    }
+                }
                 do {
                     if let insight = try await ReflectionService().generate(
                         aiProvider: aiProvider,

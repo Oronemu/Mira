@@ -9,6 +9,8 @@ public struct AskMiraView: View {
     @Environment(\.embeddingProvider) private var embeddingProvider
     @Environment(\.entryRepository) private var entryRepository
     @Environment(\.analyticsService) private var analyticsService
+    @Environment(\.subscriptionService) private var subscriptionService
+    @Environment(\.paywallPresenter) private var paywallPresenter
     @Environment(\.scenePhase) private var scenePhase
 
     @State private var state: AskMiraState?
@@ -118,6 +120,24 @@ public struct AskMiraView: View {
 
     private func refreshAISettings() {
         isLocalAI = AISettingsStore().load().provider == .local
+    }
+
+    /// Wraps `state.ask()` with the Pro gate. Free users on the on-device
+    /// provider go straight through; users who picked Remote get the
+    /// paywall instead of an unanswered request when their entitlement is
+    /// missing.
+    private func askWithProGate(state: AskMiraState) {
+        Task {
+            let provider = AISettingsStore().load().provider
+            if provider == .remote {
+                let isPro = await subscriptionService.isEntitled(to: .hostedAI)
+                guard isPro else {
+                    paywallPresenter.present(.feature(.hostedAI))
+                    return
+                }
+            }
+            await state.ask()
+        }
     }
 
     // MARK: - Content
@@ -235,7 +255,7 @@ public struct AskMiraView: View {
                 ForEach(Array(suggestedPrompts.enumerated()), id: \.offset) { _, item in
                     SuggestionChip(prompt: item.prompt, moodLevel: item.moodLevel) {
                         state.draftQuestion = resolve(item.prompt)
-                        Task { await state.ask() }
+                        askWithProGate(state: state)
                     }
                 }
             }
@@ -269,10 +289,10 @@ public struct AskMiraView: View {
             .glassEffect(.regular, in: .rect(cornerRadius: 25))
             .focused($inputFocused)
             .submitLabel(.send)
-            .onSubmit { Task { await state.ask() } }
+            .onSubmit { askWithProGate(state: state) }
 
             Button {
-                Task { await state.ask() }
+                askWithProGate(state: state)
             } label: {
                 Group {
                     if state.isAnswering {

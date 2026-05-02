@@ -11,6 +11,8 @@ public struct IntelligenceSettingsView: View {
     @Environment(\.modelDownloadCoordinator) private var coordinator
     @Environment(\.analyticsService) private var analyticsService
     @Environment(\.crashReporter) private var crashReporter
+    @Environment(\.subscriptionService) private var subscriptionService
+    @Environment(\.paywallPresenter) private var paywallPresenter
     @State private var state: SettingsState?
 
     public init() {}
@@ -112,7 +114,13 @@ public struct IntelligenceSettingsView: View {
                 moodLevel: 2,
                 isSelected: state.settings.provider == .remote
             ) {
-                Task { await state.setProvider(.remote) }
+                Task {
+                    if await subscriptionService.isEntitled(to: .hostedAI) {
+                        await state.setProvider(.remote)
+                    } else {
+                        paywallPresenter.present(.feature(.hostedAI))
+                    }
+                }
             }
         }
     }

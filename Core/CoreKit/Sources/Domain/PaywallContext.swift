@@ -1,17 +1,26 @@
 import Foundation
-import CoreKit
 
 /// Where the paywall was triggered from. Drives the headline copy ("Unlock
 /// Ask Mira" vs "Unlock Themes" vs the generic "Mira Pro") and lets
 /// analytics attribute conversions to specific entry points without each
 /// feature having to know paywall internals.
-public enum PaywallContext: Sendable, Hashable {
+public enum PaywallContext: Sendable, Hashable, Identifiable {
     /// Generic upgrade entry point — Settings banner, About screen.
     case general
 
     /// User tried to use a Pro-gated feature. The carried entitlement lets
     /// the paywall surface a feature-specific headline.
     case feature(ProEntitlement)
+
+    /// Stable id so SwiftUI's `.sheet(item:)` can drive presentation off a
+    /// `PaywallContext?` without losing identity when the case payload
+    /// changes.
+    public var id: String {
+        switch self {
+        case .general: "general"
+        case .feature(let entitlement): "feature.\(entitlement.rawValue)"
+        }
+    }
 
     /// Localised hero title shown above the product list.
     public var headline: String {
