@@ -315,13 +315,17 @@ public final class SettingsState {
     }
 
     @MainActor
-    public func exportPDF() async -> URL? {
+    public func exportPDF(template: PDFTemplate = .minimal) async -> URL? {
         do {
             let entries = try await entryRepository.fetch(matching: .all)
-            let url = try ExportService().exportPDF(entries: entries)
+            let url = try ExportService().exportPDF(entries: entries, template: template)
             analyticsService.log(
                 event: "settings_export",
-                parameters: ["format": .string("pdf"), "entry_count": .int(entries.count)]
+                parameters: [
+                    "format": .string("pdf"),
+                    "template": .string(template.rawValue),
+                    "entry_count": .int(entries.count),
+                ]
             )
             return url
         } catch {
