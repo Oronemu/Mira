@@ -33,12 +33,12 @@ struct StreakLockWidget: Widget {
     let kind = "com.veilbytesoft.Mira.StreakLockWidget"
 
     var body: some WidgetConfiguration {
-        StaticConfiguration(kind: kind, provider: StreakProvider()) { entry in
+        StaticConfiguration(kind: kind, provider: StreakProvider(requiresPro: true)) { entry in
             StreakLockView(entry: entry)
                 .containerBackground(.clear, for: .widget)
         }
-        .configurationDisplayName("Mira Streak")
-        .description("Your writing streak on the Lock Screen.")
+        .configurationDisplayName("Mira Streak (Pro)")
+        .description("Your writing streak on the Lock Screen. Requires Mira Pro.")
         .supportedFamilies([.accessoryCircular, .accessoryRectangular])
     }
 }
@@ -48,11 +48,15 @@ private struct StreakLockView: View {
     let entry: StreakEntry
 
     var body: some View {
-        switch family {
-        case .accessoryRectangular:
-            StreakLockRectangularView(entry: entry)
-        default:
-            StreakLockCircularView(entry: entry)
+        if entry.isLocked {
+            WidgetLockedView()
+        } else {
+            switch family {
+            case .accessoryRectangular:
+                StreakLockRectangularView(entry: entry)
+            default:
+                StreakLockCircularView(entry: entry)
+            }
         }
     }
 }

@@ -7,6 +7,16 @@ import Utilities
 struct StreakProvider: TimelineProvider {
     typealias Entry = StreakEntry
 
+    /// When `true`, the provider checks `WidgetEntitlementsStore` and
+    /// emits a `isLocked` entry for free users. Home Streak widget
+    /// uses `false` (always free); Lock Screen / Pro widgets use
+    /// `true` so they degrade gracefully.
+    let requiresPro: Bool
+
+    init(requiresPro: Bool = false) {
+        self.requiresPro = requiresPro
+    }
+
     func placeholder(in context: Context) -> StreakEntry { .placeholder }
 
     func getSnapshot(in context: Context, completion: @escaping (StreakEntry) -> Void) {
@@ -30,6 +40,15 @@ struct StreakProvider: TimelineProvider {
 
     @MainActor
     private func loadEntry() async -> StreakEntry {
+        if requiresPro && !WidgetEntitlementsStore().isPro() {
+            return StreakEntry(
+                date: .now,
+                streak: 0,
+                latestEntry: nil,
+                moodSparkline: Array(repeating: nil, count: 7),
+                isLocked: true
+            )
+        }
         do {
             let container = try ModelContainerFactory.live(appGroup: WidgetAppGroup.identifier)
             let repository = SwiftDataEntryRepository(modelContainer: container)
@@ -39,7 +58,8 @@ struct StreakProvider: TimelineProvider {
                 date: .now,
                 streak: streak,
                 latestEntry: entries.first,
-                moodSparkline: Self.sparkline(entries: entries)
+                moodSparkline: Self.sparkline(entries: entries),
+                isLocked: false
             )
         } catch {
             return .placeholder

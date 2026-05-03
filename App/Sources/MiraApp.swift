@@ -1,5 +1,6 @@
 import SwiftUI
 import BackgroundTasks
+import WidgetKit
 import CoreKit
 import AIKit
 import Utilities
@@ -99,6 +100,7 @@ struct MiraApp: App {
             .task { await bootstrapNotifications() }
             .task { await bootstrapLocalNotifications() }
             .task { await bootstrapSync() }
+            .task { await syncProEntitlementToWidgets() }
             .onChange(of: scenePhase) { _, newPhase in
                 lockState.handle(scenePhase: newPhase)
                 if newPhase == .active {
@@ -304,6 +306,21 @@ struct MiraApp: App {
         }
         await container.syncService.setEnabled(true)
         try? BackgroundTaskService().scheduleSyncRefresh()
+    }
+
+    /// Mirrors the user's Pro entitlement to App-Group UserDefaults so
+    /// the widget extension can decide what to render without going
+    /// through StoreKit. Reloads widget timelines on every change so
+    /// transitions (purchase, restore, lapse) propagate immediately.
+    private func syncProEntitlementToWidgets() async {
+        let store = WidgetEntitlementsStore()
+        let initial = await container.subscriptionService.status
+        store.setIsPro(initial.isPro)
+        WidgetCenter.shared.reloadAllTimelines()
+        for await snapshot in container.subscriptionService.statusUpdates {
+            store.setIsPro(snapshot.isPro)
+            WidgetCenter.shared.reloadAllTimelines()
+        }
     }
 
     /// Backfills embeddings for entries that predate the indexing feature

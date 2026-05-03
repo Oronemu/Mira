@@ -177,6 +177,8 @@ struct RootView: View {
     /// Routes mira://… URLs into the journal tab. `mira://new` opens a
     /// fresh editor; future hosts (e.g. mira://entry/<uuid>) can extend
     /// the switch without touching the rest of the view hierarchy.
+    @Environment(\.paywallPresenter) private var paywallPresenter
+
     private func handleDeepLink(_ url: URL) {
         guard url.scheme == "mira" else { return }
         switch url.host {
@@ -184,6 +186,11 @@ struct RootView: View {
             selectedTab = .journal
             journalRouter.popToRoot()
             journalRouter.openEditor(.new)
+        case "paywall":
+            // Lock-screen / Pro widgets call this when a free user
+            // taps a locked tile — surface the paywall with the
+            // .extraWidgets context so the headline matches.
+            paywallPresenter.present(.feature(.extraWidgets))
         default:
             break
         }
