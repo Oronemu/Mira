@@ -61,6 +61,7 @@ public struct InsightsListView: View {
                     repository: repository,
                     entryRepository: entryRepository,
                     aiProvider: aiProvider,
+                    subscriptionService: subscriptionService,
                     analyticsService: analyticsService,
                     crashReporter: crashReporter
                 )

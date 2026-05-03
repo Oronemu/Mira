@@ -89,6 +89,7 @@ public struct AskMiraView: View {
                 state = AskMiraState(
                     repository: repository,
                     aiProvider: aiProvider,
+                    subscriptionService: subscriptionService,
                     embeddingProvider: embeddingProvider,
                     entryRepository: entryRepository,
                     analyticsService: analyticsService

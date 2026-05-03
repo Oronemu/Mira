@@ -14,6 +14,7 @@ public final class InsightsListState {
     private let repository: any InsightRepository
     private let entryRepository: any EntryRepository
     private let aiProvider: any AIProvider
+    private let subscriptionService: any SubscriptionService
     private let analyticsService: any AnalyticsService
     private let crashReporter: any CrashReporter
 
@@ -21,12 +22,14 @@ public final class InsightsListState {
         repository: any InsightRepository,
         entryRepository: any EntryRepository,
         aiProvider: any AIProvider,
+        subscriptionService: any SubscriptionService = UnimplementedSubscriptionService(),
         analyticsService: any AnalyticsService = UnimplementedAnalyticsService(),
         crashReporter: any CrashReporter = UnimplementedCrashReporter()
     ) {
         self.repository = repository
         self.entryRepository = entryRepository
         self.aiProvider = aiProvider
+        self.subscriptionService = subscriptionService
         self.analyticsService = analyticsService
         self.crashReporter = crashReporter
     }
@@ -43,10 +46,21 @@ public final class InsightsListState {
         errorMessage = nil
         defer { isGenerating = false }
 
+        // Manual reflections route through HostedAIProvider for Pro
+        // users (so Anthropic Claude does the work, with the matching
+        // monthly cap on the worker), and fall back to whatever
+        // AIService gave us — typically Apple Foundation — for free
+        // users on-device.
+        let provider = await AIProviderFactory.provider(
+            for: .weeklyReflectionManual,
+            fallback: aiProvider,
+            subscriptionService: subscriptionService
+        )
+
         do {
             if try await ReflectionService().generate(
                 locale: locale,
-                aiProvider: aiProvider,
+                aiProvider: provider,
                 entryRepository: entryRepository,
                 insightRepository: repository
             ) != nil {

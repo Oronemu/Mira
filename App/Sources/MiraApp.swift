@@ -123,24 +123,26 @@ struct MiraApp: App {
         let subscriptionService = container.subscriptionService
         BackgroundTaskService().registerReflectionHandler { task in
             let work = Task {
-                // Pro gate: weekly reflection on the hosted/remote provider
-                // is a Pro feature. Free users on the on-device provider
-                // keep getting reflections. If the user picked Remote but
-                // hasn't subscribed, skip silently — they'll see the
-                // paywall the next time they touch an AI surface.
+                // Skip silently if AI is turned off. Otherwise pick the
+                // hosted Pro provider when the user has a Pro entitlement
+                // (so Anthropic does the work, throttled by the worker's
+                // weeklyReflectionAuto policy), or fall through to the
+                // existing on-device AIService primary for free users.
                 let aiSettings = AISettingsStore().load()
-                if aiSettings.provider == .remote {
-                    let isPro = await subscriptionService.isEntitled(to: .hostedAI)
-                    guard isPro else {
-                        task.setTaskCompleted(success: true)
-                        let frequency = ReflectionSettingsStore().load().frequency
-                        try? BackgroundTaskService().scheduleReflection(for: frequency)
-                        return
-                    }
+                guard aiSettings.provider != .off else {
+                    task.setTaskCompleted(success: true)
+                    let frequency = ReflectionSettingsStore().load().frequency
+                    try? BackgroundTaskService().scheduleReflection(for: frequency)
+                    return
                 }
+                let provider = await AIProviderFactory.provider(
+                    for: .weeklyReflectionAuto,
+                    fallback: aiProvider,
+                    subscriptionService: subscriptionService
+                )
                 do {
                     if let insight = try await ReflectionService().generate(
-                        aiProvider: aiProvider,
+                        aiProvider: provider,
                         entryRepository: entryRepository,
                         insightRepository: insightRepository
                     ) {

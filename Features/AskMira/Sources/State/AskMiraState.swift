@@ -19,6 +19,7 @@ public final class AskMiraState {
 
     private let repository: any AskMiraRepository
     private let aiProvider: any AIProvider
+    private let subscriptionService: any SubscriptionService
     private let embeddingProvider: any EmbeddingProvider
     private let entryRepository: any EntryRepository
     private let analyticsService: any AnalyticsService
@@ -29,15 +30,29 @@ public final class AskMiraState {
     public init(
         repository: any AskMiraRepository,
         aiProvider: any AIProvider,
+        subscriptionService: any SubscriptionService,
         embeddingProvider: any EmbeddingProvider,
         entryRepository: any EntryRepository,
         analyticsService: any AnalyticsService
     ) {
         self.repository = repository
         self.aiProvider = aiProvider
+        self.subscriptionService = subscriptionService
         self.embeddingProvider = embeddingProvider
         self.entryRepository = entryRepository
         self.analyticsService = analyticsService
+    }
+
+    /// Picks between the on-device fallback and the hosted Pro proxy at
+    /// call time. Pro users go through `HostedAIProvider`; everyone else
+    /// falls through to whatever the AIService primary already is —
+    /// typically Apple Foundation Models on-device.
+    private func currentProvider() async -> any AIProvider {
+        await AIProviderFactory.provider(
+            for: .askMira,
+            fallback: aiProvider,
+            subscriptionService: subscriptionService
+        )
     }
 
     public var canAsk: Bool {
@@ -221,7 +236,7 @@ public final class AskMiraState {
 
         var accumulated = ""
         do {
-            let stream = try await aiProvider.stream(request)
+            let stream = try await currentProvider().stream(request)
             for try await chunk in stream {
                 accumulated += chunk.textDelta
                 streamingAnswer = accumulated
@@ -284,7 +299,7 @@ public final class AskMiraState {
             locale: locale
         )
         do {
-            let stream = try await aiProvider.stream(request)
+            let stream = try await currentProvider().stream(request)
             var rewritten = ""
             for try await chunk in stream {
                 rewritten += chunk.textDelta
@@ -309,7 +324,7 @@ public final class AskMiraState {
             locale: locale
         )
         do {
-            let stream = try await aiProvider.stream(request)
+            let stream = try await currentProvider().stream(request)
             var accumulated = ""
             for try await chunk in stream {
                 accumulated += chunk.textDelta
