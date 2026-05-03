@@ -40,4 +40,23 @@ public enum ProEntitlement: String, Sendable, Hashable, CaseIterable, Codable {
 
     /// Day One / Apple Notes / Markdown importers.
     case importers
+
+    /// Stable snake_case identifier for analytics. The enum's `rawValue`
+    /// is camelCase to match Swift idioms; this version is for event
+    /// parameters where the rest of the project uses snake_case
+    /// (`insight_generated`, `local_model_selected`, etc.).
+    public var analyticsName: String {
+        switch self {
+        case .hostedAI:           return "hosted_ai"
+        case .advancedStats:      return "advanced_stats"
+        case .themesAndIcons:     return "themes_and_icons"
+        case .pdfExportTemplates: return "pdf_export_templates"
+        case .customMoodScales:   return "custom_mood_scales"
+        case .extraWidgets:       return "extra_widgets"
+        case .customAIPersonas:   return "custom_ai_personas"
+        case .smartFilters:       return "smart_filters"
+        case .goalsAndHabits:     return "goals_and_habits"
+        case .importers:          return "importers"
+        }
+    }
 }

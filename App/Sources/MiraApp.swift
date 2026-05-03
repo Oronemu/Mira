@@ -14,7 +14,7 @@ struct MiraApp: App {
     @State private var container: ServiceContainer
     @State private var lockState = LockState()
     @State private var appearanceState = AppearanceState()
-    @State private var paywallPresenter = AppPaywallPresenter()
+    @State private var paywallPresenter: AppPaywallPresenter
     @State private var hasOnboarded: Bool = OnboardingStore().isCompleted
     @State private var screenShieldEnabled: Bool = ScreenShieldSettingsStore().load().isEnabled
     @Environment(\.scenePhase) private var scenePhase
@@ -25,6 +25,9 @@ struct MiraApp: App {
         FirebaseBootstrap.configure()
         let container = ServiceContainer.live()
         _container = State(initialValue: container)
+        _paywallPresenter = State(
+            initialValue: AppPaywallPresenter(analyticsService: container.analyticsService)
+        )
         // Apply the user's diagnostics consent. Info.plist defaults both
         // Analytics and Crashlytics to OFF, so without this call Firebase
         // stays silent. The runtime flip happens synchronously in init to

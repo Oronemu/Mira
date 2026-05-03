@@ -22,6 +22,16 @@ public enum PaywallContext: Sendable, Hashable, Identifiable {
         }
     }
 
+    /// snake_case identifier for the `paywall_presented` event's
+    /// `context` parameter. Distinct from `id` (which is mixed-case for
+    /// SwiftUI identity) so analytics aggregations stay readable.
+    public var analyticsName: String {
+        switch self {
+        case .general: "general"
+        case .feature(let entitlement): "feature_\(entitlement.analyticsName)"
+        }
+    }
+
     /// Localised hero title shown above the product list.
     public var headline: String {
         switch self {
