@@ -745,19 +745,19 @@
         }
       }
     },
-    "Anthropic, OpenAI or OpenRouter via your API key. Falls back to on-device if the request fails." : {
-      "extractionState" : "stale",
+    "Hosted Anthropic Claude through Mira's servers. No API keys to manage." : {
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Anthropic, OpenAI or OpenRouter via your API key. Falls back to on-device if the request fails."
+            "value" : "Hosted Anthropic Claude through Mira's servers. No API keys to manage."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Anthropic, OpenAI или OpenRouter через твой API-ключ. Падает на on-device, если запрос не удался."
+            "value" : "Облачный Anthropic Claude через серверы Mira. Никаких API-ключей."
           }
         }
       }
@@ -5231,19 +5231,19 @@
         }
       }
     },
-    "Remote" : {
-      "extractionState" : "stale",
+    "Mira Pro · Cloud" : {
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Remote"
+            "value" : "Mira Pro · Cloud"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Облачный"
+            "value" : "Mira Pro · Облако"
           }
         }
       }

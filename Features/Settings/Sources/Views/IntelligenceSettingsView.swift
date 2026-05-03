@@ -63,10 +63,6 @@ public struct IntelligenceSettingsView: View {
                     localBlock(state: state)
                 }
 
-                if state.settings.provider == .remote {
-                    remoteBlock(state: state)
-                }
-
                 Color.clear.frame(height: 40)
             }
             .padding(.horizontal, 20)
@@ -109,8 +105,8 @@ public struct IntelligenceSettingsView: View {
             }
             SettingsOptionCard(
                 icon: "cloud",
-                title: "Remote",
-                subtitle: "Anthropic, OpenAI or OpenRouter via your API key. Falls back to on-device if the request fails.",
+                title: "Mira Pro · Cloud",
+                subtitle: "Hosted Anthropic Claude through Mira's servers. No API keys to manage.",
                 moodLevel: 2,
                 isSelected: state.settings.provider == .remote
             ) {
