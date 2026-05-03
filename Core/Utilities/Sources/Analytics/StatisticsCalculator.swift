@@ -228,13 +228,15 @@ public enum StatisticsCalculator {
     }
 
     /// Average mood per tag, restricted to tags that appear in at least
-    /// `minimumCount` entries with a mood — anything thinner than that
-    /// is noise and would push genuine signal out of the top of the
-    /// list. Sorted by count descending so the most-used tags surface
-    /// first; ties broken by average mood descending.
+    /// `minimumCount` entries with a mood. Threshold is intentionally
+    /// low so the card populates as soon as a tag repeats — single
+    /// uses are filtered out to keep one-off noise off the list, but
+    /// any user investment beyond that surfaces. Sorted by count
+    /// descending so the most-used tags surface first; ties broken by
+    /// average mood descending.
     public static func tagCorrelations(
         entries: [EntrySnapshot],
-        minimumCount: Int = 3
+        minimumCount: Int = 2
     ) -> [TagMoodCorrelation] {
         var buckets: [String: [Double]] = [:]
         for entry in entries {
@@ -253,6 +255,56 @@ public enum StatisticsCalculator {
                 if lhs.count != rhs.count { return lhs.count > rhs.count }
                 return lhs.averageMood > rhs.averageMood
             }
+    }
+
+    // MARK: - Mood volatility (Pro)
+
+    public struct MoodVolatility: Sendable, Hashable {
+        public let standardDeviation: Double
+        public let count: Int
+        public let level: Level
+
+        public enum Level: Sendable, Hashable {
+            case steady
+            case gentle
+            case strong
+        }
+
+        public init(standardDeviation: Double, count: Int, level: Level) {
+            self.standardDeviation = standardDeviation
+            self.count = count
+            self.level = level
+        }
+
+        /// 0…1 position on a "steady → stormy" axis. Saturates at
+        /// σ = 1.5, which is the realistic upper bound on a 1–5 scale
+        /// once you discount the pathological 50/50 1↔5 split.
+        public var fraction: Double {
+            min(1.0, standardDeviation / 1.5)
+        }
+    }
+
+    /// Population standard deviation of moods inside the supplied
+    /// entries. Returns nil when fewer than `minimumCount` entries
+    /// carry a mood — std is meaningless on tiny samples and the UI
+    /// renders an empty state in that case. Buckets are tuned for the
+    /// 1–5 mood scale: σ < 0.7 reads as "steady", 1.3+ as "strong".
+    public static func moodVolatility(
+        entries: [EntrySnapshot],
+        minimumCount: Int = 3
+    ) -> MoodVolatility? {
+        let moods = entries.compactMap { $0.mood?.rawValue }.map(Double.init)
+        guard moods.count >= minimumCount else { return nil }
+        let mean = moods.reduce(0, +) / Double(moods.count)
+        let variance = moods.map { pow($0 - mean, 2) }.reduce(0, +) / Double(moods.count)
+        let std = sqrt(variance)
+        let level: MoodVolatility.Level
+        switch std {
+        case ..<0.7: level = .steady
+        case ..<1.3: level = .gentle
+        default:     level = .strong
+        }
+        return MoodVolatility(standardDeviation: std, count: moods.count, level: level)
     }
 
     // MARK: - Weekday-baseline predictions (Pro)

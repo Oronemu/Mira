@@ -66,13 +66,11 @@ public struct SettingsView: View {
                         ) { AppearanceSettingsView() }
 
                         SettingsCategoryLink(
-                            icon: "square.and.arrow.up",
-                            title: "Export",
-                            subtitle: "Markdown or PDF of every entry",
+                            icon: "arrow.up.arrow.down",
+                            title: "Import & export",
+                            subtitle: "Take entries in or out — Markdown, PDF, Day One",
                             moodLevel: 2
-                        ) { ExportSettingsView() }
-
-                        importRow
+                        ) { ImportExportSettingsView() }
 
                         habitsAndGoalsRow
 
@@ -101,69 +99,6 @@ public struct SettingsView: View {
                 status = snapshot
             }
         }
-    }
-
-    // MARK: - Import row
-
-    /// Pro-gated entry to the Markdown importer. Pro users get a
-    /// regular nav link; free users see a ProBadge and tap → paywall
-    /// instead of pushing the screen.
-    @ViewBuilder
-    private var importRow: some View {
-        if status.isPro {
-            NavigationLink {
-                ImportSettingsView()
-            } label: {
-                importRowLabel(showsBadge: false, showsChevron: true)
-            }
-            .buttonStyle(.plain)
-        } else {
-            Button {
-                paywallPresenter.present(.feature(.importers))
-            } label: {
-                importRowLabel(showsBadge: true, showsChevron: false)
-            }
-            .buttonStyle(.plain)
-        }
-    }
-
-    private func importRowLabel(showsBadge: Bool, showsChevron: Bool) -> some View {
-        HStack(alignment: .top, spacing: 14) {
-            Image(systemName: "tray.and.arrow.down")
-                .font(.system(size: 16, weight: .semibold))
-                .foregroundStyle(MiraPalette.primaryText.opacity(0.85))
-                .frame(width: 40, height: 40)
-                .background(Circle().fill(MiraPalette.mood(level: 4).opacity(0.18)))
-
-            VStack(alignment: .leading, spacing: 3) {
-                HStack(spacing: 8) {
-                    Text(String(localized: "Import"))
-                        .font(.system(size: 16, weight: .semibold, design: .serif))
-                        .foregroundStyle(MiraPalette.primaryText)
-                    if showsBadge { ProBadge() }
-                }
-                Text(String(localized: "Bring older entries into Mira from Markdown files"))
-                    .font(.system(size: 12))
-                    .foregroundStyle(MiraPalette.secondaryText)
-                    .lineLimit(2)
-            }
-
-            Spacer(minLength: 0)
-
-            if showsChevron {
-                Image(systemName: "chevron.right")
-                    .font(.system(size: 12, weight: .semibold))
-                    .foregroundStyle(MiraPalette.secondaryText.opacity(0.7))
-            } else {
-                Image(systemName: "lock.fill")
-                    .font(.system(size: 13, weight: .semibold))
-                    .foregroundStyle(MiraPalette.primaryText.opacity(0.55))
-            }
-        }
-        .padding(14)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .contentShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
-        .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
     }
 
     // MARK: - Habits & Goals row

@@ -180,10 +180,10 @@ public struct StatsView: View {
 
     // MARK: - Pro premium section
 
-    /// Three Pro panels — tag correlations, weekday forecast, and a
-    /// year-in-review entry point. Free users see them blurred with a
-    /// single "Unlock Pro" CTA on top of the trio so the stack reads
-    /// as one paywalled tier rather than three nags.
+    /// Three Pro panels — mood volatility, tag correlations, and the
+    /// weekday forecast. Free users see them blurred with a single
+    /// "Unlock Pro" CTA on top so the stack reads as one paywalled
+    /// tier rather than three nags.
     @ViewBuilder
     private func premiumSection(state: StatsState) -> some View {
         PremiumOverlay(
@@ -191,6 +191,10 @@ public struct StatsView: View {
             onUnlock: { paywallPresenter.present(.feature(.advancedStats)) }
         ) {
             VStack(spacing: 14) {
+                StatsVolatilityCard(
+                    volatility: status.isPro ? state.moodVolatility : Self.placeholderVolatility,
+                    rangeSubtitle: rangeSubtitle(for: state.range)
+                )
                 StatsTagCorrelationCard(
                     correlations: status.isPro ? state.tagCorrelations : Self.placeholderCorrelations,
                     moodLevel: state.ambientMoodLevel
@@ -198,12 +202,18 @@ public struct StatsView: View {
                 StatsForecastCard(
                     predictions: status.isPro ? state.weekdayPredictions : Self.placeholderPredictions
                 )
-                YearInReviewCard(
-                    report: state.currentYearReport
-                )
             }
         }
     }
+
+    /// Stand-in volatility for the locked-Pro preview. Falls in the
+    /// "gentle swings" bucket so the marker sits roughly mid-bar — it
+    /// reads as a recognisable shape behind the blur.
+    private static let placeholderVolatility = StatisticsCalculator.MoodVolatility(
+        standardDeviation: 0.85,
+        count: 14,
+        level: .gentle
+    )
 
     /// Stand-in correlations rendered behind the blur so free users see
     /// a recognisable shape rather than an empty placeholder.

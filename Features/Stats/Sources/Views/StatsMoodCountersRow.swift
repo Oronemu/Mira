@@ -18,7 +18,7 @@ struct StatsMoodCountersRow: View {
                 moodLevel: 5
             )
             cell(
-                title: "Steady",
+                title: "Average",
                 titleComment: "Stats — mood counter label for entries with mood 3",
                 count: counters.steady,
                 moodLevel: 3

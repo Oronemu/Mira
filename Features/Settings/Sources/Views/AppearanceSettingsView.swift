@@ -93,63 +93,54 @@ public struct AppearanceSettingsView: View {
 
     // MARK: - Accent
 
+    /// Five free presets stay as the default palette; the sixth slot
+    /// in the same row is the Pro custom-colour swatch. Free users
+    /// see a Pro badge over it and tap raises the paywall; Pro users
+    /// see their colour (or a neutral "+") and tap opens the system
+    /// colour picker. Custom always wins the resolution chain when
+    /// set, so picking a colour visibly overrides whichever preset
+    /// the user had selected.
     private var accentSection: some View {
         VStack(alignment: .leading, spacing: 14) {
             sectionLabel("Accent")
 
-            // Free row — five mood-aliased presets, always tappable.
             HStack(spacing: 14) {
                 ForEach(AccentTint.allCases, id: \.self) { tint in
                     AccentSwatch(
                         color: MiraPalette.mood(level: tint.rawValue),
-                        isSelected: isFreeAccentSelected(tint),
-                        showsProBadge: false
+                        isSelected: isFreeAccentSelected(tint)
                     ) { state.setAccent(tint) }
-                }
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-
-            // Pro row — gated. Tap without entitlement raises the
-            // paywall instead of applying.
-            HStack(spacing: 14) {
-                ForEach(ProAccent.allCases, id: \.self) { pro in
-                    AccentSwatch(
-                        color: MiraPalette.proAccent(pro),
-                        isSelected: state.settings.proAccent == pro,
-                        showsProBadge: !status.isPro
-                    ) {
-                        if status.isPro {
-                            state.setProAccent(pro)
-                        } else {
-                            paywallPresenter.present(.feature(.themesAndIcons))
-                        }
-                    }
                 }
 
                 customSwatch
             }
             .frame(maxWidth: .infinity, alignment: .leading)
 
-            Text(activeAccentName)
-                .font(.system(size: 13, weight: .medium, design: .serif))
-                .foregroundStyle(MiraPalette.secondaryText)
-                .animation(.easeInOut(duration: 0.2), value: state.settings)
+            if status.isPro && state.settings.customAccentHex != nil {
+                resetAccentButton
+            }
         }
-        .padding(14)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
-        .animation(.spring(duration: 0.35, bounce: 0.2), value: state.settings)
+        .animation(.spring(duration: 0.3, bounce: 0.2), value: state.settings)
     }
 
-    /// "Custom" picker sits in the same row as Pro presets. Renders
-    /// either the user's chosen hex or a neutral placeholder when
-    /// unset, with a small "+"/dot to disambiguate from a regular
-    /// swatch.
+    private func isFreeAccentSelected(_ tint: AccentTint) -> Bool {
+        // Free swatches highlight only when no custom override is
+        // active — otherwise two accents would appear simultaneously
+        // selected.
+        guard state.settings.customAccentHex == nil else { return false }
+        return state.accent == tint
+    }
+
+    /// Sixth slot in the swatch row: the Pro custom-colour picker.
+    /// Renders the user's chosen hex (when set) or a neutral grey
+    /// placeholder with a "+", tagged with a Pro badge in the top-
+    /// left corner so the gating reads at a glance.
     private var customSwatch: some View {
         let isCustomActive = state.settings.customAccentHex != nil
         let displayColor: Color = isCustomActive
             ? MiraPalette.tintColor(for: state.settings)
             : MiraPalette.secondaryBackground
+
         return Button {
             if status.isPro {
                 pendingCustomColor = displayColor
@@ -165,9 +156,12 @@ public struct AppearanceSettingsView: View {
                     .overlay(
                         Circle().strokeBorder(MiraPalette.primaryText.opacity(0.15), lineWidth: 1)
                     )
-                Image(systemName: isCustomActive ? "drop.fill" : "plus")
-                    .font(.system(size: 12, weight: .bold))
-                    .foregroundStyle(MiraPalette.primaryText.opacity(0.85))
+
+                if !isCustomActive {
+                    Image(systemName: "plus")
+                        .font(.system(size: 12, weight: .bold))
+                        .foregroundStyle(MiraPalette.primaryText.opacity(0.7))
+                }
 
                 if isCustomActive {
                     Circle()
@@ -178,13 +172,31 @@ public struct AppearanceSettingsView: View {
                 if !status.isPro {
                     ProBadge()
                         .scaleEffect(0.75)
-                        .offset(x: 16, y: -16)
+                        .offset(x: -16, y: -16)
                 }
             }
             .frame(width: 44, height: 44)
             .contentShape(Circle())
         }
         .buttonStyle(.plain)
+    }
+
+    private var resetAccentButton: some View {
+        Button {
+            state.clearProOverrides()
+        } label: {
+            HStack(spacing: 6) {
+                Image(systemName: "arrow.counterclockwise")
+                    .font(.system(size: 11, weight: .semibold))
+                Text(String(localized: "Reset to default"))
+                    .font(.system(size: 13, weight: .medium))
+            }
+            .foregroundStyle(MiraPalette.secondaryText)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 6)
+        }
+        .buttonStyle(.plain)
+        .padding(.leading, 4)
     }
 
     private var customColorSheet: some View {
@@ -270,26 +282,6 @@ public struct AppearanceSettingsView: View {
         .buttonStyle(.plain)
     }
 
-    // MARK: - Selection helpers
-
-    private func isFreeAccentSelected(_ tint: AccentTint) -> Bool {
-        // The free row only highlights when no Pro override is active —
-        // otherwise the user might think two accents are simultaneously
-        // applied.
-        guard state.settings.proAccent == nil,
-              state.settings.customAccentHex == nil else { return false }
-        return state.accent == tint
-    }
-
-    private var activeAccentName: LocalizedStringKey {
-        if state.settings.customAccentHex != nil {
-            return "Custom"
-        }
-        if let pro = state.settings.proAccent {
-            return pro.displayName
-        }
-        return state.accent.displayName
-    }
 }
 
 // MARK: - Swatch
@@ -297,7 +289,6 @@ public struct AppearanceSettingsView: View {
 private struct AccentSwatch: View {
     let color: Color
     let isSelected: Bool
-    let showsProBadge: Bool
     let action: () -> Void
 
     var body: some View {
@@ -311,12 +302,6 @@ private struct AccentSwatch: View {
                     Circle()
                         .strokeBorder(MiraPalette.primaryText.opacity(0.85), lineWidth: 2)
                         .frame(width: 44, height: 44)
-                }
-
-                if showsProBadge {
-                    ProBadge()
-                        .scaleEffect(0.75)
-                        .offset(x: 16, y: -16)
                 }
             }
             .frame(width: 44, height: 44)
@@ -345,28 +330,3 @@ private extension Color {
     }
 }
 
-// MARK: - Localized names
-
-private extension AccentTint {
-    var displayName: LocalizedStringKey {
-        switch self {
-        case .cool:     return "Cool"
-        case .lavender: return "Lavender"
-        case .sand:     return "Sand"
-        case .clay:     return "Clay"
-        case .sage:     return "Sage"
-        }
-    }
-}
-
-private extension ProAccent {
-    var displayName: LocalizedStringKey {
-        switch self {
-        case .rose:   return "Rose"
-        case .ocean:  return "Ocean"
-        case .forest: return "Forest"
-        case .gold:   return "Gold"
-        case .plum:   return "Plum"
-        }
-    }
-}

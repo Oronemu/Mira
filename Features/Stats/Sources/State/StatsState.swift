@@ -135,10 +135,10 @@ public final class StatsState {
         StatisticsCalculator.weekdayPredictions(entries: allEntries, asOf: clock())
     }
 
-    /// Year-in-Review for the current calendar year.
-    public var currentYearReport: StatisticsCalculator.YearReport {
-        let calendar = Calendar.current
-        let year = calendar.component(.year, from: clock())
-        return StatisticsCalculator.yearReport(entries: allEntries, year: year)
+    /// Mood volatility inside the selected range. Range-scoped — the
+    /// user's swings shift week to week, and surfacing it as "your
+    /// current state" is more honest than a lifetime average.
+    public var moodVolatility: StatisticsCalculator.MoodVolatility? {
+        StatisticsCalculator.moodVolatility(entries: entriesInRange)
     }
 }

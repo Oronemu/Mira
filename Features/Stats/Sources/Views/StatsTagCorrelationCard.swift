@@ -41,7 +41,7 @@ struct StatsTagCorrelationCard: View {
     }
 
     private var emptyState: some View {
-        Text("Add tags and moods to your entries to see patterns here.")
+        Text("Use the same tag on at least 2 entries with a mood — patterns appear here.")
             .font(MiraTypography.caption)
             .foregroundStyle(.secondary)
             .padding(.vertical, 12)

@@ -1255,6 +1255,23 @@
         }
       }
     },
+    "Average": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Average"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Средне"
+          }
+        }
+      }
+    },
     "Avg %@ · %lld entries": {
       "comment": "Stats — mood trend subtitle: avg score and entry count",
       "extractionState": "manual",
@@ -1560,6 +1577,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "На передний план"
+          }
+        }
+      }
+    },
+    "Bring older entries in": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bring older entries in"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Перенеси старые записи"
           }
         }
       }
@@ -3603,6 +3637,23 @@
         }
       }
     },
+    "Gentle swings": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gentle swings"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Лёгкие колебания"
+          }
+        }
+      }
+    },
     "Get started": {
       "extractionState": "stale",
       "localizations": {
@@ -4062,6 +4113,23 @@
         }
       }
     },
+    "How steady your mood feels": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "How steady your mood feels"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Насколько ровное у тебя настроение"
+          }
+        }
+      }
+    },
     "How you've been": {
       "comment": "Stats — mood trend hero card title",
       "extractionState": "manual",
@@ -4315,6 +4383,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Импорт"
+          }
+        }
+      }
+    },
+    "Import & export": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Import & export"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Импорт и экспорт"
           }
         }
       }
@@ -5580,6 +5665,23 @@
         }
       }
     },
+    "Need a few moods in this range to gauge swings.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Need a few moods in this range to gauge swings."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Нужно несколько записей с настроением в этом диапазоне, чтобы оценить колебания."
+          }
+        }
+      }
+    },
     "Needs 12 GB RAM: iPhone 17, iPad Pro (1 TB+), or 16 GB+ Mac": {
       "extractionState": "stale",
       "localizations": {
@@ -6636,6 +6738,23 @@
         }
       }
     },
+    "Pick any colour for tabs and chips": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pick any colour for tabs and chips"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Выбери любой цвет для табов и чипов"
+          }
+        }
+      }
+    },
     "Pick any colour. Mira will use it across tabs, chips, and progress bars.": {
       "extractionState": "manual",
       "localizations": {
@@ -7346,6 +7465,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Сбросить фильтры"
+          }
+        }
+      }
+    },
+    "Reset to default": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reset to default"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Сбросить к стандартному"
           }
         }
       }
@@ -8268,6 +8404,23 @@
         }
       }
     },
+    "Steadiness": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Steadiness"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Устойчивость"
+          }
+        }
+      }
+    },
     "Steady": {
       "comment": "Stats — mood counter label for entries with mood 3",
       "extractionState": "manual",
@@ -8367,6 +8520,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Серия"
+          }
+        }
+      }
+    },
+    "Strong swings": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Strong swings"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Сильные колебания"
           }
         }
       }
@@ -8707,6 +8877,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "Теги"
+          }
+        }
+      }
+    },
+    "Take entries in or out — Markdown, PDF, Day One": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Take entries in or out — Markdown, PDF, Day One"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Перенос записей внутрь и наружу — Markdown, PDF, Day One"
+          }
+        }
+      }
+    },
+    "Take entries in, take entries out": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Take entries in, take entries out"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Перенеси записи внутрь и наружу"
           }
         }
       }
@@ -9459,6 +9663,23 @@
         }
       }
     },
+    "Unlock to colour Mira your way": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unlock to colour Mira your way"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Открой Pro, чтобы покрасить Mira по-своему"
+          }
+        }
+      }
+    },
     "Unlock with Passcode": {
       "extractionState": "stale",
       "localizations": {
@@ -9659,6 +9880,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Использовать Touch ID"
+          }
+        }
+      }
+    },
+    "Use the same tag on at least 2 entries with a mood — patterns appear here.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Use the same tag on at least 2 entries with a mood — patterns appear here."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Поставь один и тот же тег как минимум двум записям с настроением — паттерны появятся здесь."
           }
         }
       }
