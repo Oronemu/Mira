@@ -121,7 +121,16 @@ public actor InMemorySubscriptionService: SubscriptionService {
     }
 
     public func fetchUsage() async throws -> UsageSnapshot {
-        throw SubscriptionError.unimplemented
+        // Dev/preview-only: no real backend, so report a clean slate
+        // for the current month so the Pro screen's usage section
+        // renders with realistic copy. Tests that need specific
+        // counters should drive `MockSubscriptionService.setUsage(_:)`.
+        UsageSnapshot(
+            period: Self.currentPeriodKey(),
+            periodEnd: Self.endOfCurrentMonth(),
+            askMira: UsageSnapshot.Dimension(used: 0, limit: 100, remaining: 100),
+            manualReflections: UsageSnapshot.Dimension(used: 0, limit: 2, remaining: 2)
+        )
     }
 
     /// Test/debug hook. Forces a status without going through a purchase
@@ -157,6 +166,28 @@ public actor InMemorySubscriptionService: SubscriptionService {
         case .yearly: component = .year
         }
         return Calendar.current.date(byAdding: component, value: 1, to: Date()) ?? Date()
+    }
+
+    /// `YYYY-MM` for the current UTC month — matches the worker's
+    /// `monthKey()` so dev builds and prod use the same period format.
+    private static func currentPeriodKey(now: Date = .now) -> String {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(identifier: "UTC") ?? .gmt
+        let comps = calendar.dateComponents([.year, .month], from: now)
+        let y = comps.year ?? 1970
+        let m = comps.month ?? 1
+        return String(format: "%04d-%02d", y, m)
+    }
+
+    /// Last instant of the current UTC month. Mirrors the worker's
+    /// `endOfMonthISO` so the Pro screen's "Resets on …" copy aligns
+    /// with when counters actually flip over.
+    private static func endOfCurrentMonth(now: Date = .now) -> Date {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(identifier: "UTC") ?? .gmt
+        let startOfMonth = calendar.dateInterval(of: .month, for: now)?.start ?? now
+        let nextMonthStart = calendar.date(byAdding: .month, value: 1, to: startOfMonth) ?? now
+        return nextMonthStart.addingTimeInterval(-0.001)
     }
 }
 

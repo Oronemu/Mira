@@ -1,6 +1,7 @@
 import Foundation
 import StoreKit
 import CoreKit
+import Utilities
 
 /// Production `SubscriptionService` backed by StoreKit 2.
 ///
@@ -164,9 +165,89 @@ public actor StoreKitSubscriptionService: SubscriptionService {
     }
 
     public func fetchUsage() async throws -> CoreKit.UsageSnapshot {
-        // Real Worker call lands in 5.1.3.
-        throw SubscriptionError.unimplemented
+        guard let jws = await latestSignedTransaction() else {
+            // The Pro screen only opens this path when status.isPro is
+            // true. If we reach here without a JWS, StoreKit either
+            // hasn't materialised the transaction yet or the user is in
+            // a redeem-grant state that StoreKit doesn't track. Both
+            // map to "couldn't verify — try Restore" for the user.
+            throw SubscriptionError.verificationFailed
+        }
+        let url = MiraBackendURL.resolve().appendingPathComponent("v1/usage")
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        let payload: [String: String] = ["signedTransaction": jws]
+        request.httpBody = try JSONSerialization.data(withJSONObject: payload)
+
+        let data: Data
+        let response: URLResponse
+        do {
+            (data, response) = try await URLSession.shared.data(for: request)
+        } catch {
+            throw SubscriptionError.networkUnavailable
+        }
+        guard let http = response as? HTTPURLResponse else {
+            throw SubscriptionError.backendUnavailable
+        }
+        switch http.statusCode {
+        case 200:
+            return try Self.snapshot(from: data)
+        case 400, 401, 402, 403:
+            throw SubscriptionError.verificationFailed
+        default:
+            throw SubscriptionError.backendUnavailable
+        }
     }
+
+    private static func snapshot(from data: Data) throws -> CoreKit.UsageSnapshot {
+        let dto: UsageWireDTO
+        do {
+            dto = try JSONDecoder().decode(UsageWireDTO.self, from: data)
+        } catch {
+            throw SubscriptionError.backendUnavailable
+        }
+        guard let periodEnd = Self.iso8601.date(from: dto.periodEnd) else {
+            throw SubscriptionError.backendUnavailable
+        }
+        return CoreKit.UsageSnapshot(
+            period: dto.period,
+            periodEnd: periodEnd,
+            askMira: CoreKit.UsageSnapshot.Dimension(
+                used: dto.askMira.used,
+                limit: dto.askMira.limit,
+                remaining: dto.askMira.remaining
+            ),
+            manualReflections: CoreKit.UsageSnapshot.Dimension(
+                used: dto.manualReflections.used,
+                limit: dto.manualReflections.limit,
+                remaining: dto.manualReflections.remaining
+            )
+        )
+    }
+
+    /// Mirrors the `POST /v1/usage` response shape from `mira-backend`.
+    /// Kept private so the `UsageSnapshot` domain type stays JSON-free.
+    private struct UsageWireDTO: Decodable, Sendable {
+        struct Dimension: Decodable, Sendable {
+            let used: Int
+            let limit: Int
+            let remaining: Int
+        }
+        let period: String
+        let periodEnd: String
+        let askMira: Dimension
+        let manualReflections: Dimension
+    }
+
+    /// Worker emits ISO8601 with fractional seconds (`.999Z`); the
+    /// default `JSONDecoder.iso8601` strategy doesn't handle them, so we
+    /// parse periodEnd manually with both options enabled.
+    nonisolated(unsafe) private static let iso8601: ISO8601DateFormatter = {
+        let f = ISO8601DateFormatter()
+        f.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        return f
+    }()
 
     // MARK: - Private
 
