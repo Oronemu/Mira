@@ -62,4 +62,11 @@ public protocol SubscriptionService: Sendable {
     /// implementations, and any state where StoreKit hasn't issued a
     /// verified transaction yet.
     func latestSignedTransaction() async -> String?
+
+    /// Fetches the caller's current monthly usage against hosted-AI
+    /// caps. The Pro settings screen calls this to render "X of Y left
+    /// this month" without having to poll the AI endpoint. Throws if
+    /// the caller has no entitlement (`SubscriptionError.unimplemented`
+    /// for stub services, network/verification cases otherwise).
+    func fetchUsage() async throws -> UsageSnapshot
 }

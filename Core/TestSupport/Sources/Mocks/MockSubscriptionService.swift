@@ -96,12 +96,24 @@ public actor MockSubscriptionService: SubscriptionService {
 
     public func latestSignedTransaction() async -> String? { stubbedSignedTransaction }
 
+    public func fetchUsage() async throws -> UsageSnapshot {
+        if let stubbedUsage { return stubbedUsage }
+        throw SubscriptionError.unimplemented
+    }
+
     private var stubbedSignedTransaction: String?
+    private var stubbedUsage: UsageSnapshot?
 
     /// Test hook — pre-load the JWS that `latestSignedTransaction()`
     /// will return without paying for a real StoreKit transaction.
     public func setSignedTransaction(_ jws: String?) {
         stubbedSignedTransaction = jws
+    }
+
+    /// Test hook — pre-load the snapshot that `fetchUsage()` will
+    /// return. Defaults to throwing `.unimplemented` when unset.
+    public func setUsage(_ usage: UsageSnapshot?) {
+        stubbedUsage = usage
     }
 
     /// Test hook — flips the status without running through a purchase

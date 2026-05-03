@@ -163,6 +163,11 @@ public actor StoreKitSubscriptionService: SubscriptionService {
         return nil
     }
 
+    public func fetchUsage() async throws -> CoreKit.UsageSnapshot {
+        // Real Worker call lands in 5.1.3.
+        throw SubscriptionError.unimplemented
+    }
+
     // MARK: - Private
 
     private func loadProductsIfNeeded() async throws -> [String: Product] {

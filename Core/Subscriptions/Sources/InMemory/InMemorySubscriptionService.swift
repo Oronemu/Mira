@@ -120,6 +120,10 @@ public actor InMemorySubscriptionService: SubscriptionService {
         nil
     }
 
+    public func fetchUsage() async throws -> UsageSnapshot {
+        throw SubscriptionError.unimplemented
+    }
+
     /// Test/debug hook. Forces a status without going through a purchase
     /// path; used by `MockSubscriptionService` and the in-app dev toggle.
     public func setStatus(_ status: SubscriptionStatus) {

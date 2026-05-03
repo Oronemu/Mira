@@ -33,4 +33,8 @@ public struct UnimplementedSubscriptionService: SubscriptionService {
     public func refresh() async {}
 
     public func latestSignedTransaction() async -> String? { nil }
+
+    public func fetchUsage() async throws -> UsageSnapshot {
+        throw SubscriptionError.unimplemented
+    }
 }
