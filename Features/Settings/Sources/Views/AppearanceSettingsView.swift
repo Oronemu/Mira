@@ -32,6 +32,8 @@ public struct AppearanceSettingsView: View {
 
                     accentSection
 
+                    iconRow
+
                     Color.clear.frame(height: 32)
                 }
                 .padding(.horizontal, 20)
@@ -224,6 +226,48 @@ public struct AppearanceSettingsView: View {
         Text(key)
             .eyebrowStyle()
             .padding(.leading, 4)
+    }
+
+    // MARK: - Icon row
+
+    private var iconRow: some View {
+        NavigationLink {
+            IconPickerView()
+        } label: {
+            HStack(alignment: .center, spacing: 14) {
+                Image(systemName: "app.badge")
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundStyle(MiraPalette.primaryText.opacity(0.85))
+                    .frame(width: 40, height: 40)
+                    .background(Circle().fill(MiraPalette.mood(level: 4).opacity(0.18)))
+
+                VStack(alignment: .leading, spacing: 3) {
+                    HStack(spacing: 8) {
+                        Text(String(localized: "App icon"))
+                            .font(.system(size: 16, weight: .semibold, design: .serif))
+                            .foregroundStyle(MiraPalette.primaryText)
+                        if !status.isPro {
+                            ProBadge()
+                        }
+                    }
+                    Text(String(localized: "Pick the look that fits your home screen"))
+                        .font(.system(size: 12))
+                        .foregroundStyle(MiraPalette.secondaryText)
+                        .lineLimit(2)
+                }
+
+                Spacer(minLength: 0)
+
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundStyle(MiraPalette.secondaryText.opacity(0.7))
+            }
+            .padding(14)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .contentShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+            .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+        }
+        .buttonStyle(.plain)
     }
 
     // MARK: - Selection helpers

@@ -78,6 +78,13 @@ let project = Project(
                 // "unrecognized selector". `-lc++` is required by some
                 // Firebase transitive deps compiled as C++.
                 "OTHER_LDFLAGS": "$(inherited) -ObjC",
+                // Alternate app icons. Names match the .appiconset folders
+                // in Assets.xcassets and the AppIconOption enum the
+                // settings UI consults. Adding a new alternate means: new
+                // .appiconset, this list, and one enum case.
+                "ASSETCATALOG_COMPILER_APPICON_NAME": "AppIcon",
+                "ASSETCATALOG_COMPILER_ALTERNATE_APPICON_NAMES": "AppIcon-Calm AppIcon-Solace AppIcon-Quiet AppIcon-Reflect AppIcon-Stoic AppIcon-Editorial AppIcon-Minimal",
+                "ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS": "YES",
             ])
         ),
     ],
