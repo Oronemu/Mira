@@ -119,4 +119,26 @@ public final class StatsState {
         guard let avg = averageMood else { return 3 }
         return max(1, min(5, Int(round(avg))))
     }
+
+    // MARK: - Pro derived
+
+    /// Tag → average mood, restricted to tags with enough samples to be
+    /// meaningful. Computed across the full history (not just the
+    /// selected range) so the panel doesn't flicker as the range
+    /// changes — patterns are stable, not weekly.
+    public var tagCorrelations: [StatisticsCalculator.TagMoodCorrelation] {
+        StatisticsCalculator.tagCorrelations(entries: allEntries)
+    }
+
+    /// Forecast for the next seven days, weekday-baseline model.
+    public var weekdayPredictions: [StatisticsCalculator.DayPrediction] {
+        StatisticsCalculator.weekdayPredictions(entries: allEntries, asOf: clock())
+    }
+
+    /// Year-in-Review for the current calendar year.
+    public var currentYearReport: StatisticsCalculator.YearReport {
+        let calendar = Calendar.current
+        let year = calendar.component(.year, from: clock())
+        return StatisticsCalculator.yearReport(entries: allEntries, year: year)
+    }
 }

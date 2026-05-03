@@ -211,6 +211,229 @@ public enum StatisticsCalculator {
         }
     }
 
+    // MARK: - Tag correlations (Pro)
+
+    public struct TagMoodCorrelation: Sendable, Hashable, Identifiable {
+        public let tag: String
+        public let averageMood: Double
+        public let count: Int
+
+        public var id: String { tag }
+
+        public init(tag: String, averageMood: Double, count: Int) {
+            self.tag = tag
+            self.averageMood = averageMood
+            self.count = count
+        }
+    }
+
+    /// Average mood per tag, restricted to tags that appear in at least
+    /// `minimumCount` entries with a mood — anything thinner than that
+    /// is noise and would push genuine signal out of the top of the
+    /// list. Sorted by count descending so the most-used tags surface
+    /// first; ties broken by average mood descending.
+    public static func tagCorrelations(
+        entries: [EntrySnapshot],
+        minimumCount: Int = 3
+    ) -> [TagMoodCorrelation] {
+        var buckets: [String: [Double]] = [:]
+        for entry in entries {
+            guard let mood = entry.mood else { continue }
+            for tag in entry.tags {
+                buckets[tag, default: []].append(Double(mood.rawValue))
+            }
+        }
+        return buckets
+            .compactMap { (tag, moods) -> TagMoodCorrelation? in
+                guard moods.count >= minimumCount else { return nil }
+                let avg = moods.reduce(0, +) / Double(moods.count)
+                return TagMoodCorrelation(tag: tag, averageMood: avg, count: moods.count)
+            }
+            .sorted { lhs, rhs in
+                if lhs.count != rhs.count { return lhs.count > rhs.count }
+                return lhs.averageMood > rhs.averageMood
+            }
+    }
+
+    // MARK: - Weekday-baseline predictions (Pro)
+
+    public struct DayPrediction: Sendable, Hashable, Identifiable {
+        public let date: Date
+        public let predictedMood: Double
+        /// 0…1 based on how many same-weekday samples drove the
+        /// estimate; UI can fade rows with low confidence.
+        public let confidence: Double
+
+        public var id: Date { date }
+
+        public init(date: Date, predictedMood: Double, confidence: Double) {
+            self.date = date
+            self.predictedMood = predictedMood
+            self.confidence = confidence
+        }
+    }
+
+    /// Forecast for the next `days` days using a simple weekday-baseline
+    /// model: each day's prediction is the average mood of historical
+    /// entries falling on the same weekday. Confidence ramps with sample
+    /// size, capping at 1.0 once we have ≥`saturationCount` samples for
+    /// that weekday (default 8 ≈ 2 months of weekly journaling).
+    public static func weekdayPredictions(
+        entries: [EntrySnapshot],
+        days: Int = 7,
+        saturationCount: Int = 8,
+        asOf now: Date = .now,
+        calendar: Calendar = .current
+    ) -> [DayPrediction] {
+        // Bucket historical mood scores by weekday.
+        var buckets: [Int: [Double]] = [:]
+        for entry in entries {
+            guard let mood = entry.mood else { continue }
+            let weekday = calendar.component(.weekday, from: entry.createdAt)
+            buckets[weekday, default: []].append(Double(mood.rawValue))
+        }
+
+        let startOfTomorrow = calendar.date(byAdding: .day, value: 1, to: calendar.startOfDay(for: now)) ?? now
+        var output: [DayPrediction] = []
+        output.reserveCapacity(days)
+        for offset in 0..<days {
+            guard let day = calendar.date(byAdding: .day, value: offset, to: startOfTomorrow) else { continue }
+            let weekday = calendar.component(.weekday, from: day)
+            let samples = buckets[weekday] ?? []
+            // Neutral 3.0 baseline when we have nothing — keeps the
+            // forecast visible rather than flashing zeros.
+            let avg = samples.isEmpty ? 3.0 : samples.reduce(0, +) / Double(samples.count)
+            let confidence = min(1.0, Double(samples.count) / Double(saturationCount))
+            output.append(DayPrediction(date: day, predictedMood: avg, confidence: confidence))
+        }
+        return output
+    }
+
+    // MARK: - Year-in-Review (Pro)
+
+    public struct YearReport: Sendable, Hashable {
+        public struct MonthSummary: Sendable, Hashable, Identifiable {
+            /// 1…12.
+            public let month: Int
+            public let averageMood: Double
+            public let entryCount: Int
+
+            public var id: Int { month }
+
+            public init(month: Int, averageMood: Double, entryCount: Int) {
+                self.month = month
+                self.averageMood = averageMood
+                self.entryCount = entryCount
+            }
+        }
+
+        public struct TagCount: Sendable, Hashable, Identifiable {
+            public let tag: String
+            public let count: Int
+
+            public var id: String { tag }
+
+            public init(tag: String, count: Int) { self.tag = tag; self.count = count }
+        }
+
+        public let year: Int
+        public let totalEntries: Int
+        public let totalWords: Int
+        public let averageMood: Double?
+        public let moodCounters: MoodCounters
+        public let bestMonth: MonthSummary?
+        public let topTags: [TagCount]
+        public let longestStreak: Int
+
+        public init(
+            year: Int,
+            totalEntries: Int,
+            totalWords: Int,
+            averageMood: Double?,
+            moodCounters: MoodCounters,
+            bestMonth: MonthSummary?,
+            topTags: [TagCount],
+            longestStreak: Int
+        ) {
+            self.year = year
+            self.totalEntries = totalEntries
+            self.totalWords = totalWords
+            self.averageMood = averageMood
+            self.moodCounters = moodCounters
+            self.bestMonth = bestMonth
+            self.topTags = topTags
+            self.longestStreak = longestStreak
+        }
+    }
+
+    /// Single-pass aggregation of a calendar year. Empty years return a
+    /// zeroed report (rather than `nil`) so the UI can render a "no
+    /// entries yet" state without a separate optional check.
+    public static func yearReport(
+        entries: [EntrySnapshot],
+        year: Int,
+        topTagLimit: Int = 5,
+        calendar: Calendar = .current
+    ) -> YearReport {
+        let yearEntries = entries.filter {
+            calendar.component(.year, from: $0.createdAt) == year
+        }
+        let words = totalWords(entries: yearEntries)
+        let counters = moodCounters(entries: yearEntries)
+        let moodValues = yearEntries.compactMap { $0.mood.map { Double($0.rawValue) } }
+        let avg = moodValues.isEmpty ? nil : moodValues.reduce(0, +) / Double(moodValues.count)
+
+        // Best month — month with the highest average mood among months
+        // that have at least one mood-bearing entry (ties broken by
+        // entry count so a thin good month doesn't beat a deep one).
+        var monthBuckets: [Int: (moods: [Double], count: Int)] = [:]
+        for entry in yearEntries {
+            let m = calendar.component(.month, from: entry.createdAt)
+            var bucket = monthBuckets[m] ?? (moods: [], count: 0)
+            bucket.count += 1
+            if let mood = entry.mood { bucket.moods.append(Double(mood.rawValue)) }
+            monthBuckets[m] = bucket
+        }
+        let bestMonth: YearReport.MonthSummary? = monthBuckets
+            .compactMap { (month, bucket) -> YearReport.MonthSummary? in
+                guard !bucket.moods.isEmpty else { return nil }
+                let avg = bucket.moods.reduce(0, +) / Double(bucket.moods.count)
+                return YearReport.MonthSummary(month: month, averageMood: avg, entryCount: bucket.count)
+            }
+            .max { lhs, rhs in
+                if lhs.averageMood != rhs.averageMood { return lhs.averageMood < rhs.averageMood }
+                return lhs.entryCount < rhs.entryCount
+            }
+
+        // Top tags by frequency.
+        var tagCounts: [String: Int] = [:]
+        for entry in yearEntries {
+            for tag in entry.tags {
+                tagCounts[tag, default: 0] += 1
+            }
+        }
+        let topTags = tagCounts
+            .map { YearReport.TagCount(tag: $0.key, count: $0.value) }
+            .sorted { lhs, rhs in
+                if lhs.count != rhs.count { return lhs.count > rhs.count }
+                return lhs.tag < rhs.tag
+            }
+            .prefix(topTagLimit)
+
+        let longestStreak = streak(entries: yearEntries, calendar: calendar).best
+
+        return YearReport(
+            year: year,
+            totalEntries: yearEntries.count,
+            totalWords: words,
+            averageMood: avg,
+            moodCounters: counters,
+            bestMonth: bestMonth,
+            topTags: Array(topTags),
+            longestStreak: longestStreak
+        )
+    }
+
     /// 371-cell grid (53 weeks × 7 days) ending at the week of `now`. The
     /// view paints these in column-major order so the chart reads like a
     /// year strip — leftmost column is the oldest week, rightmost the
