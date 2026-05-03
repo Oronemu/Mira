@@ -17,10 +17,22 @@ public enum PromptTemplates {
         question: String,
         context: String,
         history: [AskMiraTurnSnapshot] = [],
-        locale: Locale = .autoupdatingCurrent
+        locale: Locale = .autoupdatingCurrent,
+        personaPrompt: String? = nil
     ) -> AIRequest {
         let language = localeLanguage(locale)
-        let system = Self.askSystem(language: language)
+        let baseSystem = Self.askSystem(language: language)
+        // Personas append after the grounding rules so the citation
+        // and "don't invent facts" requirements always come first —
+        // any user-authored prompt acts as a style overlay rather
+        // than replacing safety rules.
+        let trimmedPersona = personaPrompt?.trimmingCharacters(in: .whitespacesAndNewlines)
+        let system: String = {
+            if let persona = trimmedPersona, !persona.isEmpty {
+                return baseSystem + "\n\n" + Self.styleHeader(language: language) + " " + persona
+            }
+            return baseSystem
+        }()
         let currentUserContent = Self.askUser(language: language, question: question, context: context)
 
         var messages: [AIMessage] = [AIMessage(role: .system, content: system)]
@@ -248,6 +260,16 @@ public enum PromptTemplates {
             записей вообще нет — скажи, что пока не знаешь контекст, и \
             всё равно по-человечески ответь на сам вопрос.
             """
+        }
+    }
+
+    /// Localised lead-in for user-authored persona prompts. Sits
+    /// between the grounding rules and the user's style instructions
+    /// so the model treats it as flavour, not as new ground truth.
+    static func styleHeader(language: Language) -> String {
+        switch language {
+        case .en: return "Style and voice instructions from the user:"
+        case .ru: return "Указания пользователя по стилю и голосу:"
         }
     }
 

@@ -227,11 +227,16 @@ public final class AskMiraState {
         streamingReferenceIDs = retrieval.entries.map(\.id)
 
         let context = rag.formatContext(retrieval, locale: locale)
+        // Active persona is read fresh on every send so picking a new
+        // persona in Settings takes effect for the next message
+        // without restarting the chat.
+        let persona = AskMiraPersonaStore().active()
         let request = PromptTemplates.askMira(
             question: question,
             context: context,
             history: promptHistory,
-            locale: locale
+            locale: locale,
+            personaPrompt: persona.systemPrompt.isEmpty ? nil : persona.systemPrompt
         )
 
         var accumulated = ""

@@ -14,6 +14,7 @@ public struct IntelligenceSettingsView: View {
     @Environment(\.subscriptionService) private var subscriptionService
     @Environment(\.paywallPresenter) private var paywallPresenter
     @State private var state: SettingsState?
+    @State private var status: SubscriptionStatus = .unknown
 
     public init() {}
 
@@ -48,6 +49,75 @@ public struct IntelligenceSettingsView: View {
             }
             await state?.refresh()
         }
+        .task {
+            // Personas row reads `status.isPro` to swap a chevron for a
+            // ProBadge + paywall-on-tap. Lives in its own .task so the
+            // existing settings refresh isn't held up by it.
+            status = await subscriptionService.status
+            for await snapshot in subscriptionService.statusUpdates {
+                status = snapshot
+            }
+        }
+    }
+
+    // MARK: - Personas
+
+    @ViewBuilder
+    private var personasRow: some View {
+        if status.isPro {
+            NavigationLink {
+                PersonasListView()
+            } label: {
+                personasLabel(showsBadge: false, showsChevron: true)
+            }
+            .buttonStyle(.plain)
+        } else {
+            Button {
+                paywallPresenter.present(.feature(.customAIPersonas))
+            } label: {
+                personasLabel(showsBadge: true, showsChevron: false)
+            }
+            .buttonStyle(.plain)
+        }
+    }
+
+    private func personasLabel(showsBadge: Bool, showsChevron: Bool) -> some View {
+        HStack(alignment: .center, spacing: 14) {
+            Image(systemName: "person.crop.square.badge.camera")
+                .font(.system(size: 16, weight: .semibold))
+                .foregroundStyle(MiraPalette.primaryText.opacity(0.85))
+                .frame(width: 40, height: 40)
+                .background(Circle().fill(MiraPalette.mood(level: 5).opacity(0.18)))
+
+            VStack(alignment: .leading, spacing: 3) {
+                HStack(spacing: 8) {
+                    Text(String(localized: "Personas"))
+                        .font(.system(size: 16, weight: .semibold, design: .serif))
+                        .foregroundStyle(MiraPalette.primaryText)
+                    if showsBadge { ProBadge() }
+                }
+                Text(String(localized: "Custom voice and style for Ask Mira"))
+                    .font(.system(size: 12))
+                    .foregroundStyle(MiraPalette.secondaryText)
+                    .lineLimit(2)
+            }
+
+            Spacer(minLength: 0)
+
+            if showsChevron {
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundStyle(MiraPalette.secondaryText.opacity(0.7))
+            } else {
+                Image(systemName: "lock.fill")
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundStyle(MiraPalette.primaryText.opacity(0.55))
+            }
+        }
+        .padding(14)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .contentShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+        .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
     }
 
     // MARK: - Content
@@ -62,6 +132,8 @@ public struct IntelligenceSettingsView: View {
                 if state.settings.provider == .local {
                     localBlock(state: state)
                 }
+
+                personasRow
 
                 Color.clear.frame(height: 40)
             }
