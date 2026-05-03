@@ -4,16 +4,15 @@ import DesignSystem
 import Utilities
 
 public struct AskMiraView: View {
-    @Environment(\.askMiraRepository) private var repository
-    @Environment(\.aiProvider) private var aiProvider
-    @Environment(\.embeddingProvider) private var embeddingProvider
-    @Environment(\.entryRepository) private var entryRepository
-    @Environment(\.analyticsService) private var analyticsService
     @Environment(\.subscriptionService) private var subscriptionService
     @Environment(\.paywallPresenter) private var paywallPresenter
+    @Environment(\.analyticsService) private var analyticsService
     @Environment(\.scenePhase) private var scenePhase
 
-    @State private var state: AskMiraState?
+    /// State is owned by `RootView` so streaming continues across tab
+    /// switches and the chat doesn't reset every time the view rebuilds.
+    private let state: AskMiraState
+
     @State private var isInfoPresented = false
     @State private var isHistoryPresented = false
     @State private var isLowPowerMode = ProcessInfo.processInfo.isLowPowerModeEnabled
@@ -23,7 +22,8 @@ public struct AskMiraView: View {
 
     private let onSelectEntry: (UUID) -> Void
 
-    public init(onSelectEntry: @escaping (UUID) -> Void) {
+    public init(state: AskMiraState, onSelectEntry: @escaping (UUID) -> Void) {
+        self.state = state
         self.onSelectEntry = onSelectEntry
     }
 
@@ -31,14 +31,7 @@ public struct AskMiraView: View {
         ZStack(alignment: .bottom) {
             AmbientBackground(moodLevels: [2, 4], intensity: 0.55)
 
-            Group {
-                if let state {
-                    content(state: state)
-                } else {
-                    ProgressView()
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                }
-            }
+            content(state: state)
         }
         .navigationTitle("")
         .toolbarTitleDisplayMode(.inline)
@@ -73,30 +66,17 @@ public struct AskMiraView: View {
             AskMiraInfoSheet()
         }
         .sheet(isPresented: $isHistoryPresented) {
-            if let state {
-                AskMiraHistorySheet(
-                    chats: state.chats,
-                    activeChatID: state.activeChatID,
-                    onOpen: { id in state.openChat(id: id) },
-                    onNewChat: { state.startNewChat() },
-                    onDelete: { id in Task { await state.deleteChat(id: id) } },
-                    onRename: { id, title in Task { await state.renameChat(id: id, title: title) } }
-                )
-            }
+            AskMiraHistorySheet(
+                chats: state.chats,
+                activeChatID: state.activeChatID,
+                onOpen: { id in state.openChat(id: id) },
+                onNewChat: { state.startNewChat() },
+                onDelete: { id in Task { await state.deleteChat(id: id) } },
+                onRename: { id, title in Task { await state.renameChat(id: id, title: title) } }
+            )
         }
         .task {
-            if state == nil {
-                state = AskMiraState(
-                    repository: repository,
-                    aiProvider: aiProvider,
-                    subscriptionService: subscriptionService,
-                    embeddingProvider: embeddingProvider,
-                    entryRepository: entryRepository,
-                    analyticsService: analyticsService
-                )
-            }
             refreshAISettings()
-            await state?.observe()
         }
         .onReceive(NotificationCenter.default.publisher(for: .NSProcessInfoPowerStateDidChange)) { _ in
             let enabled = ProcessInfo.processInfo.isLowPowerModeEnabled

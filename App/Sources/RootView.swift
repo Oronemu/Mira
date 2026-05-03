@@ -12,11 +12,30 @@ import FeatureStats
 
 struct RootView: View {
     @Environment(\.appearanceState) private var appearanceState
+
+    // Repositories / services pulled here so the long-lived feature
+    // states below can be constructed once and survive tab switches.
+    @Environment(\.askMiraRepository) private var askMiraRepository
+    @Environment(\.insightRepository) private var insightRepository
+    @Environment(\.entryRepository) private var entryRepository
+    @Environment(\.aiProvider) private var aiProvider
+    @Environment(\.embeddingProvider) private var embeddingProvider
+    @Environment(\.subscriptionService) private var subscriptionService
+    @Environment(\.analyticsService) private var analyticsService
+    @Environment(\.crashReporter) private var crashReporter
+
     @State private var journalRouter = AppRouter()
     @State private var askMiraRouter = AppRouter()
     @State private var insightsRouter = AppRouter()
     @State private var selectedTab: AppTab = .journal
     @State private var isTabBarVisible: Bool = true
+
+    // Feature states are hoisted to the root so streaming chat answers,
+    // reflection generation, and live observers keep running when the
+    // user switches tabs. Owning them per-tab-view used to let
+    // `tabContent`'s switch destroy them mid-flight.
+    @State private var askMiraState: AskMiraState?
+    @State private var insightsState: InsightsListState?
 
     enum AppTab: Hashable { case journal, askMira, insights, settings }
 
@@ -40,6 +59,38 @@ struct RootView: View {
         }
         .ignoresSafeArea(.keyboard, edges: .bottom)
         .onOpenURL(perform: handleDeepLink)
+        .task {
+            ensureFeatureStates()
+            // Kick the chat / insight observers once. Both methods are
+            // idempotent — they no-op if their internal observation
+            // task is already running — so re-entering this `.task` on
+            // future RootView reappears doesn't double-subscribe.
+            await askMiraState?.observe()
+            await insightsState?.observe()
+        }
+    }
+
+    private func ensureFeatureStates() {
+        if askMiraState == nil {
+            askMiraState = AskMiraState(
+                repository: askMiraRepository,
+                aiProvider: aiProvider,
+                subscriptionService: subscriptionService,
+                embeddingProvider: embeddingProvider,
+                entryRepository: entryRepository,
+                analyticsService: analyticsService
+            )
+        }
+        if insightsState == nil {
+            insightsState = InsightsListState(
+                repository: insightRepository,
+                entryRepository: entryRepository,
+                aiProvider: aiProvider,
+                subscriptionService: subscriptionService,
+                analyticsService: analyticsService,
+                crashReporter: crashReporter
+            )
+        }
     }
 
     // MARK: - Tab bar
@@ -108,19 +159,35 @@ struct RootView: View {
 
     private var askMiraTab: some View {
         NavigationStack(path: $askMiraRouter.path) {
-            AskMiraView(onSelectEntry: { id in askMiraRouter.openDetail(id) })
-                .navigationDestination(for: AppRouter.Route.self) { route in
-                    routeView(route, router: askMiraRouter)
+            Group {
+                if let askMiraState {
+                    AskMiraView(
+                        state: askMiraState,
+                        onSelectEntry: { id in askMiraRouter.openDetail(id) }
+                    )
+                } else {
+                    AmbientBackground(moodLevels: [2, 4], intensity: 0.55)
                 }
+            }
+            .navigationDestination(for: AppRouter.Route.self) { route in
+                routeView(route, router: askMiraRouter)
+            }
         }
     }
 
     private var insightsTab: some View {
         NavigationStack(path: $insightsRouter.path) {
-            InsightsListView(
-                onSelectInsight: { id in insightsRouter.openInsight(id) },
-                onOpenStats: { insightsRouter.openStats() }
-            )
+            Group {
+                if let insightsState {
+                    InsightsListView(
+                        state: insightsState,
+                        onSelectInsight: { id in insightsRouter.openInsight(id) },
+                        onOpenStats: { insightsRouter.openStats() }
+                    )
+                } else {
+                    AmbientBackground(moodLevels: [3], intensity: 0.7)
+                }
+            }
             .safeAreaPadding(.bottom, MiraTabBarLayout.reservedHeight)
             .ignoresSafeArea(.keyboard)
             .navigationDestination(for: AppRouter.Route.self) { route in

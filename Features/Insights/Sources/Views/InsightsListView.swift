@@ -4,24 +4,25 @@ import Utilities
 import DesignSystem
 
 public struct InsightsListView: View {
-    @Environment(\.insightRepository) private var repository
-    @Environment(\.entryRepository) private var entryRepository
-    @Environment(\.aiProvider) private var aiProvider
-    @Environment(\.analyticsService) private var analyticsService
-    @Environment(\.crashReporter) private var crashReporter
-    @Environment(\.subscriptionService) private var subscriptionService
     @Environment(\.paywallPresenter) private var paywallPresenter
+    @Environment(\.subscriptionService) private var subscriptionService
 
-    @State private var state: InsightsListState?
+    /// State is owned by `RootView` so manual reflection generation
+    /// continues across tab switches and the screen doesn't reset every
+    /// time the view rebuilds.
+    private let state: InsightsListState
+
     @State private var pendingDeletionID: UUID?
 
     private let onSelectInsight: (UUID) -> Void
     private let onOpenStats: () -> Void
 
     public init(
+        state: InsightsListState,
         onSelectInsight: @escaping (UUID) -> Void,
         onOpenStats: @escaping () -> Void = {}
     ) {
+        self.state = state
         self.onSelectInsight = onSelectInsight
         self.onOpenStats = onOpenStats
     }
@@ -30,14 +31,7 @@ public struct InsightsListView: View {
         ZStack {
             AmbientBackground(moodLevels: ambientMoodLevels, intensity: 0.7)
 
-            Group {
-                if let state {
-                    scroll(state: state)
-                } else {
-                    ProgressView()
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                }
-            }
+            scroll(state: state)
         }
         .toolbarTitleDisplayMode(.inline)
         .toolbarBackground(.hidden, for: .navigationBar)
@@ -55,26 +49,13 @@ public struct InsightsListView: View {
             Text("Reflections"),
             subtitle: insightsSubtitleText
         )
-        .task {
-            if state == nil {
-                state = InsightsListState(
-                    repository: repository,
-                    entryRepository: entryRepository,
-                    aiProvider: aiProvider,
-                    subscriptionService: subscriptionService,
-                    analyticsService: analyticsService,
-                    crashReporter: crashReporter
-                )
-            }
-            await state?.observe()
-        }
         .confirmationDialog(
             "Delete this reflection?",
             isPresented: deletionPresented,
             titleVisibility: .visible
         ) {
             Button("Delete", role: .destructive) {
-                if let id = pendingDeletionID, let state {
+                if let id = pendingDeletionID {
                     Task { await state.delete(id: id) }
                 }
                 pendingDeletionID = nil
@@ -155,7 +136,7 @@ public struct InsightsListView: View {
     }
 
     private var insightsSubtitleText: Text {
-        let count = state?.insights.count ?? 0
+        let count = state.insights.count
         let month = Date.now.formatted(.dateTime.month(.wide).year())
         return Text("\(count) reflections · \(month)")
     }

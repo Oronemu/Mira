@@ -118,30 +118,42 @@ private struct AnswerBubble: View {
 
 // MARK: - Typing indicator
 
+/// Three pulsing dots driven by a `TimelineView`. We compute scale/opacity
+/// directly from elapsed time rather than driving them through an
+/// `.animation(.repeatForever(...))` on a `@State` toggle — the latter
+/// would overshoot its original amplitude after a tab-switch teardown
+/// because the freshly-mounted view's implicit animation collides with a
+/// still-resolving prior transaction. Time-based computation is
+/// stateless, so view recreation resumes seamlessly from "now".
 private struct TypingIndicator: View {
-    @State private var animating = false
+    private static let cycleSeconds: Double = 1.4
+    private static let staggerSeconds: Double = 0.18
+    private static let moodLevels: [Int] = [2, 3, 5]
 
     var body: some View {
-        HStack(spacing: 5) {
-            ForEach(0..<3, id: \.self) { index in
-                Circle()
-                    .fill(MiraPalette.mood(level: moodLevel(for: index)))
-                    .frame(width: 7, height: 7)
-                    .scaleEffect(animating ? 1 : 0.55)
-                    .opacity(animating ? 1 : 0.4)
-                    .animation(
-                        .easeInOut(duration: 0.7)
-                        .repeatForever()
-                        .delay(Double(index) * 0.18),
-                        value: animating
-                    )
+        TimelineView(.animation) { timeline in
+            HStack(spacing: 5) {
+                ForEach(0..<3, id: \.self) { index in
+                    dot(index: index, at: timeline.date)
+                }
             }
         }
-        .onAppear { animating = true }
     }
 
-    private func moodLevel(for index: Int) -> Int {
-        [2, 3, 5][index]
+    private func dot(index: Int, at date: Date) -> some View {
+        // Sine wave eased between 0…1 so the dot pulses smoothly without
+        // a discrete autoreverse boundary that the SwiftUI animation
+        // engine could reorder mid-flight.
+        let elapsed = date.timeIntervalSinceReferenceDate - Double(index) * Self.staggerSeconds
+        let progress = elapsed.truncatingRemainder(dividingBy: Self.cycleSeconds) / Self.cycleSeconds
+        let wave = (sin(progress * 2 * .pi - .pi / 2) + 1) / 2
+        let scale = 0.55 + wave * 0.45
+        let opacity = 0.4 + wave * 0.6
+        return Circle()
+            .fill(MiraPalette.mood(level: Self.moodLevels[index]))
+            .frame(width: 7, height: 7)
+            .scaleEffect(scale)
+            .opacity(opacity)
     }
 }
 
