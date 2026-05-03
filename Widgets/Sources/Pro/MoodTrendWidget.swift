@@ -23,30 +23,35 @@ private struct MoodTrendView: View {
     let entry: StreakEntry
 
     var body: some View {
-        if entry.isLocked {
-            WidgetLockedView()
-        } else {
-            VStack(alignment: .leading, spacing: 10) {
-                HStack(alignment: .firstTextBaseline) {
-                    Text("Mood")
-                        .font(.system(size: 11, weight: .semibold))
-                        .tracking(0.6)
-                        .textCase(.uppercase)
-                        .opacity(0.65)
-                    Spacer()
-                    if let mood = currentMood {
-                        Text(String(format: "%.1f", mood))
-                            .font(.system(size: 13, weight: .semibold).monospacedDigit())
-                            .foregroundStyle(MiraPalette.mood(level: max(1, min(5, Int(round(mood))))))
+        Group {
+            if entry.isLocked {
+                WidgetLockedView()
+            } else {
+                VStack(alignment: .leading, spacing: 10) {
+                    HStack(alignment: .firstTextBaseline) {
+                        Text("Mood")
+                            .font(.system(size: 11, weight: .semibold))
+                            .tracking(0.6)
+                            .textCase(.uppercase)
+                            .opacity(0.65)
+                        Spacer()
+                        if let mood = currentMood {
+                            Text(String(format: "%.1f", mood))
+                                .font(.system(size: 13, weight: .semibold).monospacedDigit())
+                                .foregroundStyle(MiraPalette.mood(level: max(1, min(5, Int(round(mood))))))
+                        }
                     }
+                    MoodSparkline(values: entry.moodSparkline, height: 26)
+                    Spacer(minLength: 0)
+                    weekdayAxis
                 }
-                MoodSparkline(values: entry.moodSparkline, height: 26)
-                Spacer(minLength: 0)
-                weekdayAxis
+                .padding(.horizontal, 4)
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+                .widgetURL(URL(string: "mira://new"))
             }
-            .padding(.horizontal, 4)
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-            .widgetURL(URL(string: "mira://new"))
+        }
+        .containerBackground(for: .widget) {
+            WidgetMoodBackground(moodLevel: entry.latestEntry?.mood?.rawValue)
         }
     }
 

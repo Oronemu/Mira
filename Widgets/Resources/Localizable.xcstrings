@@ -4,6 +4,71 @@
     "%@" : {
 
     },
+    "✦ %@ day · mood %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "✦ %1$@ day · mood %2$@"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "✦ %1$@ дн · настр %2$@"
+          }
+        }
+      }
+    },
+    "✦ %@ day streak" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "✦ %@ day streak"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "✦ серия %@ дн"
+          }
+        }
+      }
+    },
+    "✦ Mira Pro" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "✦ Mira Pro"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "✦ Mira Pro"
+          }
+        }
+      }
+    },
+    "A glance at your most recent journal entry." : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A glance at your most recent journal entry."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Взгляд на твою последнюю запись."
+          }
+        }
+      }
+    },
     "day streak" : {
       "localizations" : {
         "en" : {
@@ -52,6 +117,40 @@
         }
       }
     },
+    "Last Entry (Pro)" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Last Entry (Pro)"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Последняя запись (Pro)"
+          }
+        }
+      }
+    },
+    "Mira Mood (Pro)" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mira Mood (Pro)"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Настроение Mira (Pro)"
+          }
+        }
+      }
+    },
     "Mira Streak" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -69,8 +168,57 @@
         }
       }
     },
-    "No entries yet" : {
+    "Mira Streak (Pro)" : {
       "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mira Streak (Pro)"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Серия Mira (Pro)"
+          }
+        }
+      }
+    },
+    "Mood" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mood"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Настроение"
+          }
+        }
+      }
+    },
+    "Mood Trend (Pro)" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mood Trend (Pro)"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Тренд настроения (Pro)"
+          }
+        }
+      }
+    },
+    "No entries yet" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -136,6 +284,22 @@
         }
       }
     },
+    "Tap to subscribe" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tap to subscribe"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Нажми, чтобы подписаться"
+          }
+        }
+      }
+    },
     "Tap to write your\nfirst entry." : {
       "localizations" : {
         "en" : {
@@ -169,6 +333,56 @@
         }
       }
     },
+    "Today's mood and streak in a single line." : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Today's mood and streak in a single line."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Сегодняшнее настроение и серия одной строкой."
+          }
+        }
+      }
+    },
+    "Unlock Mira Pro" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unlock Mira Pro"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Открыть Mira Pro"
+          }
+        }
+      }
+    },
+    "Your mood over the last week. Tap to write a new entry." : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your mood over the last week. Tap to write a new entry."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Твоё настроение за последнюю неделю. Нажми, чтобы написать новую запись."
+          }
+        }
+      }
+    },
     "Your writing streak on the Lock Screen." : {
       "extractionState" : "stale",
       "localizations" : {
@@ -182,6 +396,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Твоя серия на экране блокировки."
+          }
+        }
+      }
+    },
+    "Your writing streak on the Lock Screen. Requires Mira Pro." : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your writing streak on the Lock Screen. Requires Mira Pro."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Твоя серия записей на экране блокировки. Требуется Mira Pro."
           }
         }
       }
