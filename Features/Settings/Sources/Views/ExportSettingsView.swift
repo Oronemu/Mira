@@ -11,11 +11,14 @@ public struct ExportSettingsView: View {
     @Environment(\.modelDownloadCoordinator) private var coordinator
     @Environment(\.analyticsService) private var analyticsService
     @Environment(\.crashReporter) private var crashReporter
+    @Environment(\.subscriptionService) private var subscriptionService
+    @Environment(\.paywallPresenter) private var paywallPresenter
 
     @State private var state: SettingsState?
     @State private var exportURL: IdentifiableURL?
     @State private var isExporting: Bool = false
     @State private var activeKind: ExportKind?
+    @State private var status: SubscriptionStatus = .unknown
 
     private enum ExportKind: Hashable {
         case markdown, pdf
@@ -53,6 +56,14 @@ public struct ExportSettingsView: View {
                 )
             }
         }
+        .task {
+            // Track Pro status so the PDF card can render the badge and
+            // the tap handler can gate without an extra service call.
+            status = await subscriptionService.status
+            for await snapshot in subscriptionService.statusUpdates {
+                status = snapshot
+            }
+        }
         .sheet(item: $exportURL) { wrapped in
             ShareSheet(items: [wrapped.url])
         }
@@ -82,9 +93,14 @@ public struct ExportSettingsView: View {
                         title: "PDF",
                         subtitle: "Formatted, printable copy with your mood and tags preserved.",
                         moodLevel: 4,
-                        kind: .pdf
+                        kind: .pdf,
+                        showsProBadge: !status.isPro
                     ) {
-                        runExport(kind: .pdf, state: state)
+                        if status.isPro {
+                            runExport(kind: .pdf, state: state)
+                        } else {
+                            paywallPresenter.present(.feature(.pdfExportTemplates))
+                        }
                     }
                 }
                 .disabled(isExporting)
@@ -108,6 +124,7 @@ public struct ExportSettingsView: View {
         subtitle: LocalizedStringKey,
         moodLevel: Int,
         kind: ExportKind,
+        showsProBadge: Bool = false,
         action: @escaping () -> Void
     ) -> some View {
         Button(action: action) {
@@ -119,9 +136,14 @@ public struct ExportSettingsView: View {
                     .background(Circle().fill(MiraPalette.mood(level: moodLevel).opacity(0.18)))
 
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(title)
-                        .font(.system(size: 16, weight: .semibold, design: .serif))
-                        .foregroundStyle(MiraPalette.primaryText)
+                    HStack(spacing: 8) {
+                        Text(title)
+                            .font(.system(size: 16, weight: .semibold, design: .serif))
+                            .foregroundStyle(MiraPalette.primaryText)
+                        if showsProBadge {
+                            ProBadge()
+                        }
+                    }
                     Text(subtitle)
                         .font(.system(size: 12))
                         .foregroundStyle(MiraPalette.secondaryText)
@@ -135,6 +157,10 @@ public struct ExportSettingsView: View {
                 Group {
                     if activeKind == kind && isExporting {
                         ProgressView().controlSize(.small)
+                    } else if showsProBadge {
+                        Image(systemName: "lock.fill")
+                            .font(.system(size: 13, weight: .semibold))
+                            .foregroundStyle(MiraPalette.primaryText.opacity(0.55))
                     } else {
                         Image(systemName: "square.and.arrow.up")
                             .font(.system(size: 14, weight: .semibold))
