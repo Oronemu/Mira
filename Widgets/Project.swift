@@ -24,6 +24,28 @@ let project = Project(
                 "Resources/Localizable.xcstrings",
             ],
             entitlements: "Resources/MiraWidgets.entitlements",
+            scripts: [
+                .post(
+                    script: """
+                    FIREBASE_RUN="${SRCROOT}/../Tuist/.build/checkouts/firebase-ios-sdk/Crashlytics/run"
+                    if [ ! -f "$FIREBASE_RUN" ]; then
+                        echo "warning: Firebase Crashlytics run script not found at $FIREBASE_RUN — skipping dSYM upload"
+                        exit 0
+                    fi
+                    "$FIREBASE_RUN" \
+                        -gsp "${SRCROOT}/../App/Resources/GoogleService-Info.plist" \
+                        -p ios "${DWARF_DSYM_FOLDER_PATH}/${DWARF_DSYM_FILE_NAME}"
+                    """,
+                    name: "Crashlytics dSYM upload",
+                    inputPaths: [
+                        "${DWARF_DSYM_FOLDER_PATH}/${DWARF_DSYM_FILE_NAME}",
+                        "${DWARF_DSYM_FOLDER_PATH}/${DWARF_DSYM_FILE_NAME}/Contents/Resources/DWARF/${PRODUCT_NAME}",
+                        "${DWARF_DSYM_FOLDER_PATH}/${DWARF_DSYM_FILE_NAME}/Contents/Info.plist",
+                        "$(TARGET_BUILD_DIR)/$(EXECUTABLE_PATH)",
+                    ],
+                    basedOnDependencyAnalysis: false
+                ),
+            ],
             dependencies: [
                 .project(target: "CoreKit", path: "../Core/CoreKit"),
                 .project(target: "Utilities", path: "../Core/Utilities"),
