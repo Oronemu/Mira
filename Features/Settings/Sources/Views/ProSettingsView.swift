@@ -17,6 +17,14 @@ public struct ProSettingsView: View {
     @State private var feedback: String?
     @State private var showingRedeem = false
     @State private var redeemCode = ""
+    @State private var usage: UsageLoad = .idle
+
+    private enum UsageLoad: Equatable {
+        case idle
+        case loading
+        case loaded(CoreKit.UsageSnapshot)
+        case failed(String)
+    }
 
     public init() {}
 
@@ -27,6 +35,7 @@ public struct ProSettingsView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 24) {
                     statusCard
+                    usageCard
                     actionsList
                     if let feedback {
                         Text(feedback)
@@ -41,6 +50,7 @@ public struct ProSettingsView: View {
                 .padding(.top, 4)
             }
             .scrollIndicators(.hidden)
+            .refreshable { await loadUsage() }
         }
         .navigationTitle("")
         .toolbarTitleDisplayMode(.inline)
@@ -50,6 +60,17 @@ public struct ProSettingsView: View {
             status = await subscriptionService.status
             for await snapshot in subscriptionService.statusUpdates {
                 status = snapshot
+            }
+        }
+        .task(id: status.isPro) {
+            // Load monthly usage when (and only when) the user is Pro.
+            // Status flipping back to free clears the section so a
+            // canceled subscription doesn't leave stale "12 / 100 left"
+            // copy on screen.
+            if status.isPro {
+                await loadUsage()
+            } else {
+                usage = .idle
             }
         }
         .sheet(isPresented: $showingRedeem) {
@@ -126,6 +147,113 @@ public struct ProSettingsView: View {
             RoundedRectangle(cornerRadius: 18, style: .continuous)
                 .fill(MiraPalette.mood(level: 5).opacity(0.18))
         )
+    }
+
+    // MARK: - Usage
+
+    /// Monthly usage of the metered hosted-AI intents. Free or unknown
+    /// users don't see this section at all — it would expose limits
+    /// they can't act on. Pull-to-refresh on the surrounding ScrollView
+    /// reissues the fetch.
+    @ViewBuilder
+    private var usageCard: some View {
+        if status.isPro {
+            VStack(alignment: .leading, spacing: 14) {
+                Text(String(localized: "This month"))
+                    .eyebrowStyle()
+
+                switch usage {
+                case .idle, .loading:
+                    HStack(spacing: 10) {
+                        ProgressView().controlSize(.small)
+                        Text(String(localized: "Loading usage…"))
+                            .font(MiraTypography.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                case .loaded(let snapshot):
+                    usageRow(
+                        title: String(localized: "Ask Mira"),
+                        dimension: snapshot.askMira
+                    )
+                    usageRow(
+                        title: String(localized: "Weekly Reflection"),
+                        dimension: snapshot.manualReflections
+                    )
+                    Text(resetsCopy(periodEnd: snapshot.periodEnd))
+                        .font(MiraTypography.caption)
+                        .foregroundStyle(.secondary)
+                case .failed(let message):
+                    HStack(alignment: .top, spacing: 8) {
+                        Image(systemName: "exclamationmark.triangle.fill")
+                            .foregroundStyle(.orange)
+                            .font(.system(size: 14))
+                        Text(message)
+                            .font(MiraTypography.caption)
+                            .foregroundStyle(.secondary)
+                            .multilineTextAlignment(.leading)
+                    }
+                }
+            }
+            .padding(20)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(
+                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    .fill(.thinMaterial)
+            )
+        }
+    }
+
+    private func usageRow(title: String, dimension: CoreKit.UsageSnapshot.Dimension) -> some View {
+        // Fraction = used / limit so the bar fills as the user spends.
+        // Clamp to [0, 1] in case an upstream count somehow overflows.
+        let fraction: Double = dimension.limit > 0
+            ? min(1.0, Double(dimension.used) / Double(dimension.limit))
+            : 0
+        return VStack(alignment: .leading, spacing: 6) {
+            HStack(alignment: .firstTextBaseline) {
+                Text(title)
+                    .font(MiraTypography.body)
+                    .foregroundStyle(MiraPalette.primaryText)
+                Spacer(minLength: 8)
+                Text(remainingCopy(remaining: dimension.remaining, limit: dimension.limit))
+                    .font(MiraTypography.caption.monospacedDigit())
+                    .foregroundStyle(.secondary)
+            }
+            ProgressView(value: fraction)
+                .progressViewStyle(.linear)
+        }
+    }
+
+    private func remainingCopy(remaining: Int, limit: Int) -> String {
+        String(
+            format: String(localized: "%lld of %lld left this month"),
+            remaining,
+            limit
+        )
+    }
+
+    private func resetsCopy(periodEnd: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        formatter.timeStyle = .none
+        return String(
+            format: String(localized: "Resets on %@"),
+            formatter.string(from: periodEnd)
+        )
+    }
+
+    private func loadUsage() async {
+        guard status.isPro else {
+            usage = .idle
+            return
+        }
+        usage = .loading
+        do {
+            let snapshot = try await subscriptionService.fetchUsage()
+            usage = .loaded(snapshot)
+        } catch {
+            usage = .failed(error.localizedDescription)
+        }
     }
 
     private var actionsList: some View {
