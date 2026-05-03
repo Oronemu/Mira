@@ -142,7 +142,7 @@ public struct OnboardingView: View {
                 eyebrowTitle: "Intelligence",
                 icon: "sparkles",
                 title: "Optional AI",
-                bodyText: "A small on-device model runs locally for reflections and Ask Mira. Remote providers are opt-in and use your own API key."
+                bodyText: "A small on-device model runs locally for reflections and Ask Mira — your text never leaves the iPhone. Mira Pro adds hosted Anthropic Claude through our servers; no API keys to set up."
             )
 
         case .permissions:

@@ -336,19 +336,19 @@
         }
       }
     },
-    "A small on-device model runs locally for reflections and Ask Mira. Remote providers are opt-in and use your own API key." : {
-      "extractionState" : "stale",
+    "A small on-device model runs locally for reflections and Ask Mira — your text never leaves the iPhone. Mira Pro adds hosted Anthropic Claude through our servers; no API keys to set up." : {
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "A small on-device model runs locally for reflections and Ask Mira. Remote providers are opt-in and use your own API key."
+            "value" : "A small on-device model runs locally for reflections and Ask Mira — your text never leaves the iPhone. Mira Pro adds hosted Anthropic Claude through our servers; no API keys to set up."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Небольшая модель работает прямо на устройстве — для размышлений и Ask Mira. Удалённые провайдеры подключаются по желанию и используют ваш API-ключ."
+            "value" : "Небольшая модель работает прямо на устройстве — для рефлексий и Ask Mira; текст не покидает iPhone. Подписка Mira Pro добавляет облачный Anthropic Claude через наши серверы — никаких API-ключей."
           }
         }
       }
