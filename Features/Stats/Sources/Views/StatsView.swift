@@ -12,8 +12,11 @@ public struct StatsView: View {
     @Environment(\.entryRepository) private var entryRepository
     @Environment(\.insightRepository) private var insightRepository
     @Environment(\.askMiraRepository) private var askMiraRepository
+    @Environment(\.subscriptionService) private var subscriptionService
+    @Environment(\.paywallPresenter) private var paywallPresenter
 
     @State private var state: StatsState?
+    @State private var status: SubscriptionStatus = .unknown
 
     public init() {}
 
@@ -45,6 +48,15 @@ public struct StatsView: View {
             }
             await state?.observe()
         }
+        .task {
+            // Drive Pro premium-section unlock state. Lives alongside
+            // the observe loop above; SwiftUI runs both .task blocks
+            // in parallel so neither blocks the other.
+            status = await subscriptionService.status
+            for await snapshot in subscriptionService.statusUpdates {
+                status = snapshot
+            }
+        }
     }
 
     // MARK: - Scroll
@@ -74,6 +86,8 @@ public struct StatsView: View {
                 )
 
                 StatsYearHeatmapCard(cells: state.heatmapCells)
+
+                premiumSection(state: state)
 
                 engagementRow(state: state)
                 askMiraCard(state: state)
@@ -163,6 +177,52 @@ public struct StatsView: View {
             moodLevel: state.ambientMoodLevel
         )
     }
+
+    // MARK: - Pro premium section
+
+    /// Three Pro panels — tag correlations, weekday forecast, and a
+    /// year-in-review entry point. Free users see them blurred with a
+    /// single "Unlock Pro" CTA on top of the trio so the stack reads
+    /// as one paywalled tier rather than three nags.
+    @ViewBuilder
+    private func premiumSection(state: StatsState) -> some View {
+        PremiumOverlay(
+            isLocked: !status.isPro,
+            onUnlock: { paywallPresenter.present(.feature(.advancedStats)) }
+        ) {
+            VStack(spacing: 14) {
+                StatsTagCorrelationCard(
+                    correlations: status.isPro ? state.tagCorrelations : Self.placeholderCorrelations,
+                    moodLevel: state.ambientMoodLevel
+                )
+                StatsForecastCard(
+                    predictions: status.isPro ? state.weekdayPredictions : Self.placeholderPredictions
+                )
+                YearInReviewCard(
+                    report: state.currentYearReport
+                )
+            }
+        }
+    }
+
+    /// Stand-in correlations rendered behind the blur so free users see
+    /// a recognisable shape rather than an empty placeholder.
+    private static let placeholderCorrelations: [StatisticsCalculator.TagMoodCorrelation] = [
+        .init(tag: "work",  averageMood: 3.2, count: 12),
+        .init(tag: "sleep", averageMood: 4.1, count: 9),
+        .init(tag: "run",   averageMood: 4.6, count: 7),
+    ]
+
+    private static let placeholderPredictions: [StatisticsCalculator.DayPrediction] = {
+        let cal = Calendar.current
+        let start = cal.date(byAdding: .day, value: 1, to: cal.startOfDay(for: .now)) ?? .now
+        return (0..<7).map { i in
+            let day = cal.date(byAdding: .day, value: i, to: start) ?? start
+            // Synthesised wave so the blurred preview shows variation.
+            let mood = 2.5 + sin(Double(i) * 0.9) * 1.2
+            return .init(date: day, predictedMood: mood, confidence: 0.5)
+        }
+    }()
 
     // MARK: - Helpers
 
