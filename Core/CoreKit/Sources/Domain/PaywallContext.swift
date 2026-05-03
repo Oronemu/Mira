@@ -45,8 +45,6 @@ public enum PaywallContext: Sendable, Hashable, Identifiable {
             String(localized: "Make Mira yours")
         case .feature(.pdfExportTemplates):
             String(localized: "Export beautifully")
-        case .feature(.customMoodScales):
-            String(localized: "Your mood, your way")
         case .feature(.extraWidgets):
             String(localized: "More widgets, everywhere")
         case .feature(.customAIPersonas):
@@ -73,8 +71,6 @@ public enum PaywallContext: Sendable, Hashable, Identifiable {
             String(localized: "Themes and alternative app icons crafted for journaling.")
         case .feature(.pdfExportTemplates):
             String(localized: "PDF templates with your photos, mood, and tags laid out cleanly.")
-        case .feature(.customMoodScales):
-            String(localized: "1–10 scales and named-emotion pickers, beyond the default 1–5.")
         case .feature(.extraWidgets):
             String(localized: "Lock Screen widgets and additional Home Screen sizes.")
         case .feature(.customAIPersonas):

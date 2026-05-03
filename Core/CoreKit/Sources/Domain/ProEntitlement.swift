@@ -23,9 +23,6 @@ public enum ProEntitlement: String, Sendable, Hashable, CaseIterable, Codable {
     /// PDF export with templates. Markdown export remains free.
     case pdfExportTemplates
 
-    /// 1–10 scales, named-emotion picker. The 1–5 default stays free.
-    case customMoodScales
-
     /// Lock Screen widgets and additional Home Screen widget sizes.
     case extraWidgets
 
@@ -51,7 +48,6 @@ public enum ProEntitlement: String, Sendable, Hashable, CaseIterable, Codable {
         case .advancedStats:      return "advanced_stats"
         case .themesAndIcons:     return "themes_and_icons"
         case .pdfExportTemplates: return "pdf_export_templates"
-        case .customMoodScales:   return "custom_mood_scales"
         case .extraWidgets:       return "extra_widgets"
         case .customAIPersonas:   return "custom_ai_personas"
         case .smartFilters:       return "smart_filters"
