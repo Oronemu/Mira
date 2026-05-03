@@ -24,55 +24,58 @@ struct HabitEditorView: View {
     private var isEditing: Bool { habit != nil }
 
     var body: some View {
-        NavigationStack {
-            Form {
-                Section(header: Text(String(localized: "Name"))) {
-                    TextField(String(localized: "e.g. Daily reflection"), text: $name)
-                        .textInputAutocapitalization(.sentences)
-                }
-                Section(
-                    header: Text(String(localized: "Tag")),
-                    footer: Text(String(localized: "Mira counts entries that carry this tag toward the habit."))
-                ) {
-                    TextField(String(localized: "e.g. meditation"), text: $tag)
-                        .textInputAutocapitalization(.never)
-                        .autocorrectionDisabled()
-                }
-                Section(header: Text(String(localized: "Cadence"))) {
-                    Picker(String(localized: "Cadence"), selection: $cadenceKind) {
-                        Text(String(localized: "Daily")).tag(CadenceKind.daily)
-                        Text(String(localized: "Weekly")).tag(CadenceKind.weekly)
-                        Text(String(localized: "Monthly")).tag(CadenceKind.monthly)
+        MiraSheetChrome {
+            NavigationStack {
+                Form {
+                    Section(header: Text(String(localized: "Name"))) {
+                        TextField(String(localized: "e.g. Daily reflection"), text: $name)
+                            .textInputAutocapitalization(.sentences)
                     }
-                    .pickerStyle(.segmented)
+                    Section(
+                        header: Text(String(localized: "Tag")),
+                        footer: Text(String(localized: "Mira counts entries that carry this tag toward the habit."))
+                    ) {
+                        TextField(String(localized: "e.g. meditation"), text: $tag)
+                            .textInputAutocapitalization(.never)
+                            .autocorrectionDisabled()
+                    }
+                    Section(header: Text(String(localized: "Cadence"))) {
+                        Picker(String(localized: "Cadence"), selection: $cadenceKind) {
+                            Text(String(localized: "Daily")).tag(CadenceKind.daily)
+                            Text(String(localized: "Weekly")).tag(CadenceKind.weekly)
+                            Text(String(localized: "Monthly")).tag(CadenceKind.monthly)
+                        }
+                        .pickerStyle(.segmented)
 
-                    if cadenceKind != .daily {
-                        Stepper(
-                            value: $target,
-                            in: 1...30,
-                            step: 1
-                        ) {
-                            Text(String(format: String(localized: "%lld times %@"),
-                                       target,
-                                       cadenceKind == .weekly
-                                            ? String(localized: "per week")
-                                            : String(localized: "per month")))
+                        if cadenceKind != .daily {
+                            Stepper(
+                                value: $target,
+                                in: 1...30,
+                                step: 1
+                            ) {
+                                Text(String(format: String(localized: "%lld times %@"),
+                                           target,
+                                           cadenceKind == .weekly
+                                                ? String(localized: "per week")
+                                                : String(localized: "per month")))
+                            }
+                        }
+                    }
+                    if isEditing {
+                        Section {
+                            Button(role: .destructive, action: onDelete) {
+                                Text(String(localized: "Delete habit"))
+                            }
                         }
                     }
                 }
-                if isEditing {
-                    Section {
-                        Button(role: .destructive, action: onDelete) {
-                            Text(String(localized: "Delete habit"))
-                        }
-                    }
-                }
-            }
-            .navigationTitle(isEditing
-                ? String(localized: "Edit habit")
-                : String(localized: "New habit"))
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
+                .scrollContentBackground(.hidden)
+                .navigationTitle(isEditing
+                    ? String(localized: "Edit habit")
+                    : String(localized: "New habit"))
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbarBackground(.hidden, for: .navigationBar)
+                .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button(String(localized: "Cancel"), action: onCancel)
                 }
@@ -100,22 +103,24 @@ struct HabitEditorView: View {
                     .disabled(tag.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                 }
             }
-            .onAppear {
-                if let habit, name.isEmpty && tag.isEmpty {
-                    name = habit.name
-                    tag = habit.tag
-                    switch habit.cadence {
-                    case .daily:
-                        cadenceKind = .daily
-                    case .weekly(let t):
-                        cadenceKind = .weekly
-                        target = t
-                    case .monthly(let t):
-                        cadenceKind = .monthly
-                        target = t
+                .onAppear {
+                    if let habit, name.isEmpty && tag.isEmpty {
+                        name = habit.name
+                        tag = habit.tag
+                        switch habit.cadence {
+                        case .daily:
+                            cadenceKind = .daily
+                        case .weekly(let t):
+                            cadenceKind = .weekly
+                            target = t
+                        case .monthly(let t):
+                            cadenceKind = .monthly
+                            target = t
+                        }
                     }
                 }
             }
         }
+        .miraSheet([.medium, .large])
     }
 }

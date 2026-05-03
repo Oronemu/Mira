@@ -11,69 +11,70 @@ public struct AskMiraInfoSheet: View {
     public init() {}
 
     public var body: some View {
-        NavigationStack {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 24) {
-                    hero
+        MiraSheetChrome(moodLevels: [3, 4], intensity: 0.4) {
+            NavigationStack {
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 24) {
+                        hero
 
-                    section(
-                        title: String(localized: "Who I am"),
-                        body: String(localized: "I'm a quiet companion that reads your journal so I can understand you. Not a record-keeper — an attentive friend who listens and responds.")
-                    )
+                        section(
+                            title: String(localized: "Who I am"),
+                            body: String(localized: "I'm a quiet companion that reads your journal so I can understand you. Not a record-keeper — an attentive friend who listens and responds.")
+                        )
 
-                    section(
-                        title: String(localized: "How I help"),
-                        bullets: [
-                            String(localized: "Answer questions about your life, using what you've written"),
-                            String(localized: "Notice patterns and themes in your entries"),
-                            String(localized: "Offer a gentle, grounded perspective"),
-                            String(localized: "Help you put a feeling into words"),
-                        ]
-                    )
+                        section(
+                            title: String(localized: "How I help"),
+                            bullets: [
+                                String(localized: "Answer questions about your life, using what you've written"),
+                                String(localized: "Notice patterns and themes in your entries"),
+                                String(localized: "Offer a gentle, grounded perspective"),
+                                String(localized: "Help you put a feeling into words"),
+                            ]
+                        )
 
-                    section(
-                        title: String(localized: "How I work"),
-                        bullets: [
-                            String(localized: "I only remember this conversation — other chats stay separate"),
-                            String(localized: "I look through your journal before replying"),
-                        ]
-                    )
+                        section(
+                            title: String(localized: "How I work"),
+                            bullets: [
+                                String(localized: "I only remember this conversation — other chats stay separate"),
+                                String(localized: "I look through your journal before replying"),
+                            ]
+                        )
 
-                    section(
-                        title: String(localized: "Your privacy"),
-                        bullets: [
-                            String(localized: "I never share what you write with anyone"),
-                            String(localized: "Your entries and photos stay on your phone"),
-                            String(localized: "If you turn on iCloud backup, it stays encrypted"),
-                        ]
-                    )
+                        section(
+                            title: String(localized: "Your privacy"),
+                            bullets: [
+                                String(localized: "I never share what you write with anyone"),
+                                String(localized: "Your entries and photos stay on your phone"),
+                                String(localized: "If you turn on iCloud backup, it stays encrypted"),
+                            ]
+                        )
 
-                    disclaimerCard
-                }
-                .padding(.horizontal, 20)
-                .padding(.top, 8)
-                .padding(.bottom, 32)
-            }
-            .scrollIndicators(.hidden)
-            .background(sheetBackground)
-            .navigationTitle("")
-            .toolbarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button {
-                        dismiss()
-                    } label: {
-                        Image(systemName: "xmark")
-                            .font(.system(size: 16, weight: .semibold))
-                            .foregroundStyle(MiraPalette.secondaryText)
+                        disclaimerCard
                     }
-                    .buttonStyle(.plain)
-                    .accessibilityLabel(Text("Close"))
+                    .padding(.horizontal, 20)
+                    .padding(.top, 8)
+                    .padding(.bottom, 32)
+                }
+                .scrollIndicators(.hidden)
+                .navigationTitle("")
+                .toolbarTitleDisplayMode(.inline)
+                .toolbarBackground(.hidden, for: .navigationBar)
+                .toolbar {
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Button {
+                            dismiss()
+                        } label: {
+                            Image(systemName: "xmark")
+                                .font(.system(size: 16, weight: .semibold))
+                                .foregroundStyle(MiraPalette.secondaryText)
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityLabel(Text("Close"))
+                    }
                 }
             }
         }
-        .presentationDetents([.large])
-        .presentationDragIndicator(.visible)
+        .miraSheet([.large])
     }
 
     // MARK: - Subviews
@@ -151,8 +152,4 @@ public struct AskMiraInfoSheet: View {
         .padding(.top, 8)
     }
 
-    private var sheetBackground: some View {
-        AmbientBackground(moodLevels: [3, 4], intensity: 0.4)
-            .ignoresSafeArea()
-    }
 }

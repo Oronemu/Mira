@@ -51,9 +51,7 @@ public struct EntryFilterView: View {
 
     public var body: some View {
         NavigationStack {
-            ZStack {
-                AmbientBackground(moodLevels: moods.map(\.rawValue), intensity: 0.55)
-
+            MiraSheetChrome(moodLevels: moods.map(\.rawValue)) {
                 ScrollView {
                     VStack(spacing: 20) {
                         dateCard
@@ -99,6 +97,7 @@ public struct EntryFilterView: View {
                 Button(String(localized: "Cancel"), role: .cancel) { saveName = "" }
             }
         }
+        .miraSheet([.large])
     }
 
     @ViewBuilder

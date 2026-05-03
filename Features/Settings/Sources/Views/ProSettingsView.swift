@@ -342,34 +342,39 @@ public struct ProSettingsView: View {
     // MARK: - Redeem sheet
 
     private var redeemSheet: some View {
-        NavigationStack {
-            Form {
-                Section {
-                    TextField(String(localized: "Code"), text: $redeemCode)
-                        .textInputAutocapitalization(.characters)
-                        .autocorrectionDisabled()
-                } footer: {
-                    Text(String(localized: "Codes are issued for testing, beta access, or as gifts."))
-                }
-
-                if let feedback {
-                    Section { Text(feedback).font(MiraTypography.caption) }
-                }
-            }
-            .navigationTitle(String(localized: "Redeem a code"))
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button(String(localized: "Cancel")) { showingRedeem = false }
-                }
-                ToolbarItem(placement: .confirmationAction) {
-                    Button(String(localized: "Redeem")) {
-                        Task { await redeem() }
+        MiraSheetChrome {
+            NavigationStack {
+                Form {
+                    Section {
+                        TextField(String(localized: "Code"), text: $redeemCode)
+                            .textInputAutocapitalization(.characters)
+                            .autocorrectionDisabled()
+                    } footer: {
+                        Text(String(localized: "Codes are issued for testing, beta access, or as gifts."))
                     }
-                    .disabled(redeemCode.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+
+                    if let feedback {
+                        Section { Text(feedback).font(MiraTypography.caption) }
+                    }
+                }
+                .scrollContentBackground(.hidden)
+                .navigationTitle(String(localized: "Redeem a code"))
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbarBackground(.hidden, for: .navigationBar)
+                .toolbar {
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button(String(localized: "Cancel")) { showingRedeem = false }
+                    }
+                    ToolbarItem(placement: .confirmationAction) {
+                        Button(String(localized: "Redeem")) {
+                            Task { await redeem() }
+                        }
+                        .disabled(redeemCode.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                    }
                 }
             }
         }
+        .miraSheet([.medium])
     }
 
     // MARK: - Actions

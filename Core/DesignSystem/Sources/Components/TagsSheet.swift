@@ -31,7 +31,6 @@ public struct TagsSheet: View {
 
     public var body: some View {
         VStack(spacing: 0) {
-            dragHandle
             header
 
             ScrollView {
@@ -49,41 +48,40 @@ public struct TagsSheet: View {
             .scrollIndicators(.hidden)
         }
         .frame(maxWidth: .infinity, alignment: .top)
-        .presentationDetents([.medium, .large])
-        .presentationDragIndicator(.hidden)
-        .presentationBackground(.clear)
-        .presentationCornerRadius(36)
+        .miraSheet([.medium, .large])
         .task { await loadRecent() }
     }
 
     // MARK: - Header
 
+    /// Custom header (rather than `MiraSheetHeader`) so the count badge
+    /// can ride next to the title. Keeps the same drag handle + Done
+    /// shape as the canonical sheet primitives.
     private var header: some View {
-        HStack(alignment: .firstTextBaseline) {
-            HStack(alignment: .firstTextBaseline, spacing: 8) {
-                Text("Tags")
-                    .font(MiraTypography.displayTitle)
-                    .foregroundStyle(MiraPalette.primaryText)
-                if !tags.isEmpty {
-                    Text("\(tags.count)")
-                        .font(.system(size: 14, weight: .medium))
-                        .foregroundStyle(MiraPalette.secondaryText)
-                        .monospacedDigit()
-                        .contentTransition(.numericText(countsDown: false))
-                        .animation(.smooth(duration: 0.2), value: tags.count)
+        VStack(spacing: 0) {
+            MiraDragHandle()
+
+            HStack(alignment: .firstTextBaseline) {
+                HStack(alignment: .firstTextBaseline, spacing: 8) {
+                    Text("Tags")
+                        .font(MiraTypography.displayTitle)
+                        .foregroundStyle(MiraPalette.primaryText)
+                    if !tags.isEmpty {
+                        Text("\(tags.count)")
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundStyle(MiraPalette.secondaryText)
+                            .monospacedDigit()
+                            .contentTransition(.numericText(countsDown: false))
+                            .animation(.smooth(duration: 0.2), value: tags.count)
+                    }
                 }
+                Spacer()
+                MiraSheetDoneButton { dismiss() }
             }
-            Spacer()
-            Button { dismiss() } label: {
-                Text("Done")
-                    .font(.system(size: 15, weight: .semibold))
-                    .foregroundStyle(MiraPalette.primaryText)
-            }
-            .buttonStyle(.plain)
+            .padding(.horizontal, 24)
+            .padding(.top, 14)
+            .padding(.bottom, 18)
         }
-        .padding(.horizontal, 24)
-        .padding(.top, 14)
-        .padding(.bottom, 18)
     }
 
     // MARK: - Active section
@@ -159,13 +157,6 @@ public struct TagsSheet: View {
         .buttonStyle(.plain)
         .glassEffect(.regular.interactive(), in: Capsule())
         .transition(.scale(scale: 0.85).combined(with: .opacity))
-    }
-
-    private var dragHandle: some View {
-        Capsule()
-            .fill(MiraPalette.primaryText.opacity(0.14))
-            .frame(width: 42, height: 5)
-            .padding(.top, 10)
     }
 
     private func loadRecent() async {

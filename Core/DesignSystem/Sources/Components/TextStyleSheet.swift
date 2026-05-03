@@ -42,23 +42,9 @@ public struct TextStyleSheet: View {
 
     public var body: some View {
         VStack(spacing: 0) {
-            dragHandle
-
-            HStack(alignment: .firstTextBaseline) {
-                Text("Text style")
-                    .font(MiraTypography.displayTitle)
-                    .foregroundStyle(MiraPalette.primaryText)
-                Spacer()
-                Button { dismiss() } label: {
-                    Text("Done")
-                        .font(.system(size: 15, weight: .semibold))
-                        .foregroundStyle(MiraPalette.primaryText)
-                }
-                .buttonStyle(.plain)
+            MiraSheetHeader("Text style") {
+                MiraSheetDoneButton { dismiss() }
             }
-            .padding(.horizontal, 24)
-            .padding(.top, 14)
-            .padding(.bottom, 16)
 
             ScrollView {
                 VStack(alignment: .leading, spacing: 28) {
@@ -73,18 +59,8 @@ public struct TextStyleSheet: View {
             .scrollIndicators(.hidden)
         }
         .frame(maxWidth: .infinity, alignment: .top)
-        .presentationDetents([.medium, .large])
-        .presentationDragIndicator(.hidden)
-        .presentationBackground(.clear)
-        .presentationCornerRadius(36)
+        .miraSheet([.medium, .large])
         .onAppear(perform: loadCustomColor)
-    }
-
-    private var dragHandle: some View {
-        Capsule()
-            .fill(MiraPalette.primaryText.opacity(0.14))
-            .frame(width: 42, height: 5)
-            .padding(.top, 10)
     }
 
     // MARK: - Emphasis (B / I / U)

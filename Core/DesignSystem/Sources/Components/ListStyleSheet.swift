@@ -26,23 +26,9 @@ public struct ListStyleSheet: View {
 
     public var body: some View {
         VStack(spacing: 0) {
-            dragHandle
-
-            HStack(alignment: .firstTextBaseline) {
-                Text("List style")
-                    .font(MiraTypography.displayTitle)
-                    .foregroundStyle(MiraPalette.primaryText)
-                Spacer()
-                Button { dismiss() } label: {
-                    Text("Done")
-                        .font(.system(size: 15, weight: .semibold))
-                        .foregroundStyle(MiraPalette.primaryText)
-                }
-                .buttonStyle(.plain)
+            MiraSheetHeader("List style") {
+                MiraSheetDoneButton { dismiss() }
             }
-            .padding(.horizontal, 24)
-            .padding(.top, 14)
-            .padding(.bottom, 16)
 
             ScrollView {
                 VStack(spacing: 14) {
@@ -71,17 +57,7 @@ public struct ListStyleSheet: View {
             .scrollIndicators(.hidden)
         }
         .frame(maxWidth: .infinity, alignment: .top)
-        .presentationDetents([.medium])
-        .presentationDragIndicator(.hidden)
-        .presentationBackground(.clear)
-        .presentationCornerRadius(36)
-    }
-
-    private var dragHandle: some View {
-        Capsule()
-            .fill(MiraPalette.primaryText.opacity(0.14))
-            .frame(width: 42, height: 5)
-            .padding(.top, 10)
+        .miraSheet([.medium])
     }
 
     // MARK: - Option row

@@ -14,7 +14,7 @@ public struct MoodPickerSheet: View {
 
     public var body: some View {
         VStack(spacing: 0) {
-            dragHandle
+            MiraDragHandle()
 
             Text("How are you feeling?")
                 .font(MiraTypography.displayTitle)
@@ -54,17 +54,7 @@ public struct MoodPickerSheet: View {
             .animation(.smooth(duration: 0.2), value: selection)
         }
         .frame(maxWidth: .infinity)
-        .presentationDetents([.height(360)])
-        .presentationDragIndicator(.hidden)
-        .presentationBackground(.clear)
-        .presentationCornerRadius(36)
-    }
-
-    private var dragHandle: some View {
-        Capsule()
-            .fill(MiraPalette.primaryText.opacity(0.14))
-            .frame(width: 42, height: 5)
-            .padding(.top, 10)
+        .miraSheet([.height(360)])
     }
 
     private func bubble(for mood: Mood) -> some View {

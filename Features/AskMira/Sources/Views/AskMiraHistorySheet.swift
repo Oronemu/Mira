@@ -37,42 +37,40 @@ public struct AskMiraHistorySheet: View {
     }
 
     public var body: some View {
-        NavigationStack {
-            content
-                .background(
-                    AmbientBackground(moodLevels: [3, 4], intensity: 0.4)
-                        .ignoresSafeArea()
-                )
-                .navigationTitle(Text("Chats"))
-                .toolbarTitleDisplayMode(.inline)
-                .toolbar {
-                    ToolbarItem(placement: .topBarLeading) {
-                        Button {
-                            dismiss()
-                        } label: {
-                            Image(systemName: "xmark")
-                                .font(.system(size: 16, weight: .semibold))
-                                .foregroundStyle(MiraPalette.secondaryText)
+        MiraSheetChrome(moodLevels: [3, 4], intensity: 0.4) {
+            NavigationStack {
+                content
+                    .navigationTitle(Text("Chats"))
+                    .toolbarTitleDisplayMode(.inline)
+                    .toolbarBackground(.hidden, for: .navigationBar)
+                    .toolbar {
+                        ToolbarItem(placement: .topBarLeading) {
+                            Button {
+                                dismiss()
+                            } label: {
+                                Image(systemName: "xmark")
+                                    .font(.system(size: 16, weight: .semibold))
+                                    .foregroundStyle(MiraPalette.secondaryText)
+                            }
+                            .buttonStyle(.plain)
+                            .accessibilityLabel(Text("Close"))
                         }
-                        .buttonStyle(.plain)
-                        .accessibilityLabel(Text("Close"))
-                    }
-                    ToolbarItem(placement: .topBarTrailing) {
-                        Button {
-                            onNewChat()
-                            dismiss()
-                        } label: {
-                            Image(systemName: "square.and.pencil")
-                                .font(.system(size: 18, weight: .regular))
-                                .foregroundStyle(MiraPalette.primaryText.opacity(0.85))
+                        ToolbarItem(placement: .topBarTrailing) {
+                            Button {
+                                onNewChat()
+                                dismiss()
+                            } label: {
+                                Image(systemName: "square.and.pencil")
+                                    .font(.system(size: 18, weight: .regular))
+                                    .foregroundStyle(MiraPalette.primaryText.opacity(0.85))
+                            }
+                            .buttonStyle(.plain)
+                            .accessibilityLabel(Text("New chat"))
                         }
-                        .buttonStyle(.plain)
-                        .accessibilityLabel(Text("New chat"))
                     }
-                }
+            }
         }
-        .presentationDetents([.large])
-        .presentationDragIndicator(.visible)
+        .miraSheet([.large])
         .alert(
             Text("Rename chat"),
             isPresented: Binding(

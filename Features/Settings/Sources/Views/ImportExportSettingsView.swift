@@ -306,28 +306,20 @@ public struct ImportExportSettingsView: View {
 
     private var proImportContent: some View {
         VStack(alignment: .leading, spacing: 10) {
-            formatsCard
             pickerCard
+
+            Text("Mira's own export, Bear, Obsidian, or any plain Markdown — YAML frontmatter (date, mood, tags) is honoured when present.")
+                .font(.system(size: 12))
+                .foregroundStyle(MiraPalette.secondaryText)
+                .lineSpacing(2)
+                .padding(.horizontal, 4)
+                .padding(.top, 2)
+
             if !picked.isEmpty { selectionList }
             if let summary = importResult { resultCard(summary) }
         }
-    }
-
-    private var formatsCard: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("Supported")
-                .eyebrowStyle()
-            VStack(alignment: .leading, spacing: 4) {
-                Text("• Mira's own Markdown export")
-                Text("• One Markdown file per entry (Bear, Obsidian, manual exports)")
-                Text("• YAML frontmatter — date, mood, tags — when present")
-            }
-            .font(MiraTypography.caption)
-            .foregroundStyle(.secondary)
-        }
-        .padding(18)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+        .animation(.spring(duration: 0.4, bounce: 0.15), value: picked.count)
+        .animation(.spring(duration: 0.4, bounce: 0.15), value: importResult != nil)
     }
 
     private var pickerCard: some View {
@@ -480,23 +472,27 @@ private struct PDFTemplatePickerSheet: View {
     let onCancel: () -> Void
 
     var body: some View {
-        NavigationStack {
-            ScrollView {
-                VStack(spacing: 12) {
-                    ForEach(PDFTemplate.allCases, id: \.self) { template in
-                        TemplateCard(template: template) { onPick(template) }
+        MiraSheetChrome {
+            NavigationStack {
+                ScrollView {
+                    VStack(spacing: 12) {
+                        ForEach(PDFTemplate.allCases, id: \.self) { template in
+                            TemplateCard(template: template) { onPick(template) }
+                        }
                     }
+                    .padding(20)
                 }
-                .padding(20)
-            }
-            .navigationTitle(String(localized: "PDF template"))
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button(String(localized: "Cancel"), action: onCancel)
+                .navigationTitle(String(localized: "PDF template"))
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbarBackground(.hidden, for: .navigationBar)
+                .toolbar {
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button(String(localized: "Cancel"), action: onCancel)
+                    }
                 }
             }
         }
+        .miraSheet([.medium, .large])
     }
 }
 

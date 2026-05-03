@@ -5426,6 +5426,23 @@
         }
       }
     },
+    "Mira's own export, Bear, Obsidian, or any plain Markdown — YAML frontmatter (date, mood, tags) is honoured when present.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mira's own export, Bear, Obsidian, or any plain Markdown — YAML frontmatter (date, mood, tags) is honoured when present."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Markdown-экспорт самой Mira, Bear, Obsidian или просто Markdown — YAML-frontmatter (дата, настроение, теги) учитывается, если есть."
+          }
+        }
+      }
+    },
     "Mira's palette already adapts to the mood of what you write. A manual theme toggle and accent picker are coming — the scaffolding is here.": {
       "extractionState": "stale",
       "localizations": {

@@ -200,38 +200,42 @@ public struct AppearanceSettingsView: View {
     }
 
     private var customColorSheet: some View {
-        NavigationStack {
-            VStack(alignment: .leading, spacing: 24) {
-                ColorPicker(
-                    String(localized: "Custom accent"),
-                    selection: $pendingCustomColor,
-                    supportsOpacity: false
-                )
-                .font(MiraTypography.body)
+        MiraSheetChrome {
+            NavigationStack {
+                VStack(alignment: .leading, spacing: 24) {
+                    ColorPicker(
+                        String(localized: "Custom accent"),
+                        selection: $pendingCustomColor,
+                        supportsOpacity: false
+                    )
+                    .font(MiraTypography.body)
 
-                Text(String(localized: "Pick any colour. Mira will use it across tabs, chips, and progress bars."))
-                    .font(MiraTypography.caption)
-                    .foregroundStyle(.secondary)
+                    Text(String(localized: "Pick any colour. Mira will use it across tabs, chips, and progress bars."))
+                        .font(MiraTypography.caption)
+                        .foregroundStyle(.secondary)
 
-                Spacer()
-            }
-            .padding(20)
-            .navigationTitle(String(localized: "Custom accent"))
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button(String(localized: "Cancel")) { showingCustomPicker = false }
+                    Spacer()
                 }
-                ToolbarItem(placement: .confirmationAction) {
-                    Button(String(localized: "Apply")) {
-                        if let hex = pendingCustomColor.hexString {
-                            state.setCustomAccent(hex: hex)
+                .padding(20)
+                .navigationTitle(String(localized: "Custom accent"))
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbarBackground(.hidden, for: .navigationBar)
+                .toolbar {
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button(String(localized: "Cancel")) { showingCustomPicker = false }
+                    }
+                    ToolbarItem(placement: .confirmationAction) {
+                        Button(String(localized: "Apply")) {
+                            if let hex = pendingCustomColor.hexString {
+                                state.setCustomAccent(hex: hex)
+                            }
+                            showingCustomPicker = false
                         }
-                        showingCustomPicker = false
                     }
                 }
             }
         }
+        .miraSheet([.medium])
     }
 
     private func sectionLabel(_ key: LocalizedStringKey) -> some View {
