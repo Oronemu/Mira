@@ -74,6 +74,8 @@ public struct SettingsView: View {
 
                         importRow
 
+                        habitsAndGoalsRow
+
                         SettingsCategoryLink(
                             icon: "info.circle",
                             title: "About",
@@ -141,6 +143,66 @@ public struct SettingsView: View {
                     if showsBadge { ProBadge() }
                 }
                 Text(String(localized: "Bring older entries into Mira from Markdown files"))
+                    .font(.system(size: 12))
+                    .foregroundStyle(MiraPalette.secondaryText)
+                    .lineLimit(2)
+            }
+
+            Spacer(minLength: 0)
+
+            if showsChevron {
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundStyle(MiraPalette.secondaryText.opacity(0.7))
+            } else {
+                Image(systemName: "lock.fill")
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundStyle(MiraPalette.primaryText.opacity(0.55))
+            }
+        }
+        .padding(14)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .contentShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+        .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+    }
+
+    // MARK: - Habits & Goals row
+
+    @ViewBuilder
+    private var habitsAndGoalsRow: some View {
+        if status.isPro {
+            NavigationLink {
+                HabitsAndGoalsView()
+            } label: {
+                habitsAndGoalsRowLabel(showsBadge: false, showsChevron: true)
+            }
+            .buttonStyle(.plain)
+        } else {
+            Button {
+                paywallPresenter.present(.feature(.goalsAndHabits))
+            } label: {
+                habitsAndGoalsRowLabel(showsBadge: true, showsChevron: false)
+            }
+            .buttonStyle(.plain)
+        }
+    }
+
+    private func habitsAndGoalsRowLabel(showsBadge: Bool, showsChevron: Bool) -> some View {
+        HStack(alignment: .top, spacing: 14) {
+            Image(systemName: "target")
+                .font(.system(size: 16, weight: .semibold))
+                .foregroundStyle(MiraPalette.primaryText.opacity(0.85))
+                .frame(width: 40, height: 40)
+                .background(Circle().fill(MiraPalette.mood(level: 5).opacity(0.18)))
+
+            VStack(alignment: .leading, spacing: 3) {
+                HStack(spacing: 8) {
+                    Text(String(localized: "Habits & goals"))
+                        .font(.system(size: 16, weight: .semibold, design: .serif))
+                        .foregroundStyle(MiraPalette.primaryText)
+                    if showsBadge { ProBadge() }
+                }
+                Text(String(localized: "Tag-driven targets, derived from your journal"))
                     .font(.system(size: 12))
                     .foregroundStyle(MiraPalette.secondaryText)
                     .lineLimit(2)
