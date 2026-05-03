@@ -20,9 +20,6 @@ let project = Project(
             ],
             entitlements: "Resources/Mira.entitlements",
             scripts: [
-                // Crashlytics dSYM upload. Tuist resolves SPM products to
-                // Derived/SourcePackages; the run script binary lives next
-                // to the Crashlytics module.
                 .post(
                     script: """
                     FIREBASE_RUN="${SRCROOT}/../Tuist/.build/checkouts/firebase-ios-sdk/Crashlytics/run"
@@ -36,8 +33,11 @@ let project = Project(
                     """,
                     name: "Crashlytics dSYM upload",
                     inputPaths: [
-                        "${DWARF_DSYM_FOLDER_PATH}/${DWARF_DSYM_FILE_NAME}/Contents/Resources/DWARF/${TARGET_NAME}",
-                        "$(SRCROOT)/$(BUILT_PRODUCTS_DIR)/$(INFOPLIST_PATH)",
+                        "${DWARF_DSYM_FOLDER_PATH}/${DWARF_DSYM_FILE_NAME}",
+                        "${DWARF_DSYM_FOLDER_PATH}/${DWARF_DSYM_FILE_NAME}/Contents/Resources/DWARF/${PRODUCT_NAME}",
+                        "${DWARF_DSYM_FOLDER_PATH}/${DWARF_DSYM_FILE_NAME}/Contents/Info.plist",
+                        "$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/GoogleService-Info.plist",
+                        "$(TARGET_BUILD_DIR)/$(EXECUTABLE_PATH)",
                     ],
                     basedOnDependencyAnalysis: false
                 ),
