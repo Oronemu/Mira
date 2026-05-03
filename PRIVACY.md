@@ -1,7 +1,7 @@
 # Privacy Policy — Mira
 
 **Effective date:** 23 April 2026
-**Last updated:** 23 April 2026
+**Last updated:** 3 May 2026
 **Application:** Mira — Offline AI Journal (iOS)
 **Application identifier:** `com.veilbytesoft.Mira`
 **Developer (Data Controller):** Ivan Rovkov (individual developer, natural person)
@@ -62,12 +62,12 @@ This Policy does **not** apply to:
 
 Before listing categories of data, we summarise our design principles so that this Policy is easier to interpret:
 
-1. **No developer-operated backend.** We do not run any server that receives, stores, or processes your journal content. We have no technical ability to read your entries.
-2. **Content stays on-device by default.** Journal text, photos, mood, tags, embeddings, and AI prompts are processed locally using Apple's on-device frameworks.
-3. **Any outbound transfer is opt-in and transparent.** Cloud features (iCloud backup, remote AI, analytics, crash reporting) are either disabled by default or require explicit user action.
-4. **Minimisation.** We process only what is strictly necessary for the feature the user has enabled.
+1. **Content stays on-device by default.** Journal text, photos, mood, tags, and embeddings are processed locally using Apple's on-device frameworks. Free users receive AI features (Ask Mira, weekly reflections) through Apple Foundation Models running entirely on your iPhone — your text never leaves the device.
+2. **Pro AI is proxied, never stored.** When you subscribe to Mira Pro and use a Pro AI feature, the question text and a small RAG-selected slice of your journal are sent through Mira's own Cloudflare Worker to Anthropic's Claude API. **We do not store this content** on the worker; Anthropic processes it under their commercial API terms and does not train on it. See Section 5.11 and Section 8.
+3. **Any outbound transfer is opt-in and transparent.** iCloud sync, Pro AI, analytics, and crash reporting are either disabled by default or require explicit user action (subscription, settings toggle, consent prompt).
+4. **Minimisation.** We process only what is strictly necessary for the feature you enabled.
 5. **Encryption of synced content.** When iCloud sync is enabled, entries are encrypted on-device with a symmetric key (ChaChaPoly-256) before leaving the device. Apple's CloudKit stores only the ciphertext.
-6. **User control.** You can disable telemetry, disable sync, delete entries, and remove API keys at any time within Settings.
+6. **User control.** You can disable telemetry, disable sync, cancel your subscription, and delete entries at any time within Settings or the iOS App Store.
 
 ---
 
@@ -98,14 +98,9 @@ This section enumerates **every category** of personal data the App currently pr
 
 **Legal basis (GDPR):** Art. 6(1)(b) and Art. 6(1)(f) — our legitimate interest in protecting user data with a standard security mechanism.
 
-### 5.3. User-Provided API Keys (optional feature)
+### 5.3. User-Provided API Keys *(legacy, no longer offered)*
 
-If you enable the "Remote AI" feature, you may provide an API key for Anthropic, OpenAI, or OpenRouter.
-
-- The API key is stored **exclusively** in the iOS Keychain with the access attribute `kSecAttrAccessibleWhenUnlockedThisDeviceOnly`, so that it is bound to your device and **not** synchronised to iCloud.
-- The key is never transmitted to the Developer. It is sent directly by the App to the AI provider you chose, over TLS.
-
-**Legal basis (GDPR):** Art. 6(1)(b).
+Earlier development builds let users supply their own Anthropic / OpenAI / OpenRouter API keys for a "bring-your-own-key" Remote AI mode. The released version of Mira does **not** ask for or accept user-supplied API keys — Pro AI is delivered exclusively through Mira's hosted proxy (Section 5.11). Any keys remaining in the iOS Keychain from prior builds can be deleted at **Settings → Intelligence**; we do not transmit or process them.
 
 ### 5.4. Application Preferences
 
@@ -146,19 +141,23 @@ If you enable "iCloud Sync" in Settings, the App uploads, to your **personal** i
 
 **Legal basis (GDPR):** Art. 6(1)(a) consent (you actively enable the toggle). The data controller of your iCloud account is Apple Inc.; refer to Apple's Privacy Policy (<https://www.apple.com/legal/privacy/>).
 
-### 5.7. Remote AI Data (optional, opt-in)
+### 5.7. Hosted AI Proxy Data *(Mira Pro subscribers only)*
 
-If you enable Remote AI and submit a query (an "Ask Mira" question, a reflection generation request, etc.):
+When you have an active Mira Pro subscription **and** use a Pro AI feature ("Ask Mira" chat, manually-triggered reflection, or the auto-fired weekly reflection on the hosted provider), the following data is transmitted:
 
-- The App sends, directly from your device to the provider you selected, over TLS, a prompt consisting of:
+- The App sends, over TLS, to Mira's own server (`mira-backend.miradiary.workers.dev`, a Cloudflare Worker operated by the Developer):
   - system instructions;
   - your current question or generation request;
-  - context retrieved from your journal (a RAG-selected subset of your entry text, mood, and tags) necessary to answer the question.
-- The App attaches the API key you provided to the request, so the request is billed to **your** account with the provider.
+  - a RAG-selected subset of your entry text, mood, and tags relevant to the request;
+  - the StoreKit JWS for your active subscription (used solely for entitlement verification — see 5.11).
+- The Mira worker verifies the subscription, applies a per-user monthly usage cap, and **proxies** the request body to **Anthropic, PBC** (Claude API).
+- Anthropic returns the AI response as a streaming SSE; the worker passes it back to your device byte-for-byte.
 
-The Developer does **not** receive, proxy, or log any of this data. The AI provider acts as an independent data controller, subject to its own privacy policy. See Section 8.
+**The worker does not log, store, or persist the request body or the response body**, on the worker itself or in any KV namespace. Only metadata (timestamps, status codes, monthly counters keyed on `originalTransactionId`) is retained for limit enforcement and operational diagnostics.
 
-**Legal basis (GDPR):** Art. 6(1)(a) consent and Art. 6(1)(b) performance of the contract.
+**Anthropic** is the AI processor. Per Anthropic's commercial API terms, your inputs and outputs are not used to train Anthropic's models. See Section 8.3.
+
+**Legal basis (GDPR):** Art. 6(1)(b) — performance of the Mira Pro subscription contract you entered into. Mood data within the proxy payload is processed under Art. 9(2)(a) — your explicit consent given by enabling the Pro AI feature.
 
 ### 5.8. Export Files
 
@@ -167,6 +166,37 @@ When you use the "Export" feature, the App writes Markdown or PDF files into the
 ### 5.9. Widget Data
 
 Home Screen and Lock Screen widgets read data from an App Group container shared with the main app (current streak, latest entry preview). No outbound network requests are made from widgets.
+
+### 5.11. Subscription & Transaction Data *(Mira Pro subscribers only)*
+
+When you purchase Mira Pro through the iOS App Store, the following data flows from Apple to Mira's Cloudflare Worker so we can grant Pro access:
+
+- `originalTransactionId` — Apple's stable identifier for your subscription (does **not** identify you personally; specific to Mira on this Apple ID).
+- `transactionId` — per-transaction identifier for renewals and refunds.
+- `productId` — which Mira Pro plan you bought (`com.veilbytesoft.Mira.pro.monthly` or `.yearly`).
+- `purchaseDate`, `expiresDate`, `revocationDate` — subscription lifecycle timestamps.
+- `bundleId` — confirms the transaction is for our app.
+- `environment` — `Production` or `Sandbox`.
+- `appAccountToken` (optional UUID) — set to a random per-install identifier; lets us correlate a device to a transaction without learning your Apple ID.
+- App Store Server Notifications V2 payloads — Apple posts subscription lifecycle events (renewals, refunds, expirations, revocations) to our worker; the JWS-signed payloads are verified, stored as the latest entitlement snapshot, and otherwise dropped.
+
+**Storage:** Cloudflare Workers KV (encrypted at rest by Cloudflare; us-multi-region with EU options). The latest entitlement snapshot per `originalTransactionId` is retained up to 365 days so that we can answer "is this user Pro?" between app launches without re-running the full StoreKit verification each time.
+
+**Apple does not send us your name, email, Apple ID, or payment instrument.** Only the technical fields above.
+
+**Legal basis (GDPR):** Art. 6(1)(b) — performance of the Mira Pro subscription contract.
+
+### 5.12. Hosted AI Usage Counters *(Mira Pro subscribers only)*
+
+To enforce per-user monthly caps on the heaviest AI features (Ask Mira: 100 / month; manual weekly reflection: 2 / month) the Cloudflare Worker stores integer counters keyed on `originalTransactionId` plus the current `YYYY-MM` period. Counters reset monthly. They contain no message content and no personal identifiers beyond the StoreKit transaction id.
+
+**Storage:** Cloudflare Workers KV. Stale counters auto-expire after 90 days.
+
+**Legal basis (GDPR):** Art. 6(1)(f) — legitimate interest in preventing service abuse and managing infrastructure costs.
+
+### 5.13. Redeem Codes *(complimentary access)*
+
+If a developer-issued code (e.g. from beta-testing programs or gifts) is entered in **Settings → Mira Pro → Redeem code**, Mira's worker stores `{ code, redemption timestamp, device-bound identifier }` so each code is single-use. The code itself is not personal data; the identifier is the iOS `identifierForVendor` UUID, which is local to your device + this app and resets on uninstall.
 
 ### 5.10. Data We Do **Not** Collect
 
@@ -177,7 +207,7 @@ For the avoidance of doubt, the App does **not** collect or request:
 - your contacts, calendars, or reminders;
 - health data from Apple HealthKit;
 - the iOS advertising identifier (IDFA);
-- financial or payment information (the App offers no in-app purchases at this time);
+- financial or payment information beyond the StoreKit transaction identifiers needed to verify your subscription (Section 5.11). All payments are handled by Apple — we never see your card number, billing address, or Apple ID password;
 - biometric templates;
 - data from other apps;
 - any cross-app or cross-site tracking identifiers.
@@ -194,7 +224,9 @@ We process the data listed above for the following purposes only:
 | 6.2 | On-device AI features (embedding, semantic search, reflections, Ask Mira) with Apple Foundation Models | 5.1 | Art. 6(1)(b); Art. 9(2)(a) for mood |
 | 6.3 | Protecting the App with biometric lock | 5.2 | Art. 6(1)(f) |
 | 6.4 | Optional encrypted iCloud sync between your own devices | 5.6 | Art. 6(1)(a) |
-| 6.5 | Optional remote AI when you provide your own API key | 5.3, 5.7 | Art. 6(1)(a), 6(1)(b) |
+| 6.5 | Hosted Pro AI (Ask Mira, weekly reflections via Anthropic Claude through Mira's proxy) for active subscribers | 5.7, 5.11, 5.12 | Art. 6(1)(b); Art. 9(2)(a) for mood |
+| 6.5a | Verifying Mira Pro entitlement, enforcing monthly usage caps | 5.11, 5.12 | Art. 6(1)(b), Art. 6(1)(f) |
+| 6.5b | Granting complimentary Pro access through redeem codes | 5.13 | Art. 6(1)(b) |
 | 6.6 | Diagnosing crashes and improving app stability | 5.5 (crash data) | Art. 6(1)(f), subject to opt-out |
 | 6.7 | Measuring aggregate feature usage to improve the product | 5.5 (analytics) | Art. 6(1)(a), explicit toggle |
 | 6.8 | Delivering push notifications you have allowed (e.g., "your weekly reflection is ready") | 5.5 (tokens) | Art. 6(1)(b) |
@@ -250,31 +282,27 @@ The App is configured with `FIREBASE_ANALYTICS_COLLECTION_ENABLED=false` and `Fi
 Google's privacy policy: <https://policies.google.com/privacy>.
 Firebase data disclosures: <https://firebase.google.com/support/privacy>.
 
-### 8.3. Anthropic PBC (Claude) — optional
+### 8.3. Anthropic PBC (Claude) — *Mira Pro AI processor*
 
-If you select Anthropic as the Remote AI provider and enter your own API key, the App sends prompts and retrieved journal context directly to `api.anthropic.com`.
+When you have an active Mira Pro subscription and use a Pro AI feature, the Mira Cloudflare Worker proxies your prompt and journal context to Anthropic's `api.anthropic.com`. Anthropic acts as a **processor** for the Developer under their Commercial Terms of Service. Per Anthropic's terms, **API inputs and outputs are not used to train Anthropic's models**. We have signed Anthropic's Data Processing Addendum (DPA) covering EU/UK GDPR data subjects.
 
 Privacy policy: <https://www.anthropic.com/legal/privacy>.
+Trust center: <https://trust.anthropic.com/>.
 
-### 8.4. OpenAI, L.L.C. — optional
+### 8.4. Cloudflare, Inc. — *infrastructure*
 
-If you select OpenAI and enter your own API key, the App sends prompts directly to the OpenAI API.
+Mira's hosted-AI proxy, App Store Server Notifications endpoint, redeem-code system, and per-user usage counters run on a Cloudflare Worker (`mira-backend.miradiary.workers.dev`) with three Cloudflare Workers KV namespaces. Cloudflare hosts our compute and storage; data is encrypted at rest and in transit. Cloudflare acts as a **processor** under their Customer Privacy Policy and standard DPA.
 
-Privacy policy: <https://openai.com/policies/privacy-policy>.
+Privacy policy: <https://www.cloudflare.com/privacypolicy/>.
+DPA / sub-processors: <https://www.cloudflare.com/cloudflare-customer-dpa/>.
 
-### 8.5. OpenRouter (OpenRouter, Inc.) — optional
+### 8.5. OpenAI, L.L.C., OpenRouter, Hugging Face — *not used*
 
-If you select OpenRouter and enter your own API key, the App sends prompts directly to the OpenRouter API.
+Earlier development builds offered alternative AI providers. The released app does not use OpenAI or OpenRouter. The Hugging Face Hub may be contacted only if you download an on-device model file (no journal content is transmitted, only file-download HTTPS requests).
 
-Privacy policy: <https://openrouter.ai/privacy>.
+Hugging Face privacy policy: <https://huggingface.co/privacy>.
 
-### 8.6. Hugging Face, Inc. — optional
-
-If you download on-device AI model weights, the App issues HTTPS requests to the Hugging Face Hub to fetch model files. No journal content is sent; only file-download requests.
-
-Privacy policy: <https://huggingface.co/privacy>.
-
-### 8.7. No Other Recipients
+### 8.6. No Other Recipients
 
 We do **not** share personal data with advertising networks, data brokers, or any other third parties. We do **not** sell personal data in the sense of CCPA/CPRA § 1798.140(ad). We do **not** "share" personal data for cross-context behavioural advertising in the sense of CCPA/CPRA § 1798.140(ah).
 
@@ -288,10 +316,9 @@ Because Mira has no Developer-operated backend, most processing takes place on y
 |---|---|---|
 | Apple iCloud | United States; Apple's regional data centres | Apple's Standard Contractual Clauses (SCCs) / Apple's Data Processing Addendum |
 | Google Firebase | United States; Google's regional data centres | SCCs; EU–US Data Privacy Framework (Google's self-certification) |
-| Anthropic | United States | SCCs pursuant to Anthropic's DPA |
-| OpenAI | United States | SCCs pursuant to OpenAI's DPA |
-| OpenRouter | United States | SCCs per OpenRouter's terms |
-| Hugging Face | United States / France | SCCs / EU-based for EU region |
+| Anthropic (Mira Pro AI proxy backend) | United States | SCCs pursuant to Anthropic's DPA |
+| Cloudflare (worker hosting + KV) | United States; EU regions configurable | SCCs pursuant to Cloudflare's DPA |
+| Hugging Face (on-device model downloads only) | United States / France | SCCs / EU-based for EU region |
 
 For data subjects in the Russian Federation, we note that we **do not** maintain a Russian database of journal content because all content remains on the user's device or in the user's personal iCloud. The Developer does not act as a Russian database operator within the meaning of 152-FZ Art. 18(5), as no database of personal data of Russian citizens is created or stored by the Developer. If you are a Russian citizen and consider that this arrangement is nevertheless relevant to you, contact us via the email in Section 2.
 
@@ -303,7 +330,10 @@ For data subjects in the Russian Federation, we note that we **do not** maintain
 |---|---|---|
 | Journal entries, photos, mood, tags, insights, embeddings (local) | For as long as you keep them on the device | You delete them in-app; you uninstall the App |
 | Journal entries in iCloud (encrypted) | For as long as iCloud Sync is enabled, up to Apple's iCloud retention rules | Disable iCloud Sync → encryption key is destroyed → ciphertext becomes permanently unreadable; delete the iCloud container via iOS Settings |
-| API keys | Until you remove them | Settings → Intelligence → remove key |
+| Mira Pro entitlement snapshot in Cloudflare KV | Up to 365 days; refreshed on each App Store Server Notification | Cancel subscription → next renewal lapses → entry expires; or contact us to delete |
+| Hosted AI usage counters in Cloudflare KV | Auto-expire 90 days after last write; reset monthly | — |
+| Redeem code redemption record | Until manually purged from KV; counters tied to a single device-bound id | — |
+| Legacy API keys (if any remain from earlier builds) | Until you remove them | Settings → Intelligence (legacy fields) |
 | Firebase Installation ID, analytics events | Default Google retention of up to 14 months (configurable by the Developer) | Disable Diagnostics & Analytics; uninstall the App (regenerates Installation ID) |
 | Crash reports | Default Crashlytics retention of up to 90 days | Disable Diagnostics & Analytics |
 | Push tokens | Until you revoke notification permission or uninstall | iOS Settings → Notifications → Mira → Off |
