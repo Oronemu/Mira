@@ -284,7 +284,7 @@ Firebase data disclosures: <https://firebase.google.com/support/privacy>.
 
 ### 8.3. Anthropic PBC (Claude) — *Mira Pro AI processor*
 
-When you have an active Mira Pro subscription and use a Pro AI feature, the Mira Cloudflare Worker proxies your prompt and journal context to Anthropic's `api.anthropic.com`. Anthropic acts as a **processor** for the Developer under their Commercial Terms of Service. Per Anthropic's terms, **API inputs and outputs are not used to train Anthropic's models**. We have signed Anthropic's Data Processing Addendum (DPA) covering EU/UK GDPR data subjects.
+When you have an active Mira Pro subscription and use a Pro AI feature, the Mira Cloudflare Worker proxies your prompt and journal context to Anthropic's `api.anthropic.com`. Anthropic acts as a **processor** for the Developer under their Commercial Terms of Service. Per Anthropic's terms, **API inputs and outputs are not used to train Anthropic's models**. Anthropic's [Data Processing Addendum](https://www.anthropic.com/legal/data-processing-addendum) — including Standard Contractual Clauses for EU/UK GDPR transfers — is automatically incorporated into the Commercial Terms of Service that the Developer accepted when activating the Anthropic API account.
 
 Privacy policy: <https://www.anthropic.com/legal/privacy>.
 Trust center: <https://trust.anthropic.com/>.
