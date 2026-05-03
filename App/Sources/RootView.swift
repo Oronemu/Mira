@@ -56,7 +56,7 @@ struct RootView: View {
                 .init(value: .insights, title: "Insights", systemImage: "quote.bubble"),
                 .init(value: .settings, title: "Settings", systemImage: "gearshape"),
             ],
-            tint: MiraPalette.mood(level: appearanceState.accent.rawValue)
+            tint: MiraPalette.tintColor(for: appearanceState.settings)
         )
         .padding(.bottom, 6)
     }

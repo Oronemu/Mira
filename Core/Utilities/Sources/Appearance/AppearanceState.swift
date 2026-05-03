@@ -43,6 +43,41 @@ public final class AppearanceState: @unchecked Sendable {
     public func setAccent(_ accent: AccentTint) {
         var next = settings
         next.accent = accent
+        // Selecting a free accent clears any Pro overrides so the row
+        // the user just tapped is visibly the active one.
+        next.proAccent = nil
+        next.customAccentHex = nil
+        settings = next
+        store.save(next)
+    }
+
+    public func setProAccent(_ accent: ProAccent) {
+        var next = settings
+        next.proAccent = accent
+        next.customAccentHex = nil
+        settings = next
+        store.save(next)
+    }
+
+    /// Hex must be `#RRGGBB` or `RRGGBB`. Caller is responsible for
+    /// validating with `UIColor(hexString:)` before calling — invalid
+    /// strings are persisted as-is and resolution falls back to mood.
+    public func setCustomAccent(hex: String) {
+        var next = settings
+        next.customAccentHex = hex
+        next.proAccent = nil
+        settings = next
+        store.save(next)
+    }
+
+    /// Clears Pro overrides without changing the underlying free
+    /// `accent`. Used when an entitlement lapses and we want the UI to
+    /// fall back gracefully without losing the user's prior free pick.
+    public func clearProOverrides() {
+        guard settings.proAccent != nil || settings.customAccentHex != nil else { return }
+        var next = settings
+        next.proAccent = nil
+        next.customAccentHex = nil
         settings = next
         store.save(next)
     }

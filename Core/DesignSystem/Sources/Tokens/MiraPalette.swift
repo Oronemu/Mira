@@ -1,6 +1,7 @@
 import SwiftUI
 import UIKit
 import CoreKit
+import Utilities
 
 /// Semantic colour palette. Named `Palette` (not `Colors`) to avoid colliding
 /// with Tuist's auto-generated `MiraColors` asset namespace in the App target.
@@ -44,6 +45,36 @@ public enum MiraPalette {
 
     /// Used when an entry has no mood set — soft neutral that blends in.
     public static let moodUnknown = dynamic(light: 0xD8D3CB, dark: 0x3A3A3C)
+
+    // MARK: - Accents (free + Pro)
+
+    /// Pro-only preset accents. Picked to be visually distinct from the
+    /// five free mood-aliased accents so the upgrade feels like a real
+    /// expansion of the palette, not a reshuffle.
+    public static func proAccent(_ accent: ProAccent) -> Color {
+        switch accent {
+        case .rose:   return dynamic(light: 0xC76A8E, dark: 0xE49AB4)
+        case .ocean:  return dynamic(light: 0x2C5F7A, dark: 0x6FA3BF)
+        case .forest: return dynamic(light: 0x3F6B47, dark: 0x7FAA85)
+        case .gold:   return dynamic(light: 0xB68A3F, dark: 0xD9B567)
+        case .plum:   return dynamic(light: 0x6B4079, dark: 0xB18EC3)
+        }
+    }
+
+    /// Resolves the active tint colour for `AppearanceSettings`.
+    /// Priority: customAccentHex (Pro) > proAccent (Pro) > accent (free).
+    /// Invalid hex strings degrade to the free accent rather than throw,
+    /// so a corrupt persisted value can't break rendering.
+    public static func tintColor(for settings: AppearanceSettings) -> Color {
+        if let hex = settings.customAccentHex,
+           let uiColor = UIColor(hexString: hex) {
+            return Color(uiColor: uiColor)
+        }
+        if let pro = settings.proAccent {
+            return proAccent(pro)
+        }
+        return mood(level: settings.accent.rawValue)
+    }
 
     // MARK: - Entry text color
 

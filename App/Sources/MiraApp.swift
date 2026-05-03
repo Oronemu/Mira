@@ -89,7 +89,7 @@ struct MiraApp: App {
             }
             .environment(\.appearanceState, appearanceState)
             .preferredColorScheme(appearanceState.colorScheme)
-            .tint(MiraPalette.mood(level: appearanceState.accent.rawValue))
+            .tint(MiraPalette.tintColor(for: appearanceState.settings))
             .task { bootstrapTelemetry() }
             .task { await bootstrapRemoteKey() }
             .task { await backfillEmbeddings() }

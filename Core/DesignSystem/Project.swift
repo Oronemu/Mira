@@ -15,6 +15,7 @@ let project = Project(
             ],
             dependencies: [
                 .project(target: "CoreKit", path: "../CoreKit"),
+                .project(target: "Utilities", path: "../Utilities"),
             ],
             settings: .settings(base: [
                 "SWIFT_STRICT_CONCURRENCY": "complete",
