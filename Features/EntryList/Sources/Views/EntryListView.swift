@@ -86,6 +86,7 @@ public struct EntryListView: View {
             if let state {
                 EntryFilterView(
                     initialQuery: state.query,
+                    availableTags: state.availableTags,
                     canSaveAsFilter: status.isPro,
                     onApply: { newQuery in
                         withAnimation(.spring(response: 0.4, dampingFraction: 0.85)) {

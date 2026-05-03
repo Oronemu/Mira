@@ -75,6 +75,25 @@ public final class EntryListState {
             || (query.tags?.isEmpty == false)
     }
 
+    /// Distinct tags across every entry, ordered by frequency desc then
+    /// alphabetically. Powers the filter sheet's tag chip cloud — only
+    /// tags the journal actually contains can be picked.
+    public var availableTags: [String] {
+        var counts: [String: Int] = [:]
+        for entry in allEntries {
+            for tag in entry.tags {
+                let key = tag.lowercased()
+                counts[key, default: 0] += 1
+            }
+        }
+        return counts
+            .sorted { lhs, rhs in
+                if lhs.value != rhs.value { return lhs.value > rhs.value }
+                return lhs.key < rhs.key
+            }
+            .map(\.key)
+    }
+
     // MARK: - Selection API
 
     public func enterSelection(with id: UUID? = nil) {

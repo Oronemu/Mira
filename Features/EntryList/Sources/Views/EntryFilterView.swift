@@ -6,6 +6,7 @@ public struct EntryFilterView: View {
     @Environment(\.dismiss) private var dismiss
 
     private let initialQuery: EntryQuery
+    private let availableTags: [String]
     private let onApply: (EntryQuery) -> Void
     private let canSaveAsFilter: Bool
     private let onSave: (String) -> Void
@@ -15,18 +16,20 @@ public struct EntryFilterView: View {
     @State private var toDate: Date
     @State private var dateActive: Bool
     @State private var moods: Set<Mood>
-    @State private var tagsDraft: String
+    @State private var selectedTags: Set<String>
     @State private var showingSavePrompt = false
     @State private var saveName: String = ""
 
     public init(
         initialQuery: EntryQuery,
+        availableTags: [String] = [],
         canSaveAsFilter: Bool = false,
         onApply: @escaping (EntryQuery) -> Void,
         onSave: @escaping (String) -> Void = { _ in },
         onSavePaywallTrigger: @escaping () -> Void = {}
     ) {
         self.initialQuery = initialQuery
+        self.availableTags = availableTags
         self.canSaveAsFilter = canSaveAsFilter
         self.onApply = onApply
         self.onSave = onSave
@@ -46,14 +49,14 @@ public struct EntryFilterView: View {
             _dateActive = State(initialValue: false)
         }
         _moods = State(initialValue: initialQuery.moods ?? [])
-        _tagsDraft = State(initialValue: initialQuery.tags?.joined(separator: ", ") ?? "")
+        _selectedTags = State(initialValue: Set((initialQuery.tags ?? []).map { $0.lowercased() }))
     }
 
     public var body: some View {
         NavigationStack {
             MiraSheetChrome(moodLevels: moods.map(\.rawValue)) {
                 ScrollView {
-                    VStack(spacing: 20) {
+                    VStack(alignment: .leading, spacing: 20) {
                         dateCard
                         moodCard
                         tagsCard
@@ -63,7 +66,8 @@ public struct EntryFilterView: View {
                         resetButton
                         Color.clear.frame(height: 24)
                     }
-                    .padding(.horizontal, 18)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal, 16)
                     .padding(.top, 12)
                 }
                 .scrollIndicators(.hidden)
@@ -150,6 +154,7 @@ public struct EntryFilterView: View {
                         .transition(.opacity.combined(with: .scale))
                     }
                 }
+                .frame(maxWidth: .infinity, alignment: .leading)
 
                 VStack(spacing: 8) {
                     DatePicker(
@@ -170,6 +175,7 @@ public struct EntryFilterView: View {
                 .onChange(of: fromDate) { _, _ in markDateActive() }
                 .onChange(of: toDate) { _, _ in markDateActive() }
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
     }
 
@@ -193,6 +199,7 @@ public struct EntryFilterView: View {
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
     }
 
@@ -239,22 +246,80 @@ public struct EntryFilterView: View {
 
     private var tagsCard: some View {
         GlassCard {
-            VStack(alignment: .leading, spacing: 10) {
-                Text("Tags").eyebrowStyle()
-                TextField(text: $tagsDraft, prompt: Text("comma, separated")) {
-                    Text("Tags")
+            VStack(alignment: .leading, spacing: 12) {
+                HStack {
+                    Text("Tags").eyebrowStyle()
+                    Spacer()
+                    if !selectedTags.isEmpty {
+                        Button {
+                            withAnimation(.spring(response: 0.3, dampingFraction: 0.85)) {
+                                selectedTags.removeAll()
+                            }
+                        } label: {
+                            Image(systemName: "xmark.circle.fill")
+                                .font(.system(size: 18))
+                                .foregroundStyle(MiraPalette.secondaryText)
+                                .symbolRenderingMode(.hierarchical)
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityLabel(Text("Clear tag filter"))
+                        .transition(.opacity.combined(with: .scale))
+                    }
                 }
-                .textInputAutocapitalization(.never)
-                .autocorrectionDisabled()
-                .font(MiraTypography.body)
-                .padding(.vertical, 10)
-                .padding(.horizontal, 12)
-                .background {
-                    RoundedRectangle(cornerRadius: 12, style: .continuous)
-                        .fill(MiraPalette.secondaryBackground.opacity(0.6))
+                .frame(maxWidth: .infinity, alignment: .leading)
+
+                if availableTags.isEmpty {
+                    Text("No tags yet — add tags to entries to filter by them.")
+                        .font(.system(size: 13))
+                        .foregroundStyle(MiraPalette.secondaryText)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                } else {
+                    FlowLayout(spacing: 8) {
+                        ForEach(availableTags, id: \.self) { tag in
+                            tagChip(tag)
+                        }
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
                 }
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
+    }
+
+    private func tagChip(_ tag: String) -> some View {
+        let isSelected = selectedTags.contains(tag)
+        return Button {
+            withAnimation(.spring(response: 0.3, dampingFraction: 0.85)) {
+                if isSelected {
+                    selectedTags.remove(tag)
+                } else {
+                    selectedTags.insert(tag)
+                }
+            }
+        } label: {
+            Text(tag)
+                .font(.system(size: 13, weight: .medium))
+                .foregroundStyle(isSelected ? MiraPalette.primaryText : MiraPalette.primaryText.opacity(0.85))
+                .padding(.horizontal, 12)
+                .padding(.vertical, 7)
+                .background {
+                    Capsule().fill(isSelected
+                                   ? MiraPalette.mood(level: 4).opacity(0.4)
+                                   : MiraPalette.secondaryBackground.opacity(0.6))
+                }
+                .overlay {
+                    Capsule().strokeBorder(
+                        isSelected
+                            ? MiraPalette.primaryText.opacity(0.5)
+                            : MiraPalette.primaryText.opacity(0.08),
+                        lineWidth: 1
+                    )
+                }
+                .contentShape(Capsule())
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(Text(tag))
+        .accessibilityAddTraits(isSelected ? [.isSelected, .isButton] : .isButton)
     }
 
     // MARK: - Reset
@@ -264,7 +329,7 @@ public struct EntryFilterView: View {
             withAnimation(.spring(response: 0.35, dampingFraction: 0.85)) {
                 dateActive = false
                 moods.removeAll()
-                tagsDraft = ""
+                selectedTags.removeAll()
             }
         } label: {
             HStack(spacing: 8) {
@@ -289,7 +354,7 @@ public struct EntryFilterView: View {
     }
 
     private var hasAnyDraftFilter: Bool {
-        dateActive || !moods.isEmpty || !tagsDraft.trimmingCharacters(in: .whitespaces).isEmpty
+        dateActive || !moods.isEmpty || !selectedTags.isEmpty
     }
 
     // MARK: - Apply
@@ -309,11 +374,7 @@ public struct EntryFilterView: View {
 
         next.moods = moods.isEmpty ? nil : moods
 
-        let parsed = tagsDraft
-            .split(separator: ",")
-            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() }
-            .filter { !$0.isEmpty }
-        next.tags = parsed.isEmpty ? nil : parsed
+        next.tags = selectedTags.isEmpty ? nil : Array(selectedTags).sorted()
 
         onApply(next)
         dismiss()

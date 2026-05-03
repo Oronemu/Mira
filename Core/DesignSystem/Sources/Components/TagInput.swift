@@ -127,12 +127,16 @@ private struct AddTagPill: View {
 /// current row overflows the proposed width, the next child wraps onto a new
 /// line. Spacing is uniform both horizontally and vertically.
 ///
-/// Internal (not `private`) so other DesignSystem components — e.g.
-/// `TagsSheet`'s recent-tag cloud — can reuse it without re-implementing.
-struct FlowLayout: Layout {
-    var spacing: CGFloat = 6
+/// Public so feature modules (e.g. EntryFilterView's tag chip cloud) can
+/// reuse it without re-implementing the wrap math.
+public struct FlowLayout: Layout {
+    public var spacing: CGFloat
 
-    func sizeThatFits(
+    public init(spacing: CGFloat = 6) {
+        self.spacing = spacing
+    }
+
+    public func sizeThatFits(
         proposal: ProposedViewSize,
         subviews: Subviews,
         cache: inout ()
@@ -147,7 +151,6 @@ struct FlowLayout: Layout {
         var x: CGFloat = 0
         var y: CGFloat = 0
         var rowHeight: CGFloat = 0
-        var totalWidth: CGFloat = 0
 
         for subview in subviews {
             let size = subview.sizeThatFits(.unspecified)
@@ -158,9 +161,20 @@ struct FlowLayout: Layout {
             }
             x += size.width + spacing
             rowHeight = max(rowHeight, size.height)
-            totalWidth = max(totalWidth, x)
         }
-        return CGSize(width: min(totalWidth, maxWidth), height: y + rowHeight)
+        // Claim the full proposed width when the parent gave us one.
+        // Reporting only the natural content width lets a leading
+        // `.frame(maxWidth: .infinity, alignment: .leading)` parent
+        // appear to "center" the wrap when a single short row doesn't
+        // visibly anchor against either edge — pinning to the proposal
+        // keeps the layout left-anchored at all selection counts.
+        let claimed: CGFloat
+        if let proposed = proposal.width, proposed > 0, proposed < .infinity {
+            claimed = proposed
+        } else {
+            claimed = maxWidth
+        }
+        return CGSize(width: claimed, height: y + rowHeight)
     }
 
     private func effectiveMaxWidth(_ proposal: ProposedViewSize) -> CGFloat {
@@ -170,7 +184,7 @@ struct FlowLayout: Layout {
         return UIScreen.main.bounds.width
     }
 
-    func placeSubviews(
+    public func placeSubviews(
         in bounds: CGRect,
         proposal: ProposedViewSize,
         subviews: Subviews,
