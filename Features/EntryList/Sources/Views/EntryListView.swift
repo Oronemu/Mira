@@ -7,6 +7,8 @@ public struct EntryListView: View {
     @Environment(\.entryRepository) private var repository
     @Environment(\.analyticsService) private var analyticsService
     @Environment(\.crashReporter) private var crashReporter
+    @Environment(\.subscriptionService) private var subscriptionService
+    @Environment(\.paywallPresenter) private var paywallPresenter
 
     @State private var state: EntryListState?
     @State private var searchText: String = ""
@@ -14,7 +16,12 @@ public struct EntryListView: View {
     @State private var showFilters = false
     @State private var visibleSectionID: String?
     @State private var showBulkDeleteConfirm = false
+    @State private var status: SubscriptionStatus = .unknown
+    @State private var savedFilters: [SavedFilter] = []
+    @State private var activeFilterID: UUID? = nil
     @Namespace private var rowNamespace
+
+    private let savedFilterStore = SavedFilterStore()
 
     private let initialQuery: EntryQuery
     private let onCreateNew: () -> Void
@@ -65,13 +72,43 @@ public struct EntryListView: View {
             }
             await state?.observe()
         }
+        .task {
+            // Saved filters are Pro — keep status fresh so the strip
+            // appears the moment a purchase completes and disappears
+            // again on cancel without requiring a screen reopen.
+            savedFilters = savedFilterStore.load()
+            status = await subscriptionService.status
+            for await snapshot in subscriptionService.statusUpdates {
+                status = snapshot
+            }
+        }
         .sheet(isPresented: $showFilters) {
             if let state {
-                EntryFilterView(initialQuery: state.query) { newQuery in
-                    withAnimation(.spring(response: 0.4, dampingFraction: 0.85)) {
-                        state.query = newQuery
+                EntryFilterView(
+                    initialQuery: state.query,
+                    canSaveAsFilter: status.isPro,
+                    onApply: { newQuery in
+                        withAnimation(.spring(response: 0.4, dampingFraction: 0.85)) {
+                            state.query = newQuery
+                        }
+                        // Manual edits invalidate any "active saved
+                        // filter" highlight; the user's now driving.
+                        activeFilterID = nil
+                    },
+                    onSave: { name in
+                        let filter = SavedFilter(name: name, from: state.query)
+                        savedFilterStore.save(filter)
+                        savedFilters = savedFilterStore.load()
+                        activeFilterID = filter.id
+                        analyticsService.log(
+                            event: "smart_filter_saved",
+                            parameters: ["filter_count": .int(savedFilters.count)]
+                        )
+                    },
+                    onSavePaywallTrigger: {
+                        paywallPresenter.present(.feature(.smartFilters))
                     }
-                }
+                )
             }
         }
         .alert(
@@ -175,6 +212,40 @@ public struct EntryListView: View {
 
     @ViewBuilder
     private func content(state: EntryListState) -> some View {
+        VStack(spacing: 0) {
+            if status.isPro && !savedFilters.isEmpty {
+                SavedFiltersStripView(
+                    filters: savedFilters,
+                    activeFilterID: activeFilterID,
+                    isUnfiltered: !state.hasActiveFilters,
+                    onApply: { filter in
+                        withAnimation(.spring(response: 0.4, dampingFraction: 0.85)) {
+                            state.query = filter.makeQuery(text: state.query.text)
+                        }
+                        activeFilterID = filter.id
+                    },
+                    onClear: {
+                        withAnimation(.spring(response: 0.4, dampingFraction: 0.85)) {
+                            state.query = EntryQuery(text: state.query.text)
+                        }
+                        activeFilterID = nil
+                    },
+                    onDelete: { filter in
+                        savedFilterStore.delete(id: filter.id)
+                        savedFilters = savedFilterStore.load()
+                        if activeFilterID == filter.id {
+                            activeFilterID = nil
+                        }
+                    }
+                )
+            }
+
+            innerContent(state: state)
+        }
+    }
+
+    @ViewBuilder
+    private func innerContent(state: EntryListState) -> some View {
         if state.isLoading {
             ProgressView()
                 .frame(maxWidth: .infinity, maxHeight: .infinity)

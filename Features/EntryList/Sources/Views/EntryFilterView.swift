@@ -7,16 +7,30 @@ public struct EntryFilterView: View {
 
     private let initialQuery: EntryQuery
     private let onApply: (EntryQuery) -> Void
+    private let canSaveAsFilter: Bool
+    private let onSave: (String) -> Void
+    private let onSavePaywallTrigger: () -> Void
 
     @State private var fromDate: Date
     @State private var toDate: Date
     @State private var dateActive: Bool
     @State private var moods: Set<Mood>
     @State private var tagsDraft: String
+    @State private var showingSavePrompt = false
+    @State private var saveName: String = ""
 
-    public init(initialQuery: EntryQuery, onApply: @escaping (EntryQuery) -> Void) {
+    public init(
+        initialQuery: EntryQuery,
+        canSaveAsFilter: Bool = false,
+        onApply: @escaping (EntryQuery) -> Void,
+        onSave: @escaping (String) -> Void = { _ in },
+        onSavePaywallTrigger: @escaping () -> Void = {}
+    ) {
         self.initialQuery = initialQuery
+        self.canSaveAsFilter = canSaveAsFilter
         self.onApply = onApply
+        self.onSave = onSave
+        self.onSavePaywallTrigger = onSavePaywallTrigger
 
         let cal = Calendar.current
         let now = Date.now
@@ -45,6 +59,9 @@ public struct EntryFilterView: View {
                         dateCard
                         moodCard
                         tagsCard
+                        if hasAnyDraftFilter {
+                            saveAsFilterButton
+                        }
                         resetButton
                         Color.clear.frame(height: 24)
                     }
@@ -66,7 +83,48 @@ public struct EntryFilterView: View {
                 }
             }
             .hideTabBar()
+            .alert(
+                String(localized: "Name this filter"),
+                isPresented: $showingSavePrompt
+            ) {
+                TextField(String(localized: "e.g. Bad weeks"), text: $saveName)
+                Button(String(localized: "Save")) {
+                    let trimmed = saveName.trimmingCharacters(in: .whitespacesAndNewlines)
+                    let final = trimmed.isEmpty ? String(localized: "Untitled filter") : trimmed
+                    apply()  // commit current filter to the list first
+                    onSave(final)
+                    saveName = ""
+                    dismiss()
+                }
+                Button(String(localized: "Cancel"), role: .cancel) { saveName = "" }
+            }
         }
+    }
+
+    @ViewBuilder
+    private var saveAsFilterButton: some View {
+        Button {
+            if canSaveAsFilter {
+                showingSavePrompt = true
+            } else {
+                onSavePaywallTrigger()
+            }
+        } label: {
+            HStack(spacing: 8) {
+                Image(systemName: canSaveAsFilter ? "bookmark" : "lock.fill")
+                Text(String(localized: "Save as smart filter"))
+                    .font(MiraTypography.body.weight(.semibold))
+                if !canSaveAsFilter {
+                    ProBadge()
+                }
+            }
+            .foregroundStyle(.tint)
+            .padding(.vertical, 10)
+            .padding(.horizontal, 14)
+            .frame(maxWidth: .infinity)
+            .background(.tint.opacity(0.12), in: Capsule())
+        }
+        .buttonStyle(.plain)
     }
 
     // MARK: - Date
