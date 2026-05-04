@@ -11469,6 +11469,23 @@
         }
       }
     },
+    "[DO NOT DELETE THIS TEXT — helps support diagnose your issue]": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "[DO NOT DELETE THIS TEXT — helps support diagnose your issue]"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "[НЕ УДАЛЯЙТЕ ЭТОТ ТЕКСТ — он помогает поддержке быстрее разобраться]"
+          }
+        }
+      }
+    },
     "comma, separated": {
       "extractionState": "manual",
       "localizations": {

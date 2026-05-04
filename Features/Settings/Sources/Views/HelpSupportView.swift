@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 import CoreKit
 import DesignSystem
 
@@ -12,7 +13,7 @@ import DesignSystem
 public struct HelpSupportView: View {
     @Environment(\.openURL) private var openURL
 
-    private static let supportEmail = "arbuzikmr@gmail.com"
+    private static let supportEmail = "mira-diary-support@inbox.ru"
 
     public init() {}
 
@@ -109,17 +110,54 @@ public struct HelpSupportView: View {
         .buttonStyle(.plain)
     }
 
-    /// Pre-fills subject with version + build metadata so first reply
-    /// can skip the "what build are you on" round-trip.
+    /// Pre-fills subject + body so the first support reply can skip
+    /// the "what build / iOS / device are you on" round-trip. The
+    /// diagnostic block is wrapped in a localised "[DO NOT DELETE]"
+    /// banner so users get a clear hint not to wipe it before writing.
     private var mailtoURL: URL? {
         let info = Bundle.main.infoDictionary
         let version = info?["CFBundleShortVersionString"] as? String ?? "?"
         let build = info?["CFBundleVersion"] as? String ?? "?"
         let subject = "Mira support — v\(version) (\(build))"
-        guard let encoded = subject.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) else {
-            return URL(string: "mailto:\(Self.supportEmail)")
+
+        let device = Self.deviceIdentifier()
+        let osVersion = UIDevice.current.systemVersion
+        let locale = Locale.current.identifier
+        let warning = String(localized: "[DO NOT DELETE THIS TEXT — helps support diagnose your issue]")
+
+        let body = """
+        \(warning)
+        App version: \(version) (\(build))
+        iOS: \(osVersion)
+        Device: \(device)
+        Locale: \(locale)
+        — — —
+
+
+        """
+
+        var components = URLComponents()
+        components.scheme = "mailto"
+        components.path = Self.supportEmail
+        components.queryItems = [
+            URLQueryItem(name: "subject", value: subject),
+            URLQueryItem(name: "body", value: body),
+        ]
+        return components.url
+    }
+
+    /// Reads `utsname.machine` to surface the precise model identifier
+    /// (e.g. "iPhone16,3" for iPhone 15 Pro) — `UIDevice.model` only
+    /// returns the family name and isn't useful for hardware-specific
+    /// support tickets.
+    private static func deviceIdentifier() -> String {
+        var system = utsname()
+        uname(&system)
+        let mirror = Mirror(reflecting: system.machine)
+        return mirror.children.reduce(into: "") { result, child in
+            guard let value = child.value as? Int8, value != 0 else { return }
+            result.append(String(UnicodeScalar(UInt8(value))))
         }
-        return URL(string: "mailto:\(Self.supportEmail)?subject=\(encoded)")
     }
 
     // MARK: - FAQ data
