@@ -3705,19 +3705,19 @@
         }
       }
     },
-    "Free covers the journal itself: writing, mood, photos, tags, calendar, search, iCloud sync, biometric lock, on-device Apple Foundation Models AI. Pro adds Ask Mira (Claude conversations), advanced stats, themes and app icons, PDF export, custom AI personas, smart filters, goals & habits, Lock Screen widgets, and importers from Day One / Apple Notes.": {
+    "Free gives you the full journal: writing, mood, photos, tags, calendar, search, iCloud sync, biometric lock, and a local AI for reflections. Pro unlocks Ask Mira with cloud AI, advanced stats, themes and icons, PDF export, your own AI persona, smart filters, goals and habits, Lock Screen widgets, and importers from other journal apps.": {
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Free covers the journal itself: writing, mood, photos, tags, calendar, search, iCloud sync, biometric lock, on-device Apple Foundation Models AI. Pro adds Ask Mira (Claude conversations), advanced stats, themes and app icons, PDF export, custom AI personas, smart filters, goals & habits, Lock Screen widgets, and importers from Day One / Apple Notes."
+            "value": "Free gives you the full journal: writing, mood, photos, tags, calendar, search, iCloud sync, biometric lock, and a local AI for reflections. Pro unlocks Ask Mira with cloud AI, advanced stats, themes and icons, PDF export, your own AI persona, smart filters, goals and habits, Lock Screen widgets, and importers from other journal apps."
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Бесплатная версия покрывает сам дневник: записи, настроение, фото, теги, календарь, поиск, iCloud-синк, биометрический замок, локальный AI на Apple Foundation Models. Pro добавляет Ask Mira (облачные беседы), расширенную статистику, темы и иконки, PDF-экспорт, персонализацию AI, умные фильтры, цели и привычки, виджеты Lock Screen, импортёры из Day One / Apple Notes."
+            "value": "Бесплатная версия даёт полный дневник: записи, настроение, фото, теги, календарь, поиск, iCloud-синк, биометрический замок и локальный AI для рефлексий. Pro открывает Ask Mira с облачным AI, расширенную статистику, темы и иконки, экспорт в PDF, вашу личную AI-личность, умные фильтры, цели и привычки, виджеты Lock Screen и импорт из других дневников."
           }
         }
       }
@@ -6702,19 +6702,19 @@
         }
       }
     },
-    "On your device. Mira stores everything in a local SwiftData database. iCloud sync, when you turn it on, copies the data end-to-end encrypted to your private iCloud — Apple can't read it, we can't read it. Pro hosted AI sends only the message text and a small RAG-selected slice of your journal to our proxy when you ask Mira a question; the rest of the journal never leaves your phone.": {
+    "On your iPhone. Your journal stays on this device. If you turn on iCloud sync, your entries also save to your private iCloud — only you can read them. When you ask Mira a question with cloud AI, only that question and a small relevant piece of your journal go to our servers; everything else stays on the phone.": {
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "On your device. Mira stores everything in a local SwiftData database. iCloud sync, when you turn it on, copies the data end-to-end encrypted to your private iCloud — Apple can't read it, we can't read it. Pro hosted AI sends only the message text and a small RAG-selected slice of your journal to our proxy when you ask Mira a question; the rest of the journal never leaves your phone."
+            "value": "On your iPhone. Your journal stays on this device. If you turn on iCloud sync, your entries also save to your private iCloud — only you can read them. When you ask Mira a question with cloud AI, only that question and a small relevant piece of your journal go to our servers; everything else stays on the phone."
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "На вашем устройстве. Mira хранит всё в локальной SwiftData-базе. Если включён iCloud-синк, данные копируются в ваш приватный iCloud со сквозным шифрованием — ни Apple, ни мы их прочитать не можем. Облачный AI в Pro отправляет только текст сообщения и небольшой релевантный фрагмент дневника, когда вы задаёте вопрос; остальное никогда не покидает телефон."
+            "value": "На вашем iPhone. Дневник хранится прямо на этом устройстве. Если включить iCloud-синк, записи также сохраняются в ваш приватный iCloud — прочитать их можете только вы. Когда вы задаёте вопрос Mira через облачный AI, на наши серверы уходит только сам вопрос и небольшой релевантный фрагмент дневника; всё остальное остаётся на телефоне."
           }
         }
       }
@@ -6822,53 +6822,53 @@
         }
       }
     },
-    "Open the iOS Settings app → tap your name at the top → Subscriptions → Mira Pro → Cancel Subscription. Apple processes the cancellation; we don't store payment info. Your Pro features stay active until the end of the current billing period.": {
+    "Open the iPhone Settings app, tap your name at the top, choose Subscriptions, tap Mira Pro, and Cancel Subscription. Your Pro features stay active until the end of the current billing period.": {
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Open the iOS Settings app → tap your name at the top → Subscriptions → Mira Pro → Cancel Subscription. Apple processes the cancellation; we don't store payment info. Your Pro features stay active until the end of the current billing period."
+            "value": "Open the iPhone Settings app, tap your name at the top, choose Subscriptions, tap Mira Pro, and Cancel Subscription. Your Pro features stay active until the end of the current billing period."
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Откройте Настройки iOS → нажмите на ваше имя сверху → Подписки → Mira Pro → Отменить подписку. Отменой управляет Apple — мы не храним платёжные данные. Pro останется активным до конца оплаченного периода."
+            "value": "Откройте Настройки iPhone, нажмите на ваше имя сверху, выберите Подписки, затем Mira Pro и Отменить подписку. Pro останется активным до конца оплаченного периода."
           }
         }
       }
     },
-    "Open the paywall (Settings → Upgrade or any locked feature) and tap Restore at the bottom. Apple will look up your purchase against your Apple ID and unlock Pro on this device. Make sure you're signed into the same Apple ID you used to subscribe.": {
+    "Open the upgrade screen and tap Redeem code at the bottom. Enter the code — capital letters and extra spaces don't matter — and tap Redeem. If it's valid, Pro unlocks right away.": {
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Open the paywall (Settings → Upgrade or any locked feature) and tap Restore at the bottom. Apple will look up your purchase against your Apple ID and unlock Pro on this device. Make sure you're signed into the same Apple ID you used to subscribe."
+            "value": "Open the upgrade screen and tap Redeem code at the bottom. Enter the code — capital letters and extra spaces don't matter — and tap Redeem. If it's valid, Pro unlocks right away."
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Откройте экран подписки (Настройки → Upgrade или любая заблокированная фича) и нажмите Restore внизу. Apple найдёт покупку по вашему Apple ID и разблокирует Pro на этом устройстве. Убедитесь, что вошли под тем же Apple ID, что использовали при покупке."
+            "value": "Откройте экран подписки и нажмите Redeem code внизу. Введите код — регистр и лишние пробелы не важны — и подтвердите. Если код валидный, Pro разблокируется сразу."
           }
         }
       }
     },
-    "Open the paywall and tap Redeem code at the bottom. Enter the code and tap Redeem. If it's valid you'll be unlocked immediately. Codes are case-insensitive and trimmed of surrounding spaces.": {
+    "Open the upgrade screen and tap Restore at the bottom. Make sure you're signed into the same Apple ID you used when you subscribed.": {
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Open the paywall and tap Redeem code at the bottom. Enter the code and tap Redeem. If it's valid you'll be unlocked immediately. Codes are case-insensitive and trimmed of surrounding spaces."
+            "value": "Open the upgrade screen and tap Restore at the bottom. Make sure you're signed into the same Apple ID you used when you subscribed."
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Откройте экран подписки и нажмите Redeem code внизу. Введите код и подтвердите. Если код валидный — Pro разблокируется сразу. Регистр не важен, лишние пробелы обрезаются."
+            "value": "Откройте экран подписки и нажмите Restore внизу. Убедитесь, что вошли под тем же Apple ID, что использовали при покупке."
           }
         }
       }
@@ -7384,19 +7384,19 @@
         }
       }
     },
-    "Pro includes 100 Ask Mira conversations per calendar month and 2 manually-triggered weekly reflections. Auto-fired weekly reflections aren't counted. Limits reset on the 1st. The on-device Apple Foundation Models option has no limit and runs entirely on your phone — toggle it in Settings → Intelligence.": {
+    "Pro includes 100 cloud conversations per month and 2 manual weekly reflections. Automatic weekly reflections don't count. Limits reset on the 1st of each month. The local AI option has no limits and runs entirely on your phone — switch in Settings → Intelligence.": {
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Pro includes 100 Ask Mira conversations per calendar month and 2 manually-triggered weekly reflections. Auto-fired weekly reflections aren't counted. Limits reset on the 1st. The on-device Apple Foundation Models option has no limit and runs entirely on your phone — toggle it in Settings → Intelligence."
+            "value": "Pro includes 100 cloud conversations per month and 2 manual weekly reflections. Automatic weekly reflections don't count. Limits reset on the 1st of each month. The local AI option has no limits and runs entirely on your phone — switch in Settings → Intelligence."
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Pro даёт 100 диалогов Ask Mira в месяц и 2 ручных еженедельных рефлексии. Автоматические рефлексии не учитываются. Лимиты сбрасываются 1-го числа. Локальный режим на Apple Foundation Models без лимитов — включается в Настройки → Интеллект."
+            "value": "Pro даёт 100 облачных диалогов в месяц и 2 ручных еженедельных рефлексии. Автоматические рефлексии не считаются. Лимиты сбрасываются 1-го числа каждого месяца. Локальный AI без лимитов и работает прямо на телефоне — переключиться можно в Настройки → Интеллект."
           }
         }
       }
@@ -7418,19 +7418,19 @@
         }
       }
     },
-    "Pro starts with a 7-day free trial. You won't be charged until the trial ends. Cancel any time during the trial in iOS Settings → Apple ID → Subscriptions and you'll keep Pro until the trial expires, then drop back to free with no charge.": {
+    "Pro starts with a 7-day free trial. You won't be charged until the trial ends. Cancel any time during the trial — you'll keep Pro until the trial expires, then drop back to free with no charge.": {
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Pro starts with a 7-day free trial. You won't be charged until the trial ends. Cancel any time during the trial in iOS Settings → Apple ID → Subscriptions and you'll keep Pro until the trial expires, then drop back to free with no charge."
+            "value": "Pro starts with a 7-day free trial. You won't be charged until the trial ends. Cancel any time during the trial — you'll keep Pro until the trial expires, then drop back to free with no charge."
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Pro начинается с 7-дневного пробного периода. Списания не будет до его окончания. Отменить можно в любой момент в Настройках iOS → Apple ID → Подписки. Pro останется до конца пробного срока, затем вернётесь на бесплатную версию без списания."
+            "value": "Pro начинается с 7-дневного пробного периода. Списания не будет до его окончания. Отменить можно в любой момент — Pro останется до конца пробного срока, затем вернётесь на бесплатную версию без списания."
           }
         }
       }
@@ -10139,6 +10139,23 @@
         }
       }
     },
+    "Turn on iCloud sync and your entries quietly save to your private iCloud, encrypted so only your devices can read them. Sign into the same Apple ID on another iPhone and Mira will pick everything up automatically.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Turn on iCloud sync and your entries quietly save to your private iCloud, encrypted so only your devices can read them. Sign into the same Apple ID on another iPhone and Mira will pick everything up automatically."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Включите iCloud-синк — записи тихо сохраняются в ваш приватный iCloud, зашифрованные так, что прочитать их могут только ваши устройства. Войдите под тем же Apple ID на другом iPhone — Mira подхватит всё сама."
+          }
+        }
+      }
+    },
     "Unavailable": {
       "extractionState": "stale",
       "localizations": {
@@ -10870,23 +10887,6 @@
         }
       }
     },
-    "When enabled, Mira encrypts each entry on this device using a key stored in your iCloud Keychain, then uploads the ciphertext to your private iCloud database. Other devices signed into the same Apple ID download and decrypt locally. Apple sees only encrypted blobs — they don't have the key.": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "When enabled, Mira encrypts each entry on this device using a key stored in your iCloud Keychain, then uploads the ciphertext to your private iCloud database. Other devices signed into the same Apple ID download and decrypt locally. Apple sees only encrypted blobs — they don't have the key."
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "При включении Mira шифрует каждую запись на устройстве ключом из вашего iCloud Keychain, затем загружает зашифрованные данные в ваш приватный iCloud. Другие устройства с тем же Apple ID скачивают и расшифровывают локально. Apple видит только шифротекст — ключа у них нет."
-          }
-        }
-      }
-    },
     "Where do my entries live?": {
       "extractionState": "manual",
       "localizations": {
@@ -11093,19 +11093,19 @@
         }
       }
     },
-    "Yes. Settings → Privacy → Delete all entries removes everything from this device. If iCloud sync is on, the deletion propagates to your other devices on next sync. To also revoke any cached subscription state on our backend, write to support and we'll wipe your originalTransactionId from our records.": {
+    "Yes. Settings → Privacy → Delete all entries removes everything from this iPhone. If iCloud sync is on, the deletion also reaches your other devices the next time they sync. If you'd also like us to clear any record of your subscription on our side, write to support.": {
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Yes. Settings → Privacy → Delete all entries removes everything from this device. If iCloud sync is on, the deletion propagates to your other devices on next sync. To also revoke any cached subscription state on our backend, write to support and we'll wipe your originalTransactionId from our records."
+            "value": "Yes. Settings → Privacy → Delete all entries removes everything from this iPhone. If iCloud sync is on, the deletion also reaches your other devices the next time they sync. If you'd also like us to clear any record of your subscription on our side, write to support."
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Да. Настройки → Приватность → Удалить все записи стирает всё с этого устройства. Если включён iCloud-синк, удаление синхронизируется на другие ваши устройства. Чтобы стереть кэш подписки на нашем сервере — напишите в поддержку, и мы удалим ваш originalTransactionId."
+            "value": "Да. Настройки → Приватность → Удалить все записи стирает всё с этого iPhone. Если включён iCloud-синк, удаление дойдёт до ваших других устройств при следующей синхронизации. Если хотите, чтобы мы также очистили запись о подписке на нашей стороне — напишите в поддержку."
           }
         }
       }

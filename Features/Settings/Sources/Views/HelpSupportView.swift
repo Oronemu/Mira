@@ -32,7 +32,9 @@ public struct HelpSupportView: View {
 
                     contactCard
 
-                    Color.clear.frame(height: 24)
+                    // Tab bar footprint — keep the contact card clear of
+                    // the Liquid Glass tab bar at the bottom of the app.
+                    Color.clear.frame(height: 110)
                 }
                 .padding(.horizontal, 20)
                 .padding(.top, 4)
@@ -130,47 +132,47 @@ public struct HelpSupportView: View {
         FAQItem(
             id: "privacy",
             question: String(localized: "Where do my entries live?"),
-            answer: String(localized: "On your device. Mira stores everything in a local SwiftData database. iCloud sync, when you turn it on, copies the data end-to-end encrypted to your private iCloud — Apple can't read it, we can't read it. Pro hosted AI sends only the message text and a small RAG-selected slice of your journal to our proxy when you ask Mira a question; the rest of the journal never leaves your phone.")
+            answer: String(localized: "On your iPhone. Your journal stays on this device. If you turn on iCloud sync, your entries also save to your private iCloud — only you can read them. When you ask Mira a question with cloud AI, only that question and a small relevant piece of your journal go to our servers; everything else stays on the phone.")
         ),
         FAQItem(
             id: "free-vs-pro",
             question: String(localized: "What's the difference between free and Pro?"),
-            answer: String(localized: "Free covers the journal itself: writing, mood, photos, tags, calendar, search, iCloud sync, biometric lock, on-device Apple Foundation Models AI. Pro adds Ask Mira (Claude conversations), advanced stats, themes and app icons, PDF export, custom AI personas, smart filters, goals & habits, Lock Screen widgets, and importers from Day One / Apple Notes.")
+            answer: String(localized: "Free gives you the full journal: writing, mood, photos, tags, calendar, search, iCloud sync, biometric lock, and a local AI for reflections. Pro unlocks Ask Mira with cloud AI, advanced stats, themes and icons, PDF export, your own AI persona, smart filters, goals and habits, Lock Screen widgets, and importers from other journal apps.")
         ),
         FAQItem(
             id: "trial",
             question: String(localized: "How does the free trial work?"),
-            answer: String(localized: "Pro starts with a 7-day free trial. You won't be charged until the trial ends. Cancel any time during the trial in iOS Settings → Apple ID → Subscriptions and you'll keep Pro until the trial expires, then drop back to free with no charge.")
+            answer: String(localized: "Pro starts with a 7-day free trial. You won't be charged until the trial ends. Cancel any time during the trial — you'll keep Pro until the trial expires, then drop back to free with no charge.")
         ),
         FAQItem(
             id: "cancel",
             question: String(localized: "How do I cancel my subscription?"),
-            answer: String(localized: "Open the iOS Settings app → tap your name at the top → Subscriptions → Mira Pro → Cancel Subscription. Apple processes the cancellation; we don't store payment info. Your Pro features stay active until the end of the current billing period.")
+            answer: String(localized: "Open the iPhone Settings app, tap your name at the top, choose Subscriptions, tap Mira Pro, and Cancel Subscription. Your Pro features stay active until the end of the current billing period.")
         ),
         FAQItem(
             id: "restore",
             question: String(localized: "I bought Pro on another device — how do I restore it here?"),
-            answer: String(localized: "Open the paywall (Settings → Upgrade or any locked feature) and tap Restore at the bottom. Apple will look up your purchase against your Apple ID and unlock Pro on this device. Make sure you're signed into the same Apple ID you used to subscribe.")
+            answer: String(localized: "Open the upgrade screen and tap Restore at the bottom. Make sure you're signed into the same Apple ID you used when you subscribed.")
         ),
         FAQItem(
             id: "ai-limits",
             question: String(localized: "Are there limits on Ask Mira?"),
-            answer: String(localized: "Pro includes 100 Ask Mira conversations per calendar month and 2 manually-triggered weekly reflections. Auto-fired weekly reflections aren't counted. Limits reset on the 1st. The on-device Apple Foundation Models option has no limit and runs entirely on your phone — toggle it in Settings → Intelligence.")
+            answer: String(localized: "Pro includes 100 cloud conversations per month and 2 manual weekly reflections. Automatic weekly reflections don't count. Limits reset on the 1st of each month. The local AI option has no limits and runs entirely on your phone — switch in Settings → Intelligence.")
         ),
         FAQItem(
             id: "icloud-sync",
             question: String(localized: "How does iCloud sync work?"),
-            answer: String(localized: "When enabled, Mira encrypts each entry on this device using a key stored in your iCloud Keychain, then uploads the ciphertext to your private iCloud database. Other devices signed into the same Apple ID download and decrypt locally. Apple sees only encrypted blobs — they don't have the key.")
+            answer: String(localized: "Turn on iCloud sync and your entries quietly save to your private iCloud, encrypted so only your devices can read them. Sign into the same Apple ID on another iPhone and Mira will pick everything up automatically.")
         ),
         FAQItem(
             id: "redeem",
             question: String(localized: "I have a promo code — how do I redeem it?"),
-            answer: String(localized: "Open the paywall and tap Redeem code at the bottom. Enter the code and tap Redeem. If it's valid you'll be unlocked immediately. Codes are case-insensitive and trimmed of surrounding spaces.")
+            answer: String(localized: "Open the upgrade screen and tap Redeem code at the bottom. Enter the code — capital letters and extra spaces don't matter — and tap Redeem. If it's valid, Pro unlocks right away.")
         ),
         FAQItem(
             id: "delete",
             question: String(localized: "Can I delete all my data?"),
-            answer: String(localized: "Yes. Settings → Privacy → Delete all entries removes everything from this device. If iCloud sync is on, the deletion propagates to your other devices on next sync. To also revoke any cached subscription state on our backend, write to support and we'll wipe your originalTransactionId from our records.")
+            answer: String(localized: "Yes. Settings → Privacy → Delete all entries removes everything from this iPhone. If iCloud sync is on, the deletion also reaches your other devices the next time they sync. If you'd also like us to clear any record of your subscription on our side, write to support.")
         ),
     ]
 
@@ -219,7 +221,7 @@ public struct HelpSupportView: View {
                         .padding(.horizontal, 16)
                         .padding(.bottom, 14)
                         .frame(maxWidth: .infinity, alignment: .leading)
-                        .transition(.opacity.combined(with: .move(edge: .top)))
+                        .transition(.opacity)
                 }
             }
             .background {
@@ -230,6 +232,10 @@ public struct HelpSupportView: View {
                 RoundedRectangle(cornerRadius: 16, style: .continuous)
                     .strokeBorder(MiraPalette.divider, lineWidth: 0.5)
             }
+            // Clip so the answer fades inside the card rather than
+            // bleeding past the rounded edge during the collapse
+            // animation.
+            .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
         }
     }
 }
