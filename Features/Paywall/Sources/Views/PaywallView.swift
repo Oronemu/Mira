@@ -2,10 +2,11 @@ import SwiftUI
 import CoreKit
 import DesignSystem
 
-/// Full-screen paywall presented as a sheet. Shows the contextual hero,
-/// the Pro benefit list, the two SKUs, and the primary "Start Free Trial"
-/// CTA. Footer bundles the Apple-mandated disclosure plus secondary actions
-/// (Restore, Redeem, Privacy, Terms).
+/// Full-screen paywall presented as a sheet. The redesign leans into the
+/// app's "stoic editorial" register: a warm AmbientBackground in mood
+/// levels 4–5 (terracotta + sage) under a sparkle constellation, serif
+/// hero title, glass-tinted benefit rows, a featured yearly plan with
+/// "Best value" badge, and a cascade fade-in when the sheet first opens.
 public struct PaywallView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.subscriptionService) private var subscriptionService
@@ -14,18 +15,23 @@ public struct PaywallView: View {
     private let context: PaywallContext
     @State private var state: PaywallState?
     @State private var showingRedeem = false
+    @State private var hasAppeared = false
 
     public init(context: PaywallContext = .general) {
         self.context = context
     }
 
     public var body: some View {
-        Group {
-            if let state {
-                content(state: state)
-            } else {
-                ProgressView()
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+        ZStack {
+            AmbientBackground(moodLevels: [4, 5], intensity: 0.65)
+
+            Group {
+                if let state {
+                    content(state: state)
+                } else {
+                    ProgressView()
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                }
             }
         }
         .task {
@@ -36,6 +42,11 @@ public struct PaywallView: View {
                 )
             }
             await state?.load()
+        }
+        .onAppear {
+            withAnimation(.spring(duration: 0.7, bounce: 0.1)) {
+                hasAppeared = true
+            }
         }
         .onChange(of: state?.didUnlockPro ?? false) { _, unlocked in
             if unlocked { dismiss() }
@@ -54,19 +65,38 @@ public struct PaywallView: View {
         ScrollView {
             VStack(spacing: 28) {
                 hero
+                    .opacity(hasAppeared ? 1 : 0)
+                    .offset(y: hasAppeared ? 0 : 16)
+
                 benefits
+                    .opacity(hasAppeared ? 1 : 0)
+                    .offset(y: hasAppeared ? 0 : 16)
+                    .animation(.spring(duration: 0.7, bounce: 0.1).delay(0.1), value: hasAppeared)
+
                 productList(state: state)
+                    .opacity(hasAppeared ? 1 : 0)
+                    .offset(y: hasAppeared ? 0 : 16)
+                    .animation(.spring(duration: 0.7, bounce: 0.1).delay(0.2), value: hasAppeared)
+
                 purchaseCTA(state: state)
+                    .opacity(hasAppeared ? 1 : 0)
+                    .offset(y: hasAppeared ? 0 : 16)
+                    .animation(.spring(duration: 0.7, bounce: 0.1).delay(0.3), value: hasAppeared)
+
                 if let message = state.errorMessage {
                     Text(message)
                         .font(MiraTypography.caption)
                         .foregroundStyle(.red)
                         .multilineTextAlignment(.center)
                 }
+
                 footer(state: state)
+                    .opacity(hasAppeared ? 1 : 0)
+                    .animation(.easeOut(duration: 0.5).delay(0.4), value: hasAppeared)
             }
             .padding(.horizontal, 20)
-            .padding(.vertical, 24)
+            .padding(.top, 32)
+            .padding(.bottom, 32)
         }
         .scrollIndicators(.hidden)
         .overlay(alignment: .topTrailing) { closeButton }
@@ -75,49 +105,56 @@ public struct PaywallView: View {
     // MARK: - Sections
 
     private var hero: some View {
-        VStack(spacing: 12) {
-            Image(systemName: "sparkles")
-                .font(.system(size: 44, weight: .light))
-                .foregroundStyle(.tint)
-                .accessibilityHidden(true)
+        VStack(spacing: 18) {
+            PaywallHeroIcon()
+
+            Text(String(localized: "Mira Pro"))
+                .eyebrowStyle(color: MiraPalette.proAccent(.gold))
 
             Text(context.headline)
-                .font(MiraTypography.title)
+                .font(MiraTypography.hero)
+                .foregroundStyle(MiraPalette.primaryText)
                 .multilineTextAlignment(.center)
+                .lineSpacing(2)
 
             Text(context.subheadline)
-                .font(MiraTypography.body)
-                .foregroundStyle(.secondary)
+                .font(.system(.body, design: .serif))
+                .foregroundStyle(MiraPalette.secondaryText)
                 .multilineTextAlignment(.center)
                 .fixedSize(horizontal: false, vertical: true)
+                .padding(.horizontal, 8)
         }
-        .padding(.top, 24)
     }
 
     private var benefits: some View {
-        VStack(alignment: .leading, spacing: 14) {
+        VStack(spacing: 8) {
             ProBenefitRow(
                 icon: "bubble.left.and.bubble.right",
+                moodLevel: 5,
                 title: String(localized: "Ask Mira and reflections"),
                 subtitle: String(localized: "Hosted by Mira — no API keys to manage.")
             )
             ProBenefitRow(
                 icon: "chart.line.uptrend.xyaxis",
+                moodLevel: 4,
                 title: String(localized: "Advanced stats"),
                 subtitle: String(localized: "Tag correlations, predictions, year-in-review.")
             )
             ProBenefitRow(
                 icon: "paintpalette",
+                moodLevel: 2,
                 title: String(localized: "Themes and app icons"),
                 subtitle: String(localized: "Make Mira look the way you journal.")
             )
             ProBenefitRow(
                 icon: "doc.richtext",
+                moodLevel: 3,
                 title: String(localized: "PDF templates and importers"),
                 subtitle: String(localized: "Export beautifully, import from Day One and Notes.")
             )
             ProBenefitRow(
                 icon: "rectangle.stack",
+                moodLevel: 1,
                 title: String(localized: "More widgets and smart filters"),
                 subtitle: String(localized: "Lock Screen widgets, collections, goals.")
             )
@@ -125,7 +162,7 @@ public struct PaywallView: View {
     }
 
     private func productList(state: PaywallState) -> some View {
-        VStack(spacing: 12) {
+        VStack(spacing: 14) {
             if state.isLoading {
                 ProgressView().frame(height: 80)
             } else {
@@ -133,6 +170,7 @@ public struct PaywallView: View {
                     PaywallProductCard(
                         product: product,
                         isSelected: state.selectedProductID == product.id,
+                        isFeatured: product.plan == .yearly,
                         savingsBadge: badge(for: product, in: state.products),
                         onTap: { state.selectProduct(product.id) }
                     )
@@ -149,13 +187,14 @@ public struct PaywallView: View {
             Task { await state.purchaseSelected() }
         }
         .disabled(state.selectedProductID == nil)
+        .shadow(color: MiraPalette.proAccent(.gold).opacity(0.25), radius: 16, x: 0, y: 6)
     }
 
     private func footer(state: PaywallState) -> some View {
-        VStack(spacing: 12) {
+        VStack(spacing: 14) {
             Text(disclosure(for: state))
                 .font(MiraTypography.caption)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(MiraPalette.secondaryText)
                 .multilineTextAlignment(.center)
                 .fixedSize(horizontal: false, vertical: true)
 
@@ -179,9 +218,9 @@ public struct PaywallView: View {
                 }
             }
             .font(MiraTypography.caption)
-            .foregroundStyle(.tint)
+            .foregroundStyle(MiraPalette.secondaryText)
         }
-        .padding(.top, 8)
+        .padding(.top, 4)
     }
 
     private var closeButton: some View {
@@ -192,10 +231,10 @@ public struct PaywallView: View {
                 .font(.system(size: 14, weight: .semibold))
                 .frame(width: 32, height: 32)
                 .background(.thinMaterial, in: Circle())
-                .foregroundStyle(.primary)
+                .foregroundStyle(MiraPalette.primaryText)
         }
         .padding(.top, 12)
-        .padding(.trailing, 12)
+        .padding(.trailing, 16)
         .accessibilityLabel(String(localized: "Close"))
     }
 
@@ -204,7 +243,7 @@ public struct PaywallView: View {
     private func badge(for product: SubscriptionProduct, in catalog: [SubscriptionProduct]) -> String? {
         guard product.plan == .yearly else { return nil }
         guard catalog.contains(where: { $0.plan == .monthly }) else { return nil }
-        return String(localized: "Save 30%")
+        return String(localized: "Best value · save 30%")
     }
 
     private func disclosure(for state: PaywallState) -> String {

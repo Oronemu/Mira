@@ -2,80 +2,158 @@ import SwiftUI
 import CoreKit
 import DesignSystem
 
-/// Selectable card for a single subscription SKU. Highlights the yearly
-/// plan with a "Best value — save 30%" badge and surfaces the introductory
-/// offer (free trial) so the user knows what they get on first purchase.
+/// Selectable card for a single subscription SKU. The yearly plan is rendered
+/// as the *featured* card — taller, with a soft gold gradient surround and a
+/// floating "Best value" badge — to make the pricing decision visually
+/// pre-loaded toward the better-margin SKU without crowding the screen.
 struct PaywallProductCard: View {
     let product: SubscriptionProduct
     let isSelected: Bool
+    let isFeatured: Bool
     let savingsBadge: String?
     let onTap: () -> Void
 
     var body: some View {
         Button(action: onTap) {
-            HStack(alignment: .center, spacing: 16) {
-                selectionIndicator
-
-                VStack(alignment: .leading, spacing: 4) {
-                    HStack(spacing: 8) {
-                        Text(planTitle)
-                            .font(MiraTypography.headline)
-                        if let badge = savingsBadge {
-                            Text(badge)
-                                .font(MiraTypography.caption.weight(.semibold))
-                                .padding(.horizontal, 8)
-                                .padding(.vertical, 3)
-                                .background(.tint.opacity(0.15), in: Capsule())
-                                .foregroundStyle(.tint)
-                        }
-                    }
-                    if let trial = trialCopy {
-                        Text(trial)
-                            .font(MiraTypography.caption)
-                            .foregroundStyle(.secondary)
-                    }
-                }
-
-                Spacer(minLength: 0)
-
-                VStack(alignment: .trailing, spacing: 2) {
-                    Text(product.displayPrice)
-                        .font(MiraTypography.headline)
-                    Text(perPeriodCopy)
-                        .font(MiraTypography.caption)
-                        .foregroundStyle(.secondary)
+            VStack(spacing: 0) {
+                cardBody
+            }
+            .overlay(alignment: .top) {
+                if let badge = savingsBadge, isFeatured {
+                    badgeView(text: badge)
+                        .offset(y: -10)
                 }
             }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 14)
-            .background(
-                RoundedRectangle(cornerRadius: 16, style: .continuous)
-                    .strokeBorder(
-                        isSelected ? Color.accentColor : Color.secondary.opacity(0.25),
-                        lineWidth: isSelected ? 2 : 1
-                    )
-                    .background(
-                        RoundedRectangle(cornerRadius: 16, style: .continuous)
-                            .fill(isSelected ? Color.accentColor.opacity(0.06) : Color.clear)
-                    )
-            )
+            .padding(.top, isFeatured && savingsBadge != nil ? 10 : 0)
         }
         .buttonStyle(.plain)
         .accessibilityElement(children: .combine)
         .accessibilityAddTraits(isSelected ? [.isSelected, .isButton] : .isButton)
     }
 
+    private var cardBody: some View {
+        HStack(alignment: .center, spacing: 16) {
+            selectionIndicator
+
+            VStack(alignment: .leading, spacing: 4) {
+                Text(planTitle)
+                    .font(MiraTypography.headline)
+                    .foregroundStyle(MiraPalette.primaryText)
+
+                if let trial = trialCopy {
+                    Text(trial)
+                        .font(MiraTypography.caption)
+                        .foregroundStyle(MiraPalette.secondaryText)
+                }
+            }
+
+            Spacer(minLength: 0)
+
+            VStack(alignment: .trailing, spacing: 2) {
+                Text(product.displayPrice)
+                    .font(MiraTypography.headline)
+                    .foregroundStyle(MiraPalette.primaryText)
+                Text(perPeriodCopy)
+                    .font(MiraTypography.caption)
+                    .foregroundStyle(MiraPalette.secondaryText)
+            }
+        }
+        .padding(.horizontal, 18)
+        .padding(.vertical, isFeatured ? 18 : 14)
+        .background {
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                .fill(fillStyle)
+        }
+        .overlay {
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                .strokeBorder(borderStyle, lineWidth: isSelected ? 2 : 1)
+        }
+        .shadow(
+            color: isFeatured ? MiraPalette.proAccent(.gold).opacity(isSelected ? 0.28 : 0.15) : .black.opacity(0.04),
+            radius: isFeatured ? 18 : 6,
+            x: 0,
+            y: isFeatured ? 10 : 2
+        )
+        .scaleEffect(isSelected ? 1.0 : 0.985)
+        .animation(.spring(duration: 0.35, bounce: 0.15), value: isSelected)
+    }
+
+    private var fillStyle: AnyShapeStyle {
+        if isFeatured {
+            return AnyShapeStyle(
+                LinearGradient(
+                    colors: [
+                        MiraPalette.proAccent(.gold).opacity(isSelected ? 0.18 : 0.10),
+                        MiraPalette.proAccent(.rose).opacity(isSelected ? 0.10 : 0.05),
+                    ],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+            )
+        }
+        return AnyShapeStyle(MiraPalette.surfaceElevated.opacity(isSelected ? 0.8 : 0.55))
+    }
+
+    private var borderStyle: AnyShapeStyle {
+        if isSelected {
+            return AnyShapeStyle(
+                LinearGradient(
+                    colors: isFeatured
+                        ? [MiraPalette.proAccent(.gold), MiraPalette.proAccent(.rose)]
+                        : [Color.accentColor, Color.accentColor],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+            )
+        }
+        return AnyShapeStyle(MiraPalette.divider)
+    }
+
     private var selectionIndicator: some View {
         ZStack {
             Circle()
-                .strokeBorder(isSelected ? Color.accentColor : Color.secondary.opacity(0.4), lineWidth: 2)
+                .strokeBorder(
+                    isSelected ? MiraPalette.proAccent(.gold) : MiraPalette.secondaryText.opacity(0.4),
+                    lineWidth: 2
+                )
                 .frame(width: 22, height: 22)
             if isSelected {
                 Circle()
-                    .fill(Color.accentColor)
+                    .fill(
+                        isFeatured
+                            ? AnyShapeStyle(LinearGradient(
+                                colors: [MiraPalette.proAccent(.gold), MiraPalette.proAccent(.rose)],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            ))
+                            : AnyShapeStyle(Color.accentColor)
+                    )
                     .frame(width: 12, height: 12)
+                    .transition(.scale.combined(with: .opacity))
             }
         }
+        .animation(.spring(duration: 0.3, bounce: 0.2), value: isSelected)
+    }
+
+    private func badgeView(text: String) -> some View {
+        Text(text)
+            .font(.system(size: 11, weight: .bold))
+            .tracking(0.6)
+            .textCase(.uppercase)
+            .foregroundStyle(.white)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 5)
+            .background {
+                Capsule()
+                    .fill(
+                        LinearGradient(
+                            colors: [MiraPalette.proAccent(.gold), MiraPalette.proAccent(.rose)],
+                            startPoint: .leading,
+                            endPoint: .trailing
+                        )
+                    )
+            }
+            .shadow(color: MiraPalette.proAccent(.gold).opacity(0.4), radius: 8, x: 0, y: 3)
     }
 
     private var planTitle: String {
