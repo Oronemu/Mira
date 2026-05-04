@@ -119,7 +119,7 @@ public struct PaywallView: View {
                 icon: "bubble.left.and.bubble.right",
                 moodLevel: 5,
                 title: String(localized: "Ask Mira"),
-                subtitle: String(localized: "Hosted conversations and weekly reflections.")
+                subtitle: String(localized: "Cloud conversations and weekly reflections.")
             )
             ProBenefitRow(
                 icon: "person.bubble",

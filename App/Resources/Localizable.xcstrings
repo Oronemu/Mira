@@ -421,6 +421,23 @@
         }
       }
     },
+    "A few common questions. If yours isn't here, write to us — every email is read by a human.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A few common questions. If yours isn't here, write to us — every email is read by a human."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Несколько частых вопросов. Если вашего здесь нет — напишите нам, каждое письмо читает живой человек."
+          }
+        }
+      }
+    },
     "A larger 8-billion-parameter model from Qwen 3 for noticeably deeper reflections and more nuanced writing. Needs a device with at least 12 GB of RAM.": {
       "extractionState": "manual",
       "localizations": {
@@ -489,19 +506,19 @@
         }
       }
     },
-    "A small on-device model runs locally for reflections and Ask Mira — your text never leaves the iPhone. Mira Pro adds hosted Anthropic Claude through our servers; no API keys to set up.": {
+    "A small on-device model runs locally for reflections and Ask Mira — your text never leaves the iPhone. Mira Pro adds richer cloud AI for deeper conversations.": {
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "A small on-device model runs locally for reflections and Ask Mira — your text never leaves the iPhone. Mira Pro adds hosted Anthropic Claude through our servers; no API keys to set up."
+            "value": "A small on-device model runs locally for reflections and Ask Mira — your text never leaves the iPhone. Mira Pro adds richer cloud AI for deeper conversations."
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Небольшая модель работает прямо на устройстве — для рефлексий и Ask Mira; текст не покидает iPhone. Подписка Mira Pro добавляет облачный Anthropic Claude через наши серверы — никаких API-ключей."
+            "value": "Небольшая модель работает прямо на устройстве — для рефлексий и Ask Mira; текст не покидает iPhone. Mira Pro добавляет более мощный облачный AI для глубоких бесед."
           }
         }
       }
@@ -1098,6 +1115,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Активируйте подарочный код или код бета-доступа."
+          }
+        }
+      }
+    },
+    "Are there limits on Ask Mira?": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Are there limits on Ask Mira?"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Есть ли лимиты в Ask Mira?"
           }
         }
       }
@@ -1853,6 +1887,23 @@
         }
       }
     },
+    "Can I delete all my data?": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Can I delete all my data?"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Могу ли я удалить все данные?"
+          }
+        }
+      }
+    },
     "Cancel": {
       "extractionState": "stale",
       "localizations": {
@@ -1989,6 +2040,40 @@
         }
       }
     },
+    "Cloud": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cloud"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Облачный"
+          }
+        }
+      }
+    },
+    "Cloud conversations and weekly reflections.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cloud conversations and weekly reflections."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Облачные беседы и еженедельные рефлексии."
+          }
+        }
+      }
+    },
     "Code": {
       "extractionState": "manual",
       "localizations": {
@@ -2074,6 +2159,23 @@
         }
       }
     },
+    "Common questions and how to reach us": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Common questions and how to reach us"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Частые вопросы и как с нами связаться"
+          }
+        }
+      }
+    },
     "Connection OK": {
       "extractionState": "stale",
       "localizations": {
@@ -2108,19 +2210,19 @@
         }
       }
     },
-    "Conversations and weekly reflections — no API keys, no setup.": {
+    "Conversations and weekly reflections, set up in seconds.": {
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Conversations and weekly reflections — no API keys, no setup."
+            "value": "Conversations and weekly reflections, set up in seconds."
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Диалоги и еженедельные рефлексии — без API-ключей и настроек."
+            "value": "Беседы и еженедельные рефлексии — настройка за секунды."
           }
         }
       }
@@ -3076,6 +3178,23 @@
         }
       }
     },
+    "Email support": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Email support"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Написать в поддержку"
+          }
+        }
+      }
+    },
     "Enable Face ID lock": {
       "extractionState": "stale",
       "localizations": {
@@ -3586,6 +3705,23 @@
         }
       }
     },
+    "Free covers the journal itself: writing, mood, photos, tags, calendar, search, iCloud sync, biometric lock, on-device Apple Foundation Models AI. Pro adds Ask Mira (Claude conversations), advanced stats, themes and app icons, PDF export, custom AI personas, smart filters, goals & habits, Lock Screen widgets, and importers from Day One / Apple Notes.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Free covers the journal itself: writing, mood, photos, tags, calendar, search, iCloud sync, biometric lock, on-device Apple Foundation Models AI. Pro adds Ask Mira (Claude conversations), advanced stats, themes and app icons, PDF export, custom AI personas, smart filters, goals & habits, Lock Screen widgets, and importers from Day One / Apple Notes."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Бесплатная версия покрывает сам дневник: записи, настроение, фото, теги, календарь, поиск, iCloud-синк, биометрический замок, локальный AI на Apple Foundation Models. Pro добавляет Ask Mira (облачные беседы), расширенную статистику, темы и иконки, PDF-экспорт, персонализацию AI, умные фильтры, цели и привычки, виджеты Lock Screen, импортёры из Day One / Apple Notes."
+          }
+        }
+      }
+    },
     "Free trial through %@": {
       "extractionState": "manual",
       "localizations": {
@@ -3909,6 +4045,23 @@
         }
       }
     },
+    "Help & support": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Help & support"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Помощь и поддержка"
+          }
+        }
+      }
+    },
     "Help improve Mira": {
       "extractionState": "manual",
       "localizations": {
@@ -4011,23 +4164,6 @@
         }
       }
     },
-    "Hosted Anthropic Claude through Mira's servers. No API keys to manage.": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Hosted Anthropic Claude through Mira's servers. No API keys to manage."
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Облачный Anthropic Claude через серверы Mira. Никаких API-ключей."
-          }
-        }
-      }
-    },
     "Hosted by Mira — no API keys to manage.": {
       "extractionState": "manual",
       "localizations": {
@@ -4041,23 +4177,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Хостится у Mira — никаких API-ключей."
-          }
-        }
-      }
-    },
-    "Hosted conversations and weekly reflections.": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Hosted conversations and weekly reflections."
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Размещённые беседы и еженедельные рефлексии."
           }
         }
       }
@@ -4181,6 +4300,74 @@
         }
       }
     },
+    "How can we help?": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "How can we help?"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Чем мы можем помочь?"
+          }
+        }
+      }
+    },
+    "How do I cancel my subscription?": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "How do I cancel my subscription?"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Как отменить подписку?"
+          }
+        }
+      }
+    },
+    "How does iCloud sync work?": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "How does iCloud sync work?"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Как работает iCloud-синк?"
+          }
+        }
+      }
+    },
+    "How does the free trial work?": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "How does the free trial work?"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Как работает пробный период?"
+          }
+        }
+      }
+    },
     "How each tag tends to feel": {
       "extractionState": "manual",
       "localizations": {
@@ -4264,6 +4451,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "Как меняется твоё настроение по дням недели"
+          }
+        }
+      }
+    },
+    "I bought Pro on another device — how do I restore it here?": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "I bought Pro on another device — how do I restore it here?"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Купил Pro на другом устройстве — как восстановить?"
+          }
+        }
+      }
+    },
+    "I have a promo code — how do I redeem it?": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "I have a promo code — how do I redeem it?"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "У меня есть промокод — как его ввести?"
           }
         }
       }
@@ -5268,23 +5489,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Mira Pro"
-          }
-        }
-      }
-    },
-    "Mira Pro · Cloud": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Mira Pro · Cloud"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Mira Pro · Облако"
           }
         }
       }
@@ -6498,6 +6702,23 @@
         }
       }
     },
+    "On your device. Mira stores everything in a local SwiftData database. iCloud sync, when you turn it on, copies the data end-to-end encrypted to your private iCloud — Apple can't read it, we can't read it. Pro hosted AI sends only the message text and a small RAG-selected slice of your journal to our proxy when you ask Mira a question; the rest of the journal never leaves your phone.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "On your device. Mira stores everything in a local SwiftData database. iCloud sync, when you turn it on, copies the data end-to-end encrypted to your private iCloud — Apple can't read it, we can't read it. Pro hosted AI sends only the message text and a small RAG-selected slice of your journal to our proxy when you ask Mira a question; the rest of the journal never leaves your phone."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "На вашем устройстве. Mira хранит всё в локальной SwiftData-базе. Если включён iCloud-синк, данные копируются в ваш приватный iCloud со сквозным шифрованием — ни Apple, ни мы их прочитать не можем. Облачный AI в Pro отправляет только текст сообщения и небольшой релевантный фрагмент дневника, когда вы задаёте вопрос; остальное никогда не покидает телефон."
+          }
+        }
+      }
+    },
     "On-device": {
       "extractionState": "stale",
       "localizations": {
@@ -6597,6 +6818,57 @@
           "stringUnit": {
             "state": "translated",
             "value": "Открыть статистику"
+          }
+        }
+      }
+    },
+    "Open the iOS Settings app → tap your name at the top → Subscriptions → Mira Pro → Cancel Subscription. Apple processes the cancellation; we don't store payment info. Your Pro features stay active until the end of the current billing period.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open the iOS Settings app → tap your name at the top → Subscriptions → Mira Pro → Cancel Subscription. Apple processes the cancellation; we don't store payment info. Your Pro features stay active until the end of the current billing period."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Откройте Настройки iOS → нажмите на ваше имя сверху → Подписки → Mira Pro → Отменить подписку. Отменой управляет Apple — мы не храним платёжные данные. Pro останется активным до конца оплаченного периода."
+          }
+        }
+      }
+    },
+    "Open the paywall (Settings → Upgrade or any locked feature) and tap Restore at the bottom. Apple will look up your purchase against your Apple ID and unlock Pro on this device. Make sure you're signed into the same Apple ID you used to subscribe.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open the paywall (Settings → Upgrade or any locked feature) and tap Restore at the bottom. Apple will look up your purchase against your Apple ID and unlock Pro on this device. Make sure you're signed into the same Apple ID you used to subscribe."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Откройте экран подписки (Настройки → Upgrade или любая заблокированная фича) и нажмите Restore внизу. Apple найдёт покупку по вашему Apple ID и разблокирует Pro на этом устройстве. Убедитесь, что вошли под тем же Apple ID, что использовали при покупке."
+          }
+        }
+      }
+    },
+    "Open the paywall and tap Redeem code at the bottom. Enter the code and tap Redeem. If it's valid you'll be unlocked immediately. Codes are case-insensitive and trimmed of surrounding spaces.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open the paywall and tap Redeem code at the bottom. Enter the code and tap Redeem. If it's valid you'll be unlocked immediately. Codes are case-insensitive and trimmed of surrounding spaces."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Откройте экран подписки и нажмите Redeem code внизу. Введите код и подтвердите. Если код валидный — Pro разблокируется сразу. Регистр не важен, лишние пробелы обрезаются."
           }
         }
       }
@@ -7112,6 +7384,23 @@
         }
       }
     },
+    "Pro includes 100 Ask Mira conversations per calendar month and 2 manually-triggered weekly reflections. Auto-fired weekly reflections aren't counted. Limits reset on the 1st. The on-device Apple Foundation Models option has no limit and runs entirely on your phone — toggle it in Settings → Intelligence.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pro includes 100 Ask Mira conversations per calendar month and 2 manually-triggered weekly reflections. Auto-fired weekly reflections aren't counted. Limits reset on the 1st. The on-device Apple Foundation Models option has no limit and runs entirely on your phone — toggle it in Settings → Intelligence."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pro даёт 100 диалогов Ask Mira в месяц и 2 ручных еженедельных рефлексии. Автоматические рефлексии не учитываются. Лимиты сбрасываются 1-го числа. Локальный режим на Apple Foundation Models без лимитов — включается в Настройки → Интеллект."
+          }
+        }
+      }
+    },
     "Pro restored.": {
       "extractionState": "manual",
       "localizations": {
@@ -7125,6 +7414,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Pro восстановлен."
+          }
+        }
+      }
+    },
+    "Pro starts with a 7-day free trial. You won't be charged until the trial ends. Cancel any time during the trial in iOS Settings → Apple ID → Subscriptions and you'll keep Pro until the trial expires, then drop back to free with no charge.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pro starts with a 7-day free trial. You won't be charged until the trial ends. Cancel any time during the trial in iOS Settings → Apple ID → Subscriptions and you'll keep Pro until the trial expires, then drop back to free with no charge."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pro начинается с 7-дневного пробного периода. Списания не будет до его окончания. Отменить можно в любой момент в Настройках iOS → Apple ID → Подписки. Pro останется до конца пробного срока, затем вернётесь на бесплатную версию без списания."
           }
         }
       }
@@ -8383,6 +8689,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Умные фильтры"
+          }
+        }
+      }
+    },
+    "Smarter, deeper answers powered by our servers.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Smarter, deeper answers powered by our servers."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Умнее и глубже благодаря нашим серверам."
           }
         }
       }
@@ -10513,6 +10836,23 @@
         }
       }
     },
+    "What's the difference between free and Pro?": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "What's the difference between free and Pro?"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Чем отличается бесплатная версия от Pro?"
+          }
+        }
+      }
+    },
     "When did I feel most at peace lately?": {
       "extractionState": "stale",
       "localizations": {
@@ -10526,6 +10866,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "Когда я чувствовал себя спокойнее всего?"
+          }
+        }
+      }
+    },
+    "When enabled, Mira encrypts each entry on this device using a key stored in your iCloud Keychain, then uploads the ciphertext to your private iCloud database. Other devices signed into the same Apple ID download and decrypt locally. Apple sees only encrypted blobs — they don't have the key.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "When enabled, Mira encrypts each entry on this device using a key stored in your iCloud Keychain, then uploads the ciphertext to your private iCloud database. Other devices signed into the same Apple ID download and decrypt locally. Apple sees only encrypted blobs — they don't have the key."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "При включении Mira шифрует каждую запись на устройстве ключом из вашего iCloud Keychain, затем загружает зашифрованные данные в ваш приватный iCloud. Другие устройства с тем же Apple ID скачивают и расшифровывают локально. Apple видит только шифротекст — ключа у них нет."
+          }
+        }
+      }
+    },
+    "Where do my entries live?": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Where do my entries live?"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Где хранятся мои записи?"
           }
         }
       }
@@ -10715,6 +11089,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Годовая подписка"
+          }
+        }
+      }
+    },
+    "Yes. Settings → Privacy → Delete all entries removes everything from this device. If iCloud sync is on, the deletion propagates to your other devices on next sync. To also revoke any cached subscription state on our backend, write to support and we'll wipe your originalTransactionId from our records.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yes. Settings → Privacy → Delete all entries removes everything from this device. If iCloud sync is on, the deletion propagates to your other devices on next sync. To also revoke any cached subscription state on our backend, write to support and we'll wipe your originalTransactionId from our records."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Да. Настройки → Приватность → Удалить все записи стирает всё с этого устройства. Если включён iCloud-синк, удаление синхронизируется на другие ваши устройства. Чтобы стереть кэш подписки на нашем сервере — напишите в поддержку, и мы удалим ваш originalTransactionId."
           }
         }
       }

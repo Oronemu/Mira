@@ -177,10 +177,11 @@ public struct IntelligenceSettingsView: View {
             }
             SettingsOptionCard(
                 icon: "cloud",
-                title: "Mira Pro · Cloud",
-                subtitle: "Hosted Anthropic Claude through Mira's servers. No API keys to manage.",
+                title: "Cloud",
+                subtitle: "Smarter, deeper answers powered by our servers.",
                 moodLevel: 2,
-                isSelected: state.settings.provider == .remote
+                isSelected: state.settings.provider == .remote,
+                showsProBadge: true
             ) {
                 Task {
                     if await subscriptionService.isEntitled(to: .hostedAI) {

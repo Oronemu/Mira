@@ -64,7 +64,7 @@ public enum PaywallContext: Sendable, Hashable, Identifiable {
         case .general:
             String(localized: "Hosted AI, advanced analytics, themes, and more.")
         case .feature(.hostedAI):
-            String(localized: "Conversations and weekly reflections — no API keys, no setup.")
+            String(localized: "Conversations and weekly reflections, set up in seconds.")
         case .feature(.advancedStats):
             String(localized: "Tag correlations, year-in-review, and mood predictions.")
         case .feature(.themesAndIcons):

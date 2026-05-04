@@ -75,6 +75,13 @@ public struct SettingsView: View {
                         habitsAndGoalsRow
 
                         SettingsCategoryLink(
+                            icon: "questionmark.circle",
+                            title: "Help & support",
+                            subtitle: "Common questions and how to reach us",
+                            moodLevel: 4
+                        ) { HelpSupportView() }
+
+                        SettingsCategoryLink(
                             icon: "info.circle",
                             title: "About",
                             subtitle: "Version and privacy policy",

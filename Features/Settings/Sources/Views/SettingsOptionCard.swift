@@ -12,6 +12,7 @@ struct SettingsOptionCard: View {
     let moodLevel: Int
     let isSelected: Bool
     var isEnabled: Bool = true
+    var showsProBadge: Bool = false
     let action: () -> Void
 
     var body: some View {
@@ -24,9 +25,12 @@ struct SettingsOptionCard: View {
                     .background(Circle().fill(MiraPalette.mood(level: moodLevel).opacity(isSelected ? 0.3 : 0.15)))
 
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(title)
-                        .font(.system(size: 16, weight: .semibold, design: .serif))
-                        .foregroundStyle(MiraPalette.primaryText)
+                    HStack(spacing: 8) {
+                        Text(title)
+                            .font(.system(size: 16, weight: .semibold, design: .serif))
+                            .foregroundStyle(MiraPalette.primaryText)
+                        if showsProBadge { ProBadge() }
+                    }
                     Text(subtitle)
                         .font(.system(size: 12))
                         .foregroundStyle(MiraPalette.secondaryText)
