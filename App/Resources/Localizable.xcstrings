@@ -1428,19 +1428,36 @@
         }
       }
     },
-    "Best value · save 30%": {
+    "Best value": {
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Best value · save 30%"
+            "value": "Best value"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Выгодно · экономия 30%"
+            "value": "Выгодно"
+          }
+        }
+      }
+    },
+    "Best value · save %d%%": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Best value · save %d%%"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Выгодно · экономия %d%%"
           }
         }
       }

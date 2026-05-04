@@ -279,10 +279,22 @@ public struct PaywallView: View {
 
     // MARK: - Helpers
 
+    /// Computes the savings on yearly vs paying monthly for 12 months,
+    /// rounded to a whole percent so the badge never shows "30.45%".
+    /// Falls back to a no-percentage "Best value" if either side lacks
+    /// a raw price (e.g. test catalogs that only set `displayPrice`).
     private func badge(for product: SubscriptionProduct, in catalog: [SubscriptionProduct]) -> String? {
         guard product.plan == .yearly else { return nil }
-        guard catalog.contains(where: { $0.plan == .monthly }) else { return nil }
-        return String(localized: "Best value · save 30%")
+        guard let monthly = catalog.first(where: { $0.plan == .monthly }) else { return nil }
+
+        if let monthlyPrice = monthly.price, let yearlyPrice = product.price, monthlyPrice > 0 {
+            let twelveMonths = monthlyPrice * 12
+            let saved = twelveMonths - yearlyPrice
+            guard saved > 0 else { return String(localized: "Best value") }
+            let percent = NSDecimalNumber(decimal: saved / twelveMonths * 100).intValue
+            return String(format: String(localized: "Best value · save %d%%"), percent)
+        }
+        return String(localized: "Best value")
     }
 
     private func disclosure(for state: PaywallState) -> String {

@@ -19,6 +19,11 @@ public struct SubscriptionProduct: Identifiable, Sendable, Hashable {
     /// Pre-formatted, locale-aware price string (e.g. "$5.99", "599 ₽").
     public let displayPrice: String
 
+    /// Raw decimal price in `currencyCode`. Surfaced so the paywall can
+    /// compute cross-plan deltas ("save N% on yearly") without parsing
+    /// `displayPrice`. Optional because some test catalogs don't expose it.
+    public let price: Decimal?
+
     /// ISO 4217 currency code, useful for analytics bucketing. Optional
     /// because some test catalogs don't expose it.
     public let currencyCode: String?
@@ -32,6 +37,7 @@ public struct SubscriptionProduct: Identifiable, Sendable, Hashable {
         plan: SubscriptionPlan,
         displayName: String,
         displayPrice: String,
+        price: Decimal? = nil,
         currencyCode: String?,
         introductoryOffer: IntroductoryOffer?
     ) {
@@ -39,6 +45,7 @@ public struct SubscriptionProduct: Identifiable, Sendable, Hashable {
         self.plan = plan
         self.displayName = displayName
         self.displayPrice = displayPrice
+        self.price = price
         self.currencyCode = currencyCode
         self.introductoryOffer = introductoryOffer
     }

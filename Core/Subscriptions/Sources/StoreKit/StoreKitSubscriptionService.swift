@@ -371,6 +371,7 @@ public actor StoreKitSubscriptionService: SubscriptionService {
             plan: plan,
             displayName: product.displayName,
             displayPrice: product.displayPrice,
+            price: product.price,
             currencyCode: product.priceFormatStyle.currencyCode,
             introductoryOffer: intro
         )

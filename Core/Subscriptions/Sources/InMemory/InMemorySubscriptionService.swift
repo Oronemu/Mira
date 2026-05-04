@@ -200,6 +200,7 @@ public extension InMemorySubscriptionService {
             plan: .monthly,
             displayName: String(localized: "Mira Pro — Monthly"),
             displayPrice: "$5.99",
+            price: 5.99,
             currencyCode: "USD",
             introductoryOffer: SubscriptionProduct.IntroductoryOffer(kind: .freeTrial(days: 7))
         ),
@@ -208,6 +209,7 @@ public extension InMemorySubscriptionService {
             plan: .yearly,
             displayName: String(localized: "Mira Pro — Yearly"),
             displayPrice: "$49.99",
+            price: 49.99,
             currencyCode: "USD",
             introductoryOffer: SubscriptionProduct.IntroductoryOffer(kind: .freeTrial(days: 7))
         ),
