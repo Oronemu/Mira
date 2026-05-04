@@ -6532,6 +6532,23 @@
         }
       }
     },
+    "No tags yet — add tags to entries to filter by them.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No tags yet — add tags to entries to filter by them."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Тегов пока нет — добавляйте их к записям, чтобы фильтровать по тегам."
+          }
+        }
+      }
+    },
     "None": {
       "extractionState": "manual",
       "localizations": {
