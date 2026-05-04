@@ -50,7 +50,7 @@ public enum PaywallContext: Sendable, Hashable, Identifiable {
         case .feature(.customAIPersonas):
             String(localized: "Make Mira your own")
         case .feature(.smartFilters):
-            String(localized: "Find anything, instantly")
+            String(localized: "Save the filters you keep coming back to")
         case .feature(.goalsAndHabits):
             String(localized: "Build habits with your journal")
         case .feature(.importers):
@@ -76,7 +76,7 @@ public enum PaywallContext: Sendable, Hashable, Identifiable {
         case .feature(.customAIPersonas):
             String(localized: "Author the system prompt that shapes Ask Mira's voice.")
         case .feature(.smartFilters):
-            String(localized: "Saved searches, collections, and folders for your entries.")
+            String(localized: "Saved searches that capture the way you read your journal.")
         case .feature(.goalsAndHabits):
             String(localized: "Track tag-driven habits and goals alongside your journal.")
         case .feature(.importers):

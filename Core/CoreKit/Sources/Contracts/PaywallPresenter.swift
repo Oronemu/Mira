@@ -16,4 +16,16 @@ public protocol PaywallPresenter: Sendable {
     /// types can be value types (e.g. the no-op default) and so the
     /// `EnvironmentKey.defaultValue` initialiser stays nonisolated.
     @MainActor func present(_ context: PaywallContext)
+
+    /// Currently raised paywall context, observed by the
+    /// `attachPaywall()` view modifier so that any view in the tree —
+    /// including content already inside another sheet — can host the
+    /// paywall sheet itself. Necessary because iOS won't stack a
+    /// fresh root sheet on top of an existing one.
+    @MainActor var pendingContext: PaywallContext? { get }
+
+    /// Clears any active paywall context. Called by `attachPaywall()`'s
+    /// sheet binding when SwiftUI dismisses the sheet (swipe-down or
+    /// the close button) so the presenter and SwiftUI stay in sync.
+    @MainActor func dismiss()
 }

@@ -3484,23 +3484,6 @@
         }
       }
     },
-    "Find anything, instantly": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Find anything, instantly"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Находите что угодно мгновенно"
-          }
-        }
-      }
-    },
     "First %d days free": {
       "extractionState": "manual",
       "localizations": {
@@ -8013,36 +7996,53 @@
         }
       }
     },
-    "Saved searches, collections, and folders for your entries.": {
+    "Save the filters you keep coming back to": {
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Saved searches, collections, and folders for your entries."
+            "value": "Save the filters you keep coming back to"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Сохранённые поиски, коллекции и папки для записей."
+            "value": "Сохраняйте фильтры, к которым возвращаетесь"
           }
         }
       }
     },
-    "Saved searches, collections, and folders.": {
+    "Save the filters you keep coming back to.": {
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Saved searches, collections, and folders."
+            "value": "Save the filters you keep coming back to."
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Сохранённые поиски, коллекции и папки."
+            "value": "Сохраняйте фильтры, к которым возвращаетесь."
+          }
+        }
+      }
+    },
+    "Saved searches that capture the way you read your journal.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Saved searches that capture the way you read your journal."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Сохранённые поиски — то, как вы читаете свой дневник."
           }
         }
       }
@@ -8370,19 +8370,19 @@
         }
       }
     },
-    "Smart filters and collections": {
+    "Smart filters": {
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Smart filters and collections"
+            "value": "Smart filters"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Умные фильтры и коллекции"
+            "value": "Умные фильтры"
           }
         }
       }

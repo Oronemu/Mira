@@ -110,6 +110,7 @@ public struct EntryListView: View {
                         paywallPresenter.present(.feature(.smartFilters))
                     }
                 )
+                .attachPaywall()
             }
         }
         .alert(

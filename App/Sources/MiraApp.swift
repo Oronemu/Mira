@@ -68,13 +68,13 @@ struct MiraApp: App {
                         .environment(\.syncService, container.syncService)
                         .environment(\.subscriptionService, container.subscriptionService)
                         .environment(\.paywallPresenter, paywallPresenter)
-                        .sheet(item: Binding(
-                            get: { paywallPresenter.pendingContext },
-                            set: { paywallPresenter.pendingContext = $0 }
-                        )) { context in
-                            PaywallView(context: context)
-                                .environment(\.subscriptionService, container.subscriptionService)
+                        .environment(\.paywallViewBuilder) { context in
+                            AnyView(
+                                PaywallView(context: context)
+                                    .environment(\.subscriptionService, container.subscriptionService)
+                            )
                         }
+                        .attachPaywall()
                     if lockState.isLocked {
                         LockScreenView(state: lockState)
                             .transition(.opacity)

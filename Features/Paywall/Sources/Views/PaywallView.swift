@@ -68,15 +68,15 @@ public struct PaywallView: View {
         ScrollView {
             VStack(spacing: 24) {
                 hero
-                    .scrollFadeIn()
+                    .firstAppearFade()
 
                 benefits
 
                 productList(state: state)
-                    .scrollFadeIn()
+                    .firstAppearFade()
 
                 purchaseCTA(state: state)
-                    .scrollFadeIn()
+                    .firstAppearFade()
 
                 if let message = state.errorMessage {
                     Text(message)
@@ -86,7 +86,7 @@ public struct PaywallView: View {
                 }
 
                 footer(state: state)
-                    .scrollFadeIn()
+                    .firstAppearFade()
             }
             .padding(.horizontal, 20)
             .padding(.top, 32)
@@ -140,63 +140,63 @@ public struct PaywallView: View {
                 title: String(localized: "Ask Mira"),
                 subtitle: String(localized: "Hosted conversations and weekly reflections.")
             )
-            .scrollFadeIn()
+            .firstAppearFade()
             ProBenefitRow(
                 icon: "person.bubble",
                 moodLevel: 4,
                 title: String(localized: "Custom AI personas"),
                 subtitle: String(localized: "Author the system prompt that shapes Mira's voice.")
             )
-            .scrollFadeIn()
+            .firstAppearFade()
             ProBenefitRow(
                 icon: "chart.line.uptrend.xyaxis",
                 moodLevel: 5,
                 title: String(localized: "Advanced stats"),
                 subtitle: String(localized: "Tag correlations, predictions, year-in-review.")
             )
-            .scrollFadeIn()
+            .firstAppearFade()
             ProBenefitRow(
                 icon: "target",
                 moodLevel: 4,
                 title: String(localized: "Goals and habits"),
                 subtitle: String(localized: "Tag-driven habits and goals alongside your journal.")
             )
-            .scrollFadeIn()
+            .firstAppearFade()
             ProBenefitRow(
                 icon: "line.3.horizontal.decrease.circle",
                 moodLevel: 3,
-                title: String(localized: "Smart filters and collections"),
-                subtitle: String(localized: "Saved searches, collections, and folders.")
+                title: String(localized: "Smart filters"),
+                subtitle: String(localized: "Save the filters you keep coming back to.")
             )
-            .scrollFadeIn()
+            .firstAppearFade()
             ProBenefitRow(
                 icon: "paintpalette",
                 moodLevel: 2,
                 title: String(localized: "Themes and app icons"),
                 subtitle: String(localized: "Make Mira look the way you journal.")
             )
-            .scrollFadeIn()
+            .firstAppearFade()
             ProBenefitRow(
                 icon: "doc.richtext",
                 moodLevel: 3,
                 title: String(localized: "PDF export with templates"),
                 subtitle: String(localized: "Print, share, archive — beautifully laid out.")
             )
-            .scrollFadeIn()
+            .firstAppearFade()
             ProBenefitRow(
                 icon: "rectangle.stack",
                 moodLevel: 2,
                 title: String(localized: "Lock Screen widgets"),
                 subtitle: String(localized: "Plus more Home Screen widget sizes.")
             )
-            .scrollFadeIn()
+            .firstAppearFade()
             ProBenefitRow(
                 icon: "square.and.arrow.down",
                 moodLevel: 1,
                 title: String(localized: "Importers"),
                 subtitle: String(localized: "Bring entries from Day One, Apple Notes, Markdown.")
             )
-            .scrollFadeIn()
+            .firstAppearFade()
         }
     }
 
@@ -311,15 +311,30 @@ public struct PaywallView: View {
 }
 
 private extension View {
-    /// Fades + lifts the view as it enters the scroll viewport. Identity
-    /// phase shows the content at full opacity; topLeading/bottomTrailing
-    /// phases drop opacity and push the row down 18pt so each ProBenefit
-    /// row reveals itself one by one as the user scrolls.
-    func scrollFadeIn() -> some View {
-        scrollTransition(.animated.threshold(.visible(0.2))) { content, phase in
-            content
-                .opacity(phase.isIdentity ? 1 : 0)
-                .offset(y: phase.isIdentity ? 0 : 18)
-        }
+    /// Fades + lifts the view the *first* time it enters the view tree
+    /// (driven by .onAppear, one-shot). Re-scrolling past it doesn't
+    /// re-trigger the animation — the cascade plays once and stays put.
+    func firstAppearFade() -> some View {
+        modifier(FirstAppearFadeModifier())
+    }
+}
+
+/// Per-instance @State means each row tracks its own first-appear flag,
+/// so each one fires the spring exactly once as it enters the viewport
+/// (lazy stack) or on initial render (eager stack). Subsequent re-renders
+/// keep `visible == true`, which makes `.opacity` and `.offset` no-ops.
+private struct FirstAppearFadeModifier: ViewModifier {
+    @State private var visible: Bool = false
+
+    func body(content: Content) -> some View {
+        content
+            .opacity(visible ? 1 : 0)
+            .offset(y: visible ? 0 : 18)
+            .onAppear {
+                guard !visible else { return }
+                withAnimation(.spring(duration: 0.55, bounce: 0.18)) {
+                    visible = true
+                }
+            }
     }
 }

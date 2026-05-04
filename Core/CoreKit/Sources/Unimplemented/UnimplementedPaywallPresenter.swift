@@ -11,4 +11,6 @@ import Foundation
 public struct UnimplementedPaywallPresenter: PaywallPresenter {
     public init() {}
     @MainActor public func present(_ context: PaywallContext) {}
+    @MainActor public func dismiss() {}
+    @MainActor public var pendingContext: PaywallContext? { nil }
 }

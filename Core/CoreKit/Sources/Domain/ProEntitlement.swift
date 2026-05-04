@@ -29,7 +29,7 @@ public enum ProEntitlement: String, Sendable, Hashable, CaseIterable, Codable {
     /// User-authored system prompts / personas for Ask Mira.
     case customAIPersonas
 
-    /// Smart filters, collections, folders.
+    /// Saved searches the user can come back to (`SavedFilter`).
     case smartFilters
 
     /// Tag-driven goals and habit tracker.
