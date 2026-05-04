@@ -2,11 +2,10 @@ import SwiftUI
 import CoreKit
 import DesignSystem
 
-/// Full-screen paywall presented as a sheet. The redesign leans into the
-/// app's "stoic editorial" register: a warm AmbientBackground in mood
-/// levels 4–5 (terracotta + sage) under a sparkle constellation, serif
-/// hero title, glass-tinted benefit rows, a featured yearly plan with
-/// "Best value" badge, and a cascade fade-in when the sheet first opens.
+/// Full-screen paywall presented as a sheet. Warm AmbientBackground
+/// (mood 4–5), sparkle hero, serif title, glass-tinted benefit rows,
+/// featured yearly plan with "Best value" badge. Static — no entrance
+/// animation, all rows render in their final positions immediately.
 public struct PaywallView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.subscriptionService) private var subscriptionService
@@ -15,7 +14,6 @@ public struct PaywallView: View {
     private let context: PaywallContext
     @State private var state: PaywallState?
     @State private var showingRedeem = false
-    @State private var hasAppeared = false
 
     public init(context: PaywallContext = .general) {
         self.context = context
@@ -41,10 +39,6 @@ public struct PaywallView: View {
                     subscriptionService: subscriptionService
                 )
             }
-            // Stagger after the first frame so the cascade plays *during*
-            // the sheet's own present transition, not before it lands.
-            try? await Task.sleep(for: .milliseconds(80))
-            hasAppeared = true
             await state?.load()
         }
         .onChange(of: state?.didUnlockPro ?? false) { _, unlocked in
@@ -60,23 +54,13 @@ public struct PaywallView: View {
 
     // MARK: - Content
 
-    /// Each direct child uses `.scrollTransition` so it fades + lifts as
-     /// it scrolls into view. Combined with the initial `hasAppeared`
-     /// fade-in this gives a single coherent rule: nothing appears unless
-     /// it's actually on screen.
     private func content(state: PaywallState) -> some View {
         ScrollView {
             VStack(spacing: 24) {
                 hero
-                    .firstAppearFade()
-
                 benefits
-
                 productList(state: state)
-                    .firstAppearFade()
-
                 purchaseCTA(state: state)
-                    .firstAppearFade()
 
                 if let message = state.errorMessage {
                     Text(message)
@@ -86,13 +70,10 @@ public struct PaywallView: View {
                 }
 
                 footer(state: state)
-                    .firstAppearFade()
             }
             .padding(.horizontal, 20)
             .padding(.top, 32)
             .padding(.bottom, 32)
-            .opacity(hasAppeared ? 1 : 0)
-            .animation(.easeOut(duration: 0.45), value: hasAppeared)
         }
         .scrollIndicators(.hidden)
         .overlay(alignment: .topTrailing) { closeButton }
@@ -140,63 +121,54 @@ public struct PaywallView: View {
                 title: String(localized: "Ask Mira"),
                 subtitle: String(localized: "Hosted conversations and weekly reflections.")
             )
-            .firstAppearFade()
             ProBenefitRow(
                 icon: "person.bubble",
                 moodLevel: 4,
                 title: String(localized: "Custom AI personas"),
                 subtitle: String(localized: "Author the system prompt that shapes Mira's voice.")
             )
-            .firstAppearFade()
             ProBenefitRow(
                 icon: "chart.line.uptrend.xyaxis",
                 moodLevel: 5,
                 title: String(localized: "Advanced stats"),
                 subtitle: String(localized: "Tag correlations, predictions, year-in-review.")
             )
-            .firstAppearFade()
             ProBenefitRow(
                 icon: "target",
                 moodLevel: 4,
                 title: String(localized: "Goals and habits"),
                 subtitle: String(localized: "Tag-driven habits and goals alongside your journal.")
             )
-            .firstAppearFade()
             ProBenefitRow(
                 icon: "line.3.horizontal.decrease.circle",
                 moodLevel: 3,
                 title: String(localized: "Smart filters"),
                 subtitle: String(localized: "Save the filters you keep coming back to.")
             )
-            .firstAppearFade()
             ProBenefitRow(
                 icon: "paintpalette",
                 moodLevel: 2,
                 title: String(localized: "Themes and app icons"),
                 subtitle: String(localized: "Make Mira look the way you journal.")
             )
-            .firstAppearFade()
             ProBenefitRow(
                 icon: "doc.richtext",
                 moodLevel: 3,
                 title: String(localized: "PDF export with templates"),
                 subtitle: String(localized: "Print, share, archive — beautifully laid out.")
             )
-            .firstAppearFade()
             ProBenefitRow(
                 icon: "rectangle.stack",
                 moodLevel: 2,
                 title: String(localized: "Lock Screen widgets"),
                 subtitle: String(localized: "Plus more Home Screen widget sizes.")
             )
-            .firstAppearFade()
             ProBenefitRow(
                 icon: "square.and.arrow.down",
                 moodLevel: 1,
                 title: String(localized: "Importers"),
                 subtitle: String(localized: "Bring entries from Day One, Apple Notes, Markdown.")
             )
-            .firstAppearFade()
         }
     }
 
@@ -310,31 +282,3 @@ public struct PaywallView: View {
     }
 }
 
-private extension View {
-    /// Fades + lifts the view the *first* time it enters the view tree
-    /// (driven by .onAppear, one-shot). Re-scrolling past it doesn't
-    /// re-trigger the animation — the cascade plays once and stays put.
-    func firstAppearFade() -> some View {
-        modifier(FirstAppearFadeModifier())
-    }
-}
-
-/// Per-instance @State means each row tracks its own first-appear flag,
-/// so each one fires the spring exactly once as it enters the viewport
-/// (lazy stack) or on initial render (eager stack). Subsequent re-renders
-/// keep `visible == true`, which makes `.opacity` and `.offset` no-ops.
-private struct FirstAppearFadeModifier: ViewModifier {
-    @State private var visible: Bool = false
-
-    func body(content: Content) -> some View {
-        content
-            .opacity(visible ? 1 : 0)
-            .offset(y: visible ? 0 : 18)
-            .onAppear {
-                guard !visible else { return }
-                withAnimation(.spring(duration: 0.55, bounce: 0.18)) {
-                    visible = true
-                }
-            }
-    }
-}

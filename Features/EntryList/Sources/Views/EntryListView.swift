@@ -107,10 +107,16 @@ public struct EntryListView: View {
                         )
                     },
                     onSavePaywallTrigger: {
-                        paywallPresenter.present(.feature(.smartFilters))
+                        // iOS won't stack a fresh root sheet on top of the
+                        // open filter sheet — close the filter first, then
+                        // raise the paywall after the dismiss animation.
+                        showFilters = false
+                        Task { @MainActor in
+                            try? await Task.sleep(for: .milliseconds(280))
+                            paywallPresenter.present(.feature(.smartFilters))
+                        }
                     }
                 )
-                .attachPaywall()
             }
         }
         .alert(
