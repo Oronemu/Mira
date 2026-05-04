@@ -41,12 +41,11 @@ public struct PaywallView: View {
                     subscriptionService: subscriptionService
                 )
             }
+            // Stagger after the first frame so the cascade plays *during*
+            // the sheet's own present transition, not before it lands.
+            try? await Task.sleep(for: .milliseconds(80))
+            hasAppeared = true
             await state?.load()
-        }
-        .onAppear {
-            withAnimation(.spring(duration: 0.7, bounce: 0.1)) {
-                hasAppeared = true
-            }
         }
         .onChange(of: state?.didUnlockPro ?? false) { _, unlocked in
             if unlocked { dismiss() }
@@ -63,25 +62,26 @@ public struct PaywallView: View {
 
     private func content(state: PaywallState) -> some View {
         ScrollView {
-            VStack(spacing: 28) {
+            VStack(spacing: 24) {
                 hero
                     .opacity(hasAppeared ? 1 : 0)
-                    .offset(y: hasAppeared ? 0 : 16)
+                    .offset(y: hasAppeared ? 0 : 20)
+                    .animation(.spring(duration: 0.7, bounce: 0.18).delay(0.0), value: hasAppeared)
 
                 benefits
                     .opacity(hasAppeared ? 1 : 0)
-                    .offset(y: hasAppeared ? 0 : 16)
-                    .animation(.spring(duration: 0.7, bounce: 0.1).delay(0.1), value: hasAppeared)
+                    .offset(y: hasAppeared ? 0 : 20)
+                    .animation(.spring(duration: 0.7, bounce: 0.15).delay(0.12), value: hasAppeared)
 
                 productList(state: state)
                     .opacity(hasAppeared ? 1 : 0)
-                    .offset(y: hasAppeared ? 0 : 16)
-                    .animation(.spring(duration: 0.7, bounce: 0.1).delay(0.2), value: hasAppeared)
+                    .offset(y: hasAppeared ? 0 : 20)
+                    .animation(.spring(duration: 0.7, bounce: 0.15).delay(0.24), value: hasAppeared)
 
                 purchaseCTA(state: state)
                     .opacity(hasAppeared ? 1 : 0)
-                    .offset(y: hasAppeared ? 0 : 16)
-                    .animation(.spring(duration: 0.7, bounce: 0.1).delay(0.3), value: hasAppeared)
+                    .offset(y: hasAppeared ? 0 : 20)
+                    .animation(.spring(duration: 0.7, bounce: 0.18).delay(0.36), value: hasAppeared)
 
                 if let message = state.errorMessage {
                     Text(message)
@@ -92,7 +92,7 @@ public struct PaywallView: View {
 
                 footer(state: state)
                     .opacity(hasAppeared ? 1 : 0)
-                    .animation(.easeOut(duration: 0.5).delay(0.4), value: hasAppeared)
+                    .animation(.easeOut(duration: 0.6).delay(0.48), value: hasAppeared)
             }
             .padding(.horizontal, 20)
             .padding(.top, 32)
@@ -105,17 +105,24 @@ public struct PaywallView: View {
     // MARK: - Sections
 
     private var hero: some View {
-        VStack(spacing: 18) {
+        // Eyebrow shown only for feature-specific contexts so it doesn't
+        // duplicate the headline on the generic ".general" case (where the
+        // headline already reads "Mira Pro").
+        VStack(spacing: 16) {
             PaywallHeroIcon()
 
-            Text(String(localized: "Mira Pro"))
-                .eyebrowStyle(color: MiraPalette.proAccent(.gold))
+            if case .feature = context {
+                Text(String(localized: "Mira Pro"))
+                    .eyebrowStyle(color: MiraPalette.proAccent(.gold))
+            }
 
             Text(context.headline)
-                .font(MiraTypography.hero)
+                .font(.system(size: 32, weight: .semibold, design: .serif))
                 .foregroundStyle(MiraPalette.primaryText)
                 .multilineTextAlignment(.center)
                 .lineSpacing(2)
+                .minimumScaleFactor(0.78)
+                .lineLimit(3)
 
             Text(context.subheadline)
                 .font(.system(.body, design: .serif))
@@ -126,19 +133,40 @@ public struct PaywallView: View {
         }
     }
 
+    /// Mirrors `ProEntitlement` 1:1 so that adding a Pro capability stays
+     /// a single-source change. Subtitle copy stays terse — the row is one
+     /// of nine, not the full marketing pitch.
     private var benefits: some View {
         VStack(spacing: 8) {
             ProBenefitRow(
                 icon: "bubble.left.and.bubble.right",
                 moodLevel: 5,
-                title: String(localized: "Ask Mira and reflections"),
-                subtitle: String(localized: "Hosted by Mira — no API keys to manage.")
+                title: String(localized: "Ask Mira"),
+                subtitle: String(localized: "Hosted conversations and weekly reflections.")
+            )
+            ProBenefitRow(
+                icon: "person.bubble",
+                moodLevel: 4,
+                title: String(localized: "Custom AI personas"),
+                subtitle: String(localized: "Author the system prompt that shapes Mira's voice.")
             )
             ProBenefitRow(
                 icon: "chart.line.uptrend.xyaxis",
-                moodLevel: 4,
+                moodLevel: 5,
                 title: String(localized: "Advanced stats"),
                 subtitle: String(localized: "Tag correlations, predictions, year-in-review.")
+            )
+            ProBenefitRow(
+                icon: "target",
+                moodLevel: 4,
+                title: String(localized: "Goals and habits"),
+                subtitle: String(localized: "Tag-driven habits and goals alongside your journal.")
+            )
+            ProBenefitRow(
+                icon: "line.3.horizontal.decrease.circle",
+                moodLevel: 3,
+                title: String(localized: "Smart filters and collections"),
+                subtitle: String(localized: "Saved searches, collections, and folders.")
             )
             ProBenefitRow(
                 icon: "paintpalette",
@@ -149,14 +177,20 @@ public struct PaywallView: View {
             ProBenefitRow(
                 icon: "doc.richtext",
                 moodLevel: 3,
-                title: String(localized: "PDF templates and importers"),
-                subtitle: String(localized: "Export beautifully, import from Day One and Notes.")
+                title: String(localized: "PDF export with templates"),
+                subtitle: String(localized: "Print, share, archive — beautifully laid out.")
             )
             ProBenefitRow(
                 icon: "rectangle.stack",
+                moodLevel: 2,
+                title: String(localized: "Lock Screen widgets"),
+                subtitle: String(localized: "Plus more Home Screen widget sizes.")
+            )
+            ProBenefitRow(
+                icon: "square.and.arrow.down",
                 moodLevel: 1,
-                title: String(localized: "More widgets and smart filters"),
-                subtitle: String(localized: "Lock Screen widgets, collections, goals.")
+                title: String(localized: "Importers"),
+                subtitle: String(localized: "Bring entries from Day One, Apple Notes, Markdown.")
             )
         }
     }

@@ -13,39 +13,40 @@ struct ProBenefitRow: View {
     let subtitle: String
 
     var body: some View {
-        HStack(alignment: .center, spacing: 14) {
+        HStack(alignment: .center, spacing: 12) {
             ZStack {
                 Circle()
                     .fill(MiraPalette.mood(level: moodLevel).opacity(0.22))
                 Circle()
                     .strokeBorder(MiraPalette.mood(level: moodLevel).opacity(0.35), lineWidth: 0.5)
                 Image(systemName: icon)
-                    .font(.system(size: 16, weight: .semibold))
+                    .font(.system(size: 14, weight: .semibold))
                     .foregroundStyle(MiraPalette.mood(level: moodLevel))
             }
-            .frame(width: 36, height: 36)
+            .frame(width: 32, height: 32)
             .accessibilityHidden(true)
 
-            VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: 1) {
                 Text(title)
-                    .font(MiraTypography.headline)
+                    .font(.system(size: 15, weight: .semibold))
                     .foregroundStyle(MiraPalette.primaryText)
                 Text(subtitle)
-                    .font(.system(.subheadline, design: .serif))
+                    .font(.system(size: 12.5, design: .serif))
                     .foregroundStyle(MiraPalette.secondaryText)
                     .fixedSize(horizontal: false, vertical: true)
+                    .lineLimit(2)
             }
 
             Spacer(minLength: 0)
         }
-        .padding(.vertical, 10)
-        .padding(.horizontal, 14)
+        .padding(.vertical, 8)
+        .padding(.horizontal, 12)
         .background {
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .fill(MiraPalette.surfaceElevated.opacity(0.55))
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .fill(MiraPalette.surfaceElevated.opacity(0.5))
         }
         .overlay {
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
                 .strokeBorder(MiraPalette.divider, lineWidth: 0.5)
         }
         .accessibilityElement(children: .combine)
