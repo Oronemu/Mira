@@ -326,10 +326,10 @@ public struct ProSettingsView: View {
             Text(String(localized: "Subscriptions auto-renew until cancelled in App Store settings at least 24 hours before the end of the current period."))
             HStack(spacing: 16) {
                 Button(String(localized: "Privacy")) {
-                    if let url = URL(string: "https://mira.app/privacy") { openURL(url) }
+                    if let url = URL(string: "https://mira-diary.com/privacy") { openURL(url) }
                 }
                 Button(String(localized: "Terms")) {
-                    if let url = URL(string: "https://mira.app/terms") { openURL(url) }
+                    if let url = URL(string: "https://mira-diary.com/terms") { openURL(url) }
                 }
             }
             .font(MiraTypography.caption.weight(.semibold))

@@ -13,7 +13,7 @@ import DesignSystem
 public struct HelpSupportView: View {
     @Environment(\.openURL) private var openURL
 
-    private static let supportEmail = "mira-diary-support@inbox.ru"
+    private static let supportEmail = "support@mira-diary.com"
 
     public init() {}
 

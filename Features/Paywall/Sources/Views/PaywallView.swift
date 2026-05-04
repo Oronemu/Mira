@@ -221,11 +221,11 @@ public struct PaywallView: View {
                 }
 
                 Button(String(localized: "Privacy")) {
-                    if let url = URL(string: "https://mira.app/privacy") { openURL(url) }
+                    if let url = URL(string: "https://mira-diary.com/privacy") { openURL(url) }
                 }
 
                 Button(String(localized: "Terms")) {
-                    if let url = URL(string: "https://mira.app/terms") { openURL(url) }
+                    if let url = URL(string: "https://mira-diary.com/terms") { openURL(url) }
                 }
             }
             .font(MiraTypography.caption)
