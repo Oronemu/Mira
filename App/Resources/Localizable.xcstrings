@@ -966,6 +966,23 @@
         }
       }
     },
+    "Almost all of Mira works without our servers: writing, mood, photos, search, iCloud sync, themes, the on-device AI. The cloud features (Ask Mira and weekly reflections through the Cloud option) talk to external servers and may be intermittently slow or blocked on Russian networks due to regulatory restrictions on outbound services. If you run into that, switch to the on-device AI in Settings → Intelligence — it runs entirely on your iPhone and doesn't depend on any external service.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Almost all of Mira works without our servers: writing, mood, photos, search, iCloud sync, themes, the on-device AI. The cloud features (Ask Mira and weekly reflections through the Cloud option) talk to external servers and may be intermittently slow or blocked on Russian networks due to regulatory restrictions on outbound services. If you run into that, switch to the on-device AI in Settings → Intelligence — it runs entirely on your iPhone and doesn't depend on any external service."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Почти всё в Mira работает без наших серверов: записи, настроение, фото, поиск, iCloud-синк, темы, локальный AI. Облачные функции (Ask Mira и еженедельные рефлексии в режиме Cloud) обращаются к внешним серверам и на российских сетях из-за ограничений на работу зарубежных сервисов могут работать с перебоями или быть недоступны. Если столкнулись с этим — переключитесь на локальный AI в Настройки → Интеллект: он работает прямо на iPhone и не зависит от внешних сервисов."
+          }
+        }
+      }
+    },
     "Always": {
       "extractionState": "stale",
       "localizations": {
@@ -2244,6 +2261,23 @@
         }
       }
     },
+    "Couldn't delete everything. Try again, or contact support.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn't delete everything. Try again, or contact support."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не удалось удалить всё. Попробуйте ещё раз или напишите в поддержку."
+          }
+        }
+      }
+    },
     "Couldn't load this entry.": {
       "localizations": {
         "en": {
@@ -2600,6 +2634,40 @@
         }
       }
     },
+    "Delete all entries": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete all entries"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Удалить все записи"
+          }
+        }
+      }
+    },
+    "Delete all entries?": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete all entries?"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Удалить все записи?"
+          }
+        }
+      }
+    },
     "Delete chat?": {
       "extractionState": "manual",
       "localizations": {
@@ -2630,6 +2698,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Удалить запись?"
+          }
+        }
+      }
+    },
+    "Delete everything": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete everything"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Удалить всё"
           }
         }
       }
@@ -3395,6 +3480,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Запись была удалена."
+          }
+        }
+      }
+    },
+    "Erase data": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Erase data"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Удалить данные"
           }
         }
       }
@@ -4587,6 +4689,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Я тихий собеседник, который читает твой дневник, чтобы понять тебя. Не архивариус — внимательный друг, который слушает и отвечает."
+          }
+        }
+      }
+    },
+    "I'm in Russia — does everything work?": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "I'm in Russia — does everything work?"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Я в России — всё ли работает?"
           }
         }
       }
@@ -7843,6 +7962,23 @@
         }
       }
     },
+    "Removes journal, reflections, and Ask Mira chats from this device.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Removes journal, reflections, and Ask Mira chats from this device."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Удаляет дневник, рефлексии и беседы Ask Mira с этого устройства."
+          }
+        }
+      }
+    },
     "Rename": {
       "extractionState": "manual",
       "localizations": {
@@ -9952,6 +10088,23 @@
         }
       }
     },
+    "This removes every journal entry, reflection, and Ask Mira chat from this iPhone. iCloud sync will propagate the deletion to your other devices on next sync. This can't be undone.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This removes every journal entry, reflection, and Ask Mira chat from this iPhone. iCloud sync will propagate the deletion to your other devices on next sync. This can't be undone."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Это удалит все записи дневника, рефлексии и беседы Ask Mira с этого iPhone. iCloud-синк передаст удаление на ваши другие устройства при следующей синхронизации. Отменить это нельзя."
+          }
+        }
+      }
+    },
     "This subscription is not available right now.": {
       "extractionState": "manual",
       "localizations": {
@@ -10968,6 +11121,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Кто может открыть Mira на этом устройстве"
+          }
+        }
+      }
+    },
+    "Wipe everything Mira keeps on this iPhone": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wipe everything Mira keeps on this iPhone"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Стереть всё, что Mira хранит на iPhone"
           }
         }
       }

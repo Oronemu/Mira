@@ -68,6 +68,24 @@ public actor SwiftDataEntryRepository: EntryRepository {
         reloadWidgets()
     }
 
+    public func deleteAll() async throws {
+        let descriptor = FetchDescriptor<Entry>()
+        let all = try modelContext.fetch(descriptor)
+        guard !all.isEmpty else { return }
+        let ids = all.map(\.id)
+        for entry in all {
+            modelContext.delete(entry)
+        }
+        try modelContext.save()
+        // Yield a `.deleted` event per row so CloudKitPusher tears
+        // them down on other devices, mirroring single-row delete().
+        for id in ids {
+            emitChange(.deleted(id))
+        }
+        notifyObservers()
+        reloadWidgets()
+    }
+
     public func fetchUnindexed(limit: Int) async throws -> [UnindexedEntry] {
         var descriptor = FetchDescriptor<Entry>(
             predicate: #Predicate<Entry> { $0.embedding == nil },

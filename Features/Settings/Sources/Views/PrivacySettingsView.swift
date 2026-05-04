@@ -8,11 +8,15 @@ public struct PrivacySettingsView: View {
     @Environment(\.aiService) private var aiService
     @Environment(\.entryRepository) private var entryRepository
     @Environment(\.insightRepository) private var insightRepository
+    @Environment(\.askMiraRepository) private var askMiraRepository
     @Environment(\.openURL) private var openURL
     @Environment(\.modelDownloadCoordinator) private var coordinator
     @Environment(\.analyticsService) private var analyticsService
     @Environment(\.crashReporter) private var crashReporter
     @State private var state: SettingsState?
+    @State private var showingDeleteConfirm = false
+    @State private var isDeleting = false
+    @State private var deleteError: String?
 
     public init() {}
 
@@ -109,12 +113,104 @@ public struct PrivacySettingsView: View {
 
                 diagnosticsSection(state: state)
 
-                Color.clear.frame(height: 32)
+                SettingsHero(
+                    title: "Erase data",
+                    subtitle: "Wipe everything Mira keeps on this iPhone"
+                )
+                .padding(.top, 8)
+
+                deleteAllCard
+
+                if let deleteError {
+                    ErrorPill(deleteError)
+                }
+
+                Color.clear.frame(height: 110)
             }
             .padding(.horizontal, 20)
             .padding(.top, 4)
         }
         .scrollIndicators(.hidden)
+        .alert(
+            String(localized: "Delete all entries?"),
+            isPresented: $showingDeleteConfirm
+        ) {
+            Button(String(localized: "Delete everything"), role: .destructive) {
+                Task { await performDeleteAll() }
+            }
+            Button(String(localized: "Cancel"), role: .cancel) {}
+        } message: {
+            Text("This removes every journal entry, reflection, and Ask Mira chat from this iPhone. iCloud sync will propagate the deletion to your other devices on next sync. This can't be undone.")
+        }
+    }
+
+    private var deleteAllCard: some View {
+        Button {
+            deleteError = nil
+            showingDeleteConfirm = true
+        } label: {
+            HStack(alignment: .center, spacing: 14) {
+                ZStack {
+                    Circle()
+                        .fill(MiraPalette.mood(level: 1).opacity(0.22))
+                    Image(systemName: "trash")
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundStyle(MiraPalette.mood(level: 1))
+                }
+                .frame(width: 40, height: 40)
+
+                VStack(alignment: .leading, spacing: 3) {
+                    HStack(spacing: 6) {
+                        if isDeleting {
+                            ProgressView().controlSize(.small)
+                        }
+                        Text(String(localized: "Delete all entries"))
+                            .font(.system(size: 16, weight: .semibold, design: .serif))
+                            .foregroundStyle(MiraPalette.primaryText)
+                    }
+                    Text(String(localized: "Removes journal, reflections, and Ask Mira chats from this device."))
+                        .font(.system(size: 12))
+                        .foregroundStyle(MiraPalette.secondaryText)
+                        .lineLimit(3)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+
+                Spacer(minLength: 0)
+
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundStyle(MiraPalette.secondaryText.opacity(0.7))
+            }
+            .padding(14)
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .buttonStyle(.plain)
+        .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+        .disabled(isDeleting)
+        .opacity(isDeleting ? 0.6 : 1)
+    }
+
+    /// Wipes the three local stores in parallel, then surfaces a friendly
+    /// error pill if anything failed. The CloudKit pusher picks up the
+    /// per-row deletes through `EntryRepository.changes()` and ships them
+    /// to the user's other devices — no extra plumbing here.
+    @MainActor
+    private func performDeleteAll() async {
+        isDeleting = true
+        defer { isDeleting = false }
+        do {
+            try await entryRepository.deleteAll()
+            try await askMiraRepository.deleteAllChats()
+            // Insights are derived from entries — wipe them after entries
+            // so the UI doesn't briefly show insights pointing to gone rows.
+            for insight in (try? await insightRepository.fetchAll()) ?? [] {
+                try? await insightRepository.delete(id: insight.id)
+            }
+            analyticsService.log(event: "data_wiped", parameters: [:])
+        } catch {
+            deleteError = String(localized: "Couldn't delete everything. Try again, or contact support.")
+            crashReporter.recordError(error, reason: "data_wipe_failed")
+        }
     }
 
     private var biometricHint: some View {

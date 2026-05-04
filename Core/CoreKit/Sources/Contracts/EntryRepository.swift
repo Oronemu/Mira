@@ -8,6 +8,12 @@ public protocol EntryRepository: Sendable {
     func save(_ entry: EntrySnapshot) async throws
     func delete(id: UUID) async throws
 
+    /// Wipes every entry in local storage. Used by the destructive
+    /// "Delete all entries" action under Settings → Privacy. Yields a
+    /// `.deleted` change for each removed row so the CloudKit pusher
+    /// propagates the deletes to the user's other devices.
+    func deleteAll() async throws
+
     /// Reactive stream of entries that match `query`. Emits the current
     /// snapshot immediately, then again on every relevant change.
     func observe(query: EntryQuery) -> AsyncStream<[EntrySnapshot]>

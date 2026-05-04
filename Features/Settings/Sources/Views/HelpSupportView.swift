@@ -170,6 +170,11 @@ public struct HelpSupportView: View {
             answer: String(localized: "Open the upgrade screen and tap Redeem code at the bottom. Enter the code — capital letters and extra spaces don't matter — and tap Redeem. If it's valid, Pro unlocks right away.")
         ),
         FAQItem(
+            id: "regional-cloud",
+            question: String(localized: "I'm in Russia — does everything work?"),
+            answer: String(localized: "Almost all of Mira works without our servers: writing, mood, photos, search, iCloud sync, themes, the on-device AI. The cloud features (Ask Mira and weekly reflections through the Cloud option) talk to external servers and may be intermittently slow or blocked on Russian networks due to regulatory restrictions on outbound services. If you run into that, switch to the on-device AI in Settings → Intelligence — it runs entirely on your iPhone and doesn't depend on any external service.")
+        ),
+        FAQItem(
             id: "delete",
             question: String(localized: "Can I delete all my data?"),
             answer: String(localized: "Yes. Settings → Privacy → Delete all entries removes everything from this iPhone. If iCloud sync is on, the deletion also reaches your other devices the next time they sync. If you'd also like us to clear any record of your subscription on our side, write to support.")

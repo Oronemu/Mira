@@ -21,6 +21,10 @@ public struct UnimplementedEntryRepository: EntryRepository {
         unimplemented(#function)
     }
 
+    public func deleteAll() async throws {
+        unimplemented(#function)
+    }
+
     public func observe(query: EntryQuery) -> AsyncStream<[EntrySnapshot]> {
         unimplemented(#function)
     }
