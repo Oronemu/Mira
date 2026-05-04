@@ -259,11 +259,15 @@ public struct PaywallView: View {
         guard product.plan == .yearly else { return nil }
         guard let monthly = catalog.first(where: { $0.plan == .monthly }) else { return nil }
 
-        if let monthlyPrice = monthly.price, let yearlyPrice = product.price, monthlyPrice > 0 {
-            let twelveMonths = monthlyPrice * 12
-            let saved = twelveMonths - yearlyPrice
-            guard saved > 0 else { return String(localized: "Best value") }
-            let percent = NSDecimalNumber(decimal: saved / twelveMonths * 100).intValue
+        if let monthlyDecimal = monthly.price, let yearlyDecimal = product.price {
+            let monthlyDouble = NSDecimalNumber(decimal: monthlyDecimal).doubleValue
+            let yearlyDouble = NSDecimalNumber(decimal: yearlyDecimal).doubleValue
+            let twelveMonths = monthlyDouble * 12
+            guard twelveMonths > 0, yearlyDouble < twelveMonths else {
+                return String(localized: "Best value")
+            }
+            let percent = Int(((twelveMonths - yearlyDouble) / twelveMonths) * 100)
+            guard percent > 0 else { return String(localized: "Best value") }
             return String(format: String(localized: "Best value · save %d%%"), percent)
         }
         return String(localized: "Best value")
