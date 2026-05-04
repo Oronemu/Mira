@@ -60,28 +60,23 @@ public struct PaywallView: View {
 
     // MARK: - Content
 
+    /// Each direct child uses `.scrollTransition` so it fades + lifts as
+     /// it scrolls into view. Combined with the initial `hasAppeared`
+     /// fade-in this gives a single coherent rule: nothing appears unless
+     /// it's actually on screen.
     private func content(state: PaywallState) -> some View {
         ScrollView {
             VStack(spacing: 24) {
                 hero
-                    .opacity(hasAppeared ? 1 : 0)
-                    .offset(y: hasAppeared ? 0 : 20)
-                    .animation(.spring(duration: 0.7, bounce: 0.18).delay(0.0), value: hasAppeared)
+                    .scrollFadeIn()
 
                 benefits
-                    .opacity(hasAppeared ? 1 : 0)
-                    .offset(y: hasAppeared ? 0 : 20)
-                    .animation(.spring(duration: 0.7, bounce: 0.15).delay(0.12), value: hasAppeared)
 
                 productList(state: state)
-                    .opacity(hasAppeared ? 1 : 0)
-                    .offset(y: hasAppeared ? 0 : 20)
-                    .animation(.spring(duration: 0.7, bounce: 0.15).delay(0.24), value: hasAppeared)
+                    .scrollFadeIn()
 
                 purchaseCTA(state: state)
-                    .opacity(hasAppeared ? 1 : 0)
-                    .offset(y: hasAppeared ? 0 : 20)
-                    .animation(.spring(duration: 0.7, bounce: 0.18).delay(0.36), value: hasAppeared)
+                    .scrollFadeIn()
 
                 if let message = state.errorMessage {
                     Text(message)
@@ -91,12 +86,13 @@ public struct PaywallView: View {
                 }
 
                 footer(state: state)
-                    .opacity(hasAppeared ? 1 : 0)
-                    .animation(.easeOut(duration: 0.6).delay(0.48), value: hasAppeared)
+                    .scrollFadeIn()
             }
             .padding(.horizontal, 20)
             .padding(.top, 32)
             .padding(.bottom, 32)
+            .opacity(hasAppeared ? 1 : 0)
+            .animation(.easeOut(duration: 0.45), value: hasAppeared)
         }
         .scrollIndicators(.hidden)
         .overlay(alignment: .topTrailing) { closeButton }
@@ -137,61 +133,70 @@ public struct PaywallView: View {
      /// a single-source change. Subtitle copy stays terse — the row is one
      /// of nine, not the full marketing pitch.
     private var benefits: some View {
-        VStack(spacing: 8) {
+        VStack(spacing: 10) {
             ProBenefitRow(
                 icon: "bubble.left.and.bubble.right",
                 moodLevel: 5,
                 title: String(localized: "Ask Mira"),
                 subtitle: String(localized: "Hosted conversations and weekly reflections.")
             )
+            .scrollFadeIn()
             ProBenefitRow(
                 icon: "person.bubble",
                 moodLevel: 4,
                 title: String(localized: "Custom AI personas"),
                 subtitle: String(localized: "Author the system prompt that shapes Mira's voice.")
             )
+            .scrollFadeIn()
             ProBenefitRow(
                 icon: "chart.line.uptrend.xyaxis",
                 moodLevel: 5,
                 title: String(localized: "Advanced stats"),
                 subtitle: String(localized: "Tag correlations, predictions, year-in-review.")
             )
+            .scrollFadeIn()
             ProBenefitRow(
                 icon: "target",
                 moodLevel: 4,
                 title: String(localized: "Goals and habits"),
                 subtitle: String(localized: "Tag-driven habits and goals alongside your journal.")
             )
+            .scrollFadeIn()
             ProBenefitRow(
                 icon: "line.3.horizontal.decrease.circle",
                 moodLevel: 3,
                 title: String(localized: "Smart filters and collections"),
                 subtitle: String(localized: "Saved searches, collections, and folders.")
             )
+            .scrollFadeIn()
             ProBenefitRow(
                 icon: "paintpalette",
                 moodLevel: 2,
                 title: String(localized: "Themes and app icons"),
                 subtitle: String(localized: "Make Mira look the way you journal.")
             )
+            .scrollFadeIn()
             ProBenefitRow(
                 icon: "doc.richtext",
                 moodLevel: 3,
                 title: String(localized: "PDF export with templates"),
                 subtitle: String(localized: "Print, share, archive — beautifully laid out.")
             )
+            .scrollFadeIn()
             ProBenefitRow(
                 icon: "rectangle.stack",
                 moodLevel: 2,
                 title: String(localized: "Lock Screen widgets"),
                 subtitle: String(localized: "Plus more Home Screen widget sizes.")
             )
+            .scrollFadeIn()
             ProBenefitRow(
                 icon: "square.and.arrow.down",
                 moodLevel: 1,
                 title: String(localized: "Importers"),
                 subtitle: String(localized: "Bring entries from Day One, Apple Notes, Markdown.")
             )
+            .scrollFadeIn()
         }
     }
 
@@ -289,6 +294,20 @@ public struct PaywallView: View {
             return String(format: String(localized: "%@ per month after the free trial. Renews automatically until cancelled in App Store settings."), selected.displayPrice)
         case .yearly:
             return String(format: String(localized: "%@ per year after the free trial. Renews automatically until cancelled in App Store settings."), selected.displayPrice)
+        }
+    }
+}
+
+private extension View {
+    /// Fades + lifts the view as it enters the scroll viewport. Identity
+    /// phase shows the content at full opacity; topLeading/bottomTrailing
+    /// phases drop opacity and push the row down 18pt so each ProBenefit
+    /// row reveals itself one by one as the user scrolls.
+    func scrollFadeIn() -> some View {
+        scrollTransition(.animated.threshold(.visible(0.2))) { content, phase in
+            content
+                .opacity(phase.isIdentity ? 1 : 0)
+                .offset(y: phase.isIdentity ? 0 : 18)
         }
     }
 }

@@ -1255,6 +1255,23 @@
         }
       }
     },
+    "Author the system prompt that shapes Mira's voice.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Author the system prompt that shapes Mira's voice."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Сформулируйте промпт, который задаёт голос Mira."
+          }
+        }
+      }
+    },
     "Average": {
       "extractionState": "manual",
       "localizations": {
@@ -1411,6 +1428,23 @@
         }
       }
     },
+    "Best value · save 30%": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Best value · save 30%"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Выгодно · экономия 30%"
+          }
+        }
+      }
+    },
     "Biometric authentication is not available on this device.": {
       "extractionState": "stale",
       "localizations": {
@@ -1543,6 +1577,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "На передний план"
+          }
+        }
+      }
+    },
+    "Bring entries from Day One, Apple Notes, Markdown.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bring entries from Day One, Apple Notes, Markdown."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Перенесите записи из Day One, Apple Notes и Markdown."
           }
         }
       }
@@ -2137,6 +2188,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Свой"
+          }
+        }
+      }
+    },
+    "Custom AI personas": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Custom AI personas"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Свои AI-личности"
           }
         }
       }
@@ -3688,6 +3756,23 @@
         }
       }
     },
+    "Goals and habits": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Goals and habits"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Цели и привычки"
+          }
+        }
+      }
+    },
     "Gold": {
       "extractionState": "manual",
       "localizations": {
@@ -3956,6 +4041,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Хостится у Mira — никаких API-ключей."
+          }
+        }
+      }
+    },
+    "Hosted conversations and weekly reflections.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hosted conversations and weekly reflections."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Размещённые беседы и еженедельные рефлексии."
           }
         }
       }
@@ -4438,6 +4540,23 @@
         }
       }
     },
+    "Importers": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Importers"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Импорт"
+          }
+        }
+      }
+    },
     "Importing %.0f%%": {
       "extractionState": "manual",
       "localizations": {
@@ -4774,6 +4893,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Локальные напоминания — вечерний пинг и привет, если давно не было"
+          }
+        }
+      }
+    },
+    "Lock Screen widgets": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lock Screen widgets"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Виджеты на Lock Screen"
           }
         }
       }
@@ -6568,6 +6704,23 @@
         }
       }
     },
+    "PDF export with templates": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "PDF export with templates"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Экспорт в PDF с шаблонами"
+          }
+        }
+      }
+    },
     "PDF templates and importers": {
       "extractionState": "manual",
       "localizations": {
@@ -6857,6 +7010,23 @@
         }
       }
     },
+    "Plus more Home Screen widget sizes.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Plus more Home Screen widget sizes."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Плюс дополнительные размеры виджетов Home Screen."
+          }
+        }
+      }
+    },
     "Predicted mood for the week": {
       "extractionState": "manual",
       "localizations": {
@@ -6887,6 +7057,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Превью"
+          }
+        }
+      }
+    },
+    "Print, share, archive — beautifully laid out.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Print, share, archive — beautifully laid out."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Печать, обмен, архив — с аккуратной вёрсткой."
           }
         }
       }
@@ -7826,6 +8013,23 @@
         }
       }
     },
+    "Saved searches, collections, and folders.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Saved searches, collections, and folders."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Сохранённые поиски, коллекции и папки."
+          }
+        }
+      }
+    },
     "Saves every entry to a temporary file and hands it to the share sheet so you can move it wherever you like.": {
       "extractionState": "stale",
       "localizations": {
@@ -8145,6 +8349,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Сонные"
+          }
+        }
+      }
+    },
+    "Smart filters and collections": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Smart filters and collections"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Умные фильтры и коллекции"
           }
         }
       }
@@ -8860,6 +9081,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Паттерны тегов"
+          }
+        }
+      }
+    },
+    "Tag-driven habits and goals alongside your journal.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tag-driven habits and goals alongside your journal."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Привычки и цели по тегам — прямо в дневнике."
           }
         }
       }

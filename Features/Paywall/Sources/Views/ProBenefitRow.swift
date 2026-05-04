@@ -13,25 +13,25 @@ struct ProBenefitRow: View {
     let subtitle: String
 
     var body: some View {
-        HStack(alignment: .center, spacing: 12) {
+        HStack(alignment: .center, spacing: 14) {
             ZStack {
                 Circle()
                     .fill(MiraPalette.mood(level: moodLevel).opacity(0.22))
                 Circle()
                     .strokeBorder(MiraPalette.mood(level: moodLevel).opacity(0.35), lineWidth: 0.5)
                 Image(systemName: icon)
-                    .font(.system(size: 14, weight: .semibold))
+                    .font(.system(size: 18, weight: .semibold))
                     .foregroundStyle(MiraPalette.mood(level: moodLevel))
             }
-            .frame(width: 32, height: 32)
+            .frame(width: 44, height: 44)
             .accessibilityHidden(true)
 
-            VStack(alignment: .leading, spacing: 1) {
+            VStack(alignment: .leading, spacing: 3) {
                 Text(title)
-                    .font(.system(size: 15, weight: .semibold))
+                    .font(.system(size: 16, weight: .semibold))
                     .foregroundStyle(MiraPalette.primaryText)
                 Text(subtitle)
-                    .font(.system(size: 12.5, design: .serif))
+                    .font(.system(size: 13.5, design: .serif))
                     .foregroundStyle(MiraPalette.secondaryText)
                     .fixedSize(horizontal: false, vertical: true)
                     .lineLimit(2)
@@ -39,14 +39,15 @@ struct ProBenefitRow: View {
 
             Spacer(minLength: 0)
         }
-        .padding(.vertical, 8)
-        .padding(.horizontal, 12)
+        .padding(.vertical, 14)
+        .padding(.horizontal, 16)
+        .frame(maxWidth: .infinity, alignment: .leading)
         .background {
-            RoundedRectangle(cornerRadius: 14, style: .continuous)
-                .fill(MiraPalette.surfaceElevated.opacity(0.5))
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .fill(MiraPalette.surfaceElevated.opacity(0.55))
         }
         .overlay {
-            RoundedRectangle(cornerRadius: 14, style: .continuous)
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
                 .strokeBorder(MiraPalette.divider, lineWidth: 0.5)
         }
         .accessibilityElement(children: .combine)

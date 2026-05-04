@@ -78,33 +78,41 @@ struct PaywallProductCard: View {
         .animation(.spring(duration: 0.35, bounce: 0.15), value: isSelected)
     }
 
+    /// Both cards share the gold accent for selection — yearly stays
+     /// visually special by carrying the gold→rose *gradient* + glow,
+     /// while monthly uses a softer solid gold tint. This keeps the
+     /// paywall on a single coherent palette (no stray system blue).
     private var fillStyle: AnyShapeStyle {
         if isFeatured {
             return AnyShapeStyle(
                 LinearGradient(
                     colors: [
-                        MiraPalette.proAccent(.gold).opacity(isSelected ? 0.18 : 0.10),
-                        MiraPalette.proAccent(.rose).opacity(isSelected ? 0.10 : 0.05),
+                        MiraPalette.proAccent(.gold).opacity(isSelected ? 0.20 : 0.10),
+                        MiraPalette.proAccent(.rose).opacity(isSelected ? 0.12 : 0.05),
                     ],
                     startPoint: .topLeading,
                     endPoint: .bottomTrailing
                 )
             )
         }
-        return AnyShapeStyle(MiraPalette.surfaceElevated.opacity(isSelected ? 0.8 : 0.55))
+        if isSelected {
+            return AnyShapeStyle(MiraPalette.proAccent(.gold).opacity(0.10))
+        }
+        return AnyShapeStyle(MiraPalette.surfaceElevated.opacity(0.55))
     }
 
     private var borderStyle: AnyShapeStyle {
         if isSelected {
-            return AnyShapeStyle(
-                LinearGradient(
-                    colors: isFeatured
-                        ? [MiraPalette.proAccent(.gold), MiraPalette.proAccent(.rose)]
-                        : [Color.accentColor, Color.accentColor],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
+            if isFeatured {
+                return AnyShapeStyle(
+                    LinearGradient(
+                        colors: [MiraPalette.proAccent(.gold), MiraPalette.proAccent(.rose)],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
                 )
-            )
+            }
+            return AnyShapeStyle(MiraPalette.proAccent(.gold))
         }
         return AnyShapeStyle(MiraPalette.divider)
     }
@@ -126,7 +134,7 @@ struct PaywallProductCard: View {
                                 startPoint: .topLeading,
                                 endPoint: .bottomTrailing
                             ))
-                            : AnyShapeStyle(Color.accentColor)
+                            : AnyShapeStyle(MiraPalette.proAccent(.gold))
                     )
                     .frame(width: 12, height: 12)
                     .transition(.scale.combined(with: .opacity))
