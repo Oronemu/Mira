@@ -88,9 +88,21 @@ let project = Project(
             ])
         ),
     ],
+    schemes: [
+        .scheme(
+            name: "Mira",
+            shared: true,
+            buildAction: .buildAction(targets: ["Mira"]),
+            runAction: .runAction(
+                configuration: "Debug",
+                options: .options(storeKitConfigurationPath: "Resources/Mira.storekit")
+            ),
+            archiveAction: .archiveAction(configuration: "Release"),
+            profileAction: .profileAction(configuration: "Release"),
+            analyzeAction: .analyzeAction(configuration: "Debug")
+        ),
+    ],
     additionalFiles: [
-        // StoreKit Configuration for local testing — attach via
-        // Edit Scheme → Run → Options → StoreKit Configuration.
         "Resources/Mira.storekit",
     ]
 )
