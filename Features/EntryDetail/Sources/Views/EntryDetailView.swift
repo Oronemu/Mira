@@ -12,6 +12,8 @@ public struct EntryDetailView: View {
 
     @State private var state: EntryDetailState?
     @State private var draft: EntryDraftState?
+    @State private var controller = MiraRichTextController()
+    @State private var canvasFocused: Bool = false
     @State private var isEditing = false
     @State private var pickerItems: [PhotosPickerItem] = []
     @State private var showMoodSheet = false
@@ -26,7 +28,6 @@ public struct EntryDetailView: View {
     @State private var didAutoDismiss = false
     @State private var viewer: PhotoViewerItem?
     @Namespace private var photoTransition
-    @FocusState private var canvasFocused: Bool
 
     private let entryID: UUID
     private let onDismiss: () -> Void
@@ -41,7 +42,7 @@ public struct EntryDetailView: View {
             AmbientBackground(moodLevels: ambientMoodLevels, intensity: 0.7)
                 .contentShape(Rectangle())
                 .onTapGesture {
-                    canvasFocused = false
+                    controller.resignFocus()
                     draft?.deselectSticker()
                 }
 
@@ -53,9 +54,6 @@ public struct EntryDetailView: View {
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
             }
-        }
-        .onChange(of: canvasFocused) { _, focused in
-            if focused { draft?.deselectSticker() }
         }
         .navigationTitle("")
         .toolbarTitleDisplayMode(.inline)
@@ -105,31 +103,27 @@ public struct EntryDetailView: View {
             }
         }
         .sheet(isPresented: $showTextStyleSheet) {
-            if let draft {
-                TextStyleSheet(
-                    current: draft.currentStyle,
-                    onFontFamily: { draft.applyFontFamily($0) },
-                    onFontSize: { draft.applyFontSize($0) },
-                    onTextColor: { draft.applyTextColor($0) },
-                    onToggleBold: { draft.toggleBold() },
-                    onToggleItalic: { draft.toggleItalic() },
-                    onToggleUnderline: { draft.toggleUnderline() }
-                )
-                .presentationBackground {
-                    AmbientBackground(moodLevels: ambientMoodLevels, intensity: 0.55)
-                }
+            TextStyleSheet(
+                current: controller.currentStyle,
+                onFontFamily: { controller.applyFontFamily($0) },
+                onFontSize: { controller.applyFontSize($0) },
+                onTextColor: { controller.applyTextColor($0) },
+                onToggleBold: { controller.toggleBold() },
+                onToggleItalic: { controller.toggleItalic() },
+                onToggleUnderline: { controller.toggleUnderline() }
+            )
+            .presentationBackground {
+                AmbientBackground(moodLevels: ambientMoodLevels, intensity: 0.55)
             }
         }
         .sheet(isPresented: $showListStyleSheet) {
-            if let draft {
-                ListStyleSheet(
-                    currentKind: draft.currentLineToken?.kind ?? .paragraph,
-                    canOutdent: (draft.currentLineToken?.indent ?? 0) > 0,
-                    apply: { draft.applyListAction($0) }
-                )
-                .presentationBackground {
-                    AmbientBackground(moodLevels: ambientMoodLevels, intensity: 0.55)
-                }
+            ListStyleSheet(
+                currentKind: controller.currentLineToken?.kind ?? .paragraph,
+                canOutdent: (controller.currentLineToken?.indent ?? 0) > 0,
+                apply: { controller.applyListAction($0) }
+            )
+            .presentationBackground {
+                AmbientBackground(moodLevels: ambientMoodLevels, intensity: 0.55)
             }
         }
         .sheet(isPresented: $showStickerSheet) {
@@ -171,13 +165,6 @@ public struct EntryDetailView: View {
         .onChange(of: pickerItems) { _, newItems in
             guard let draft, !newItems.isEmpty else { return }
             Task { await ingest(items: newItems, into: draft) }
-        }
-        .onChange(of: draft?.content) { oldValue, newValue in
-            guard let draft,
-                  let oldValue,
-                  let newValue,
-                  oldValue != newValue else { return }
-            draft.handleContentChange(oldValue: oldValue, newValue: newValue)
         }
         .animation(.spring(response: 0.48, dampingFraction: 0.88), value: isEditing)
         .task {
@@ -311,9 +298,9 @@ public struct EntryDetailView: View {
     // MARK: - Editing canvas
 
     /// Page-style editing canvas. Mirrors `EntryEditorView.canvas` —
-    /// outer ScrollView, scroll-disabled TextEditor sized to content,
-    /// stickers in the same scroll content layer so they pin to the
-    /// document and travel with the text on scroll.
+    /// outer ScrollView, intrinsic-sized rich text view, stickers in the
+    /// same scroll content layer so they pin to the document and travel
+    /// with the text on scroll.
     private func editingCanvas(draft: EntryDraftState) -> some View {
         GeometryReader { outer in
             ScrollView {
@@ -333,24 +320,17 @@ public struct EntryDetailView: View {
                                     .padding(.leading, 20)
                                     .allowsHitTesting(false)
                             }
-                            TextEditor(
-                                text: Binding(
-                                    get: { draft.content.resolvedForDisplay() },
+                            MiraRichTextEditor(
+                                content: Binding(
+                                    get: { draft.content },
                                     set: { draft.content = $0 }
                                 ),
-                                selection: Binding(
-                                    get: {
-                                        draft.selection
-                                            ?? AttributedTextSelection(insertionPoint: draft.content.startIndex)
-                                    },
-                                    set: { draft.selection = $0 }
-                                )
+                                controller: controller,
+                                onFocusChange: { focused in
+                                    canvasFocused = focused
+                                    if focused { draft.deselectSticker() }
+                                }
                             )
-                            .lineSpacing(6)
-                            .scrollContentBackground(.hidden)
-                            .background(Color.clear)
-                            .scrollDisabled(true)
-                            .focused($canvasFocused)
                             .padding(.horizontal, 16)
                             .frame(minHeight: max(240, outer.size.height - 60))
                         }
@@ -362,7 +342,7 @@ public struct EntryDetailView: View {
                             get: { draft.selectedStickerID },
                             set: { newID in
                                 draft.selectedStickerID = newID
-                                if newID != nil { canvasFocused = false }
+                                if newID != nil { controller.resignFocus() }
                             }
                         ),
                         interactive: true,
@@ -522,8 +502,8 @@ public struct EntryDetailView: View {
                 action: { showTextStyleSheet = true }
             ),
             list: EntryEditingDock.Slot(
-                isActive: draft.currentLineToken?.kind != .paragraph
-                    && draft.currentLineToken != nil,
+                isActive: controller.currentLineToken?.kind != .paragraph
+                    && controller.currentLineToken != nil,
                 action: { showListStyleSheet = true }
             ),
             stickers: EntryEditingDock.Slot(
@@ -564,7 +544,7 @@ public struct EntryDetailView: View {
 
     private func exitEditing() async {
         guard let draft else { return }
-        canvasFocused = false
+        controller.resignFocus()
         let trimmed = draft.plainContent.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return }
         if draft.hasChanges {

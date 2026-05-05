@@ -26,6 +26,22 @@ public final class MiraRichTextController {
 
     public init() {}
 
+    // MARK: - Focus
+
+    @discardableResult
+    public func focus() -> Bool {
+        textView?.becomeFirstResponder() ?? false
+    }
+
+    @discardableResult
+    public func resignFocus() -> Bool {
+        textView?.resignFirstResponder() ?? false
+    }
+
+    public var isFocused: Bool {
+        textView?.isFirstResponder ?? false
+    }
+
     // MARK: - Style queries
 
     public func refreshFromTextView() {

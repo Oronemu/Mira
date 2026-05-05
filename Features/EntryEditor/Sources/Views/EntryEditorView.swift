@@ -12,6 +12,8 @@ public struct EntryEditorView: View {
     @Environment(\.dismiss) private var dismiss
 
     @State private var state: EntryEditorState?
+    @State private var controller = MiraRichTextController()
+    @State private var canvasFocused: Bool = false
     @State private var pickerItems: [PhotosPickerItem] = []
     @State private var showMoodSheet = false
     @State private var showTagsSheet = false
@@ -28,7 +30,6 @@ public struct EntryEditorView: View {
     @State private var isStickerManipulating: Bool = false
     @State private var viewer: PhotoViewerItem?
     @Namespace private var photoTransition
-    @FocusState private var canvasFocused: Bool
 
     private let mode: EntryEditorState.Mode
 
@@ -41,7 +42,7 @@ public struct EntryEditorView: View {
             AmbientBackground(moodLevels: ambientMoodLevels, intensity: 0.75)
                 .contentShape(Rectangle())
                 .onTapGesture {
-                    canvasFocused = false
+                    controller.resignFocus()
                     state?.deselectSticker()
                 }
 
@@ -51,9 +52,6 @@ public struct EntryEditorView: View {
                 ProgressView()
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
-        }
-        .onChange(of: canvasFocused) { _, focused in
-            if focused { state?.deselectSticker() }
         }
         .navigationTitle(title)
         .navigationBarTitleDisplayMode(.inline)
@@ -99,31 +97,27 @@ public struct EntryEditorView: View {
             }
         }
         .sheet(isPresented: $showTextStyleSheet) {
-            if let state {
-                TextStyleSheet(
-                    current: state.currentStyle,
-                    onFontFamily: { state.applyFontFamily($0) },
-                    onFontSize: { state.applyFontSize($0) },
-                    onTextColor: { state.applyTextColor($0) },
-                    onToggleBold: { state.toggleBold() },
-                    onToggleItalic: { state.toggleItalic() },
-                    onToggleUnderline: { state.toggleUnderline() }
-                )
-                .presentationBackground {
-                    AmbientBackground(moodLevels: ambientMoodLevels, intensity: 0.55)
-                }
+            TextStyleSheet(
+                current: controller.currentStyle,
+                onFontFamily: { controller.applyFontFamily($0) },
+                onFontSize: { controller.applyFontSize($0) },
+                onTextColor: { controller.applyTextColor($0) },
+                onToggleBold: { controller.toggleBold() },
+                onToggleItalic: { controller.toggleItalic() },
+                onToggleUnderline: { controller.toggleUnderline() }
+            )
+            .presentationBackground {
+                AmbientBackground(moodLevels: ambientMoodLevels, intensity: 0.55)
             }
         }
         .sheet(isPresented: $showListStyleSheet) {
-            if let state {
-                ListStyleSheet(
-                    currentKind: state.currentLineToken?.kind ?? .paragraph,
-                    canOutdent: (state.currentLineToken?.indent ?? 0) > 0,
-                    apply: { state.applyListAction($0) }
-                )
-                .presentationBackground {
-                    AmbientBackground(moodLevels: ambientMoodLevels, intensity: 0.55)
-                }
+            ListStyleSheet(
+                currentKind: controller.currentLineToken?.kind ?? .paragraph,
+                canOutdent: (controller.currentLineToken?.indent ?? 0) > 0,
+                apply: { controller.applyListAction($0) }
+            )
+            .presentationBackground {
+                AmbientBackground(moodLevels: ambientMoodLevels, intensity: 0.55)
             }
         }
         .sheet(isPresented: $showStickerSheet) {
@@ -170,13 +164,6 @@ public struct EntryEditorView: View {
             guard let state, !newItems.isEmpty else { return }
             Task { await ingest(items: newItems, into: state) }
         }
-        .onChange(of: state?.content) { oldValue, newValue in
-            guard let state,
-                  let oldValue,
-                  let newValue,
-                  oldValue != newValue else { return }
-            state.handleContentChange(oldValue: oldValue, newValue: newValue)
-        }
         .task {
             if state == nil {
                 state = EntryEditorState(
@@ -189,7 +176,7 @@ public struct EntryEditorView: View {
                 )
                 if case .new = mode {
                     try? await Task.sleep(for: .milliseconds(220))
-                    canvasFocused = true
+                    controller.focus()
                 }
             }
         }
@@ -207,12 +194,9 @@ public struct EntryEditorView: View {
     // MARK: - Canvas
 
     /// Page-style canvas: the whole thing is one scroll view, the
-    /// TextEditor expands to its content (no internal scroll), and
-    /// stickers live in the same scroll content layer — so they pin to
-    /// the document and travel with the text when the user scrolls.
-    /// This is the Apple-Notes / Notion model; the previous
-    /// floating-overlay approach left stickers stuck to the viewport
-    /// while text scrolled away beneath them.
+    /// rich-text view sizes itself to its content (no internal scroll),
+    /// and stickers live in the same scroll content layer — so they pin
+    /// to the document and travel with the text when the user scrolls.
     private func canvas(state: EntryEditorState) -> some View {
         GeometryReader { outer in
             ScrollView {
@@ -232,25 +216,18 @@ public struct EntryEditorView: View {
                                     .padding(.leading, 20)
                                     .allowsHitTesting(false)
                             }
-                            TextEditor(
-                                text: Binding(
-                                    get: { state.content.resolvedForDisplay() },
+                            MiraRichTextEditor(
+                                content: Binding(
+                                    get: { state.content },
                                     set: { state.content = $0 }
                                 ),
-                                selection: Binding(
-                                    get: {
-                                        state.selection
-                                            ?? AttributedTextSelection(insertionPoint: state.content.startIndex)
-                                    },
-                                    set: { state.selection = $0 }
-                                )
+                                controller: controller,
+                                isEditable: state.isEditable,
+                                onFocusChange: { focused in
+                                    canvasFocused = focused
+                                    if focused { state.deselectSticker() }
+                                }
                             )
-                            .lineSpacing(6)
-                            .scrollContentBackground(.hidden)
-                            .background(Color.clear)
-                            .scrollDisabled(true)
-                            .focused($canvasFocused)
-                            .disabled(!state.isEditable)
                             .padding(.horizontal, 16)
                             .frame(minHeight: textEditorMinHeight(outer: outer))
                         }
@@ -265,7 +242,7 @@ public struct EntryEditorView: View {
                                 // Tapping a sticker dismisses the
                                 // keyboard so the manipulation chrome
                                 // isn't covered.
-                                if newID != nil { canvasFocused = false }
+                                if newID != nil { controller.resignFocus() }
                             }
                         ),
                         interactive: true,
@@ -304,9 +281,8 @@ public struct EntryEditorView: View {
         }
     }
 
-    /// Floor the TextEditor at roughly viewport height so a freshly-
-    /// created entry feels like a full page, not a tiny field above
-    /// blank space. Subtracts the eyebrow header's vertical room.
+    /// Floor the editor at roughly viewport height so a freshly-created
+    /// entry feels like a full page, not a tiny field above blank space.
     private func textEditorMinHeight(outer proxy: GeometryProxy) -> CGFloat {
         max(240, proxy.size.height - 60)
     }
@@ -422,8 +398,8 @@ public struct EntryEditorView: View {
                 action: { showTextStyleSheet = true }
             ),
             list: EntryEditingDock.Slot(
-                isActive: state.currentLineToken?.kind != .paragraph
-                    && state.currentLineToken != nil,
+                isActive: controller.currentLineToken?.kind != .paragraph
+                    && controller.currentLineToken != nil,
                 isDisabled: !state.isEditable,
                 action: { showListStyleSheet = true }
             ),
