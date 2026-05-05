@@ -108,6 +108,7 @@ public struct AskMiraView: View {
     /// paywall instead of an unanswered request when their entitlement is
     /// missing.
     private func askWithProGate(state: AskMiraState) {
+        inputFocused = false
         Task {
             let provider = AISettingsStore().load().provider
             if provider == .remote {

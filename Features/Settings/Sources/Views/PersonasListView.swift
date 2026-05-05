@@ -88,7 +88,7 @@ public struct PersonasListView: View {
                 .buttonStyle(.plain)
 
                 VStack(alignment: .leading, spacing: 3) {
-                    Text(persona.name)
+                    personaName(persona)
                         .font(.system(size: 15, weight: .semibold, design: .serif))
                         .foregroundStyle(MiraPalette.primaryText)
                     Text(preview(for: persona))
@@ -111,6 +111,19 @@ public struct PersonasListView: View {
             .contentShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
         }
         .buttonStyle(.plain)
+    }
+
+    /// Built-in personas store their name as the literal English key
+    /// ("Default") so the model layer stays language-agnostic. The view
+    /// routes that name back through Localizable.xcstrings so it shows
+    /// up translated in non-English locales. User-authored names are
+    /// rendered verbatim — we don't want a persona called "Save" to
+    /// silently translate.
+    private func personaName(_ persona: AskMiraPersona) -> Text {
+        if persona.isBuiltIn {
+            return Text(LocalizedStringKey(persona.name))
+        }
+        return Text(persona.name)
     }
 
     private func preview(for persona: AskMiraPersona) -> LocalizedStringKey {
