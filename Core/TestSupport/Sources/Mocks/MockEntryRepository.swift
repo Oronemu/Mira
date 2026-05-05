@@ -71,6 +71,16 @@ public actor MockEntryRepository: EntryRepository {
         notifyObservers()
     }
 
+    public func deleteAll() async throws {
+        let removed = Array(entries.keys)
+        entries.removeAll()
+        deletedIDs.append(contentsOf: removed)
+        for id in removed {
+            emitChange(.deleted(id))
+        }
+        notifyObservers()
+    }
+
     public nonisolated func observe(query: EntryQuery) -> AsyncStream<[EntrySnapshot]> {
         AsyncStream { continuation in
             let token = UUID()

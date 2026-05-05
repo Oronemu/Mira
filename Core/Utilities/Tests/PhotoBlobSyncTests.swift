@@ -176,6 +176,16 @@ private actor StubEntryRepository: EntryRepository {
         }
     }
 
+    func deleteAll() async throws {
+        let removed = Array(entries.keys)
+        entries.removeAll()
+        for id in removed {
+            for continuation in continuations.values {
+                continuation.yield(.deleted(id))
+            }
+        }
+    }
+
     nonisolated func observe(query: EntryQuery) -> AsyncStream<[EntrySnapshot]> {
         AsyncStream { _ in }
     }
