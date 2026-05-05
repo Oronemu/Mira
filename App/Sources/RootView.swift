@@ -36,6 +36,7 @@ struct RootView: View {
     // `tabContent`'s switch destroy them mid-flight.
     @State private var askMiraState: AskMiraState?
     @State private var insightsState: InsightsListState?
+    @State private var entryListState: EntryListState?
 
     enum AppTab: Hashable { case journal, askMira, insights, settings }
 
@@ -87,6 +88,14 @@ struct RootView: View {
                 entryRepository: entryRepository,
                 aiProvider: aiProvider,
                 subscriptionService: subscriptionService,
+                analyticsService: analyticsService,
+                crashReporter: crashReporter
+            )
+        }
+        if entryListState == nil {
+            entryListState = EntryListState(
+                repository: entryRepository,
+                initialQuery: .all,
                 analyticsService: analyticsService,
                 crashReporter: crashReporter
             )
@@ -145,10 +154,17 @@ struct RootView: View {
 
     private var journalTab: some View {
         NavigationStack(path: $journalRouter.path) {
-            EntryListView(
-                onCreateNew: { journalRouter.openEditor(.new) },
-                onSelectEntry: { id in journalRouter.openDetail(id) }
-            )
+            Group {
+                if let entryListState {
+                    EntryListView(
+                        state: entryListState,
+                        onCreateNew: { journalRouter.openEditor(.new) },
+                        onSelectEntry: { id in journalRouter.openDetail(id) }
+                    )
+                } else {
+                    AmbientBackground(moodLevels: [])
+                }
+            }
             .safeAreaPadding(.bottom, MiraTabBarLayout.reservedHeight)
             .ignoresSafeArea(.keyboard)
             .navigationDestination(for: AppRouter.Route.self) { route in

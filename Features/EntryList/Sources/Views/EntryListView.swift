@@ -10,7 +10,11 @@ public struct EntryListView: View {
     @Environment(\.subscriptionService) private var subscriptionService
     @Environment(\.paywallPresenter) private var paywallPresenter
 
-    @State private var state: EntryListState?
+    /// State owned by this view when no parent injects one. The journal
+    /// tab passes a hoisted state in (so it survives tab switches and
+    /// doesn't flash a loader on every reselect); the dayList sub-route
+    /// leaves it nil and we create one scoped to the pushed view.
+    @State private var ownedState: EntryListState?
     @State private var searchText: String = ""
     @State private var pendingDeletionID: UUID?
     @State private var showFilters = false
@@ -23,18 +27,25 @@ public struct EntryListView: View {
 
     private let savedFilterStore = SavedFilterStore()
 
+    private let injectedState: EntryListState?
     private let initialQuery: EntryQuery
     private let onCreateNew: () -> Void
     private let onSelectEntry: (UUID) -> Void
 
     public init(
+        state: EntryListState? = nil,
         initialQuery: EntryQuery = .all,
         onCreateNew: @escaping () -> Void = {},
         onSelectEntry: @escaping (UUID) -> Void = { _ in }
     ) {
+        self.injectedState = state
         self.initialQuery = initialQuery
         self.onCreateNew = onCreateNew
         self.onSelectEntry = onSelectEntry
+    }
+
+    private var state: EntryListState? {
+        injectedState ?? ownedState
     }
 
     public var body: some View {
@@ -62,8 +73,8 @@ public struct EntryListView: View {
             state?.updateSearchText(searchText)
         }
         .task {
-            if state == nil {
-                state = EntryListState(
+            if injectedState == nil, ownedState == nil {
+                ownedState = EntryListState(
                     repository: repository,
                     initialQuery: initialQuery,
                     analyticsService: analyticsService,
