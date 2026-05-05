@@ -71,6 +71,9 @@ struct StatsWeekdayCard: View {
             .foregroundStyle(barColor(for: row))
         }
         .chartYScale(domain: 0...5)
+        .chartPlotStyle { plotArea in
+            plotArea.padding(.top, 8)
+        }
         .chartYAxis {
             AxisMarks(values: [1, 3, 5]) { _ in
                 AxisGridLine().foregroundStyle(MiraPalette.primaryText.opacity(0.06))
