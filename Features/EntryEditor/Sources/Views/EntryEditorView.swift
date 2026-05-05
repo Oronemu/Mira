@@ -175,7 +175,13 @@ public struct EntryEditorView: View {
                     crashReporter: crashReporter
                 )
                 if case .new = mode {
-                    try? await Task.sleep(for: .milliseconds(220))
+                    // Wait until the NavigationStack push animation AND
+                    // the custom tab-bar slide-out have fully settled.
+                    // Calling `becomeFirstResponder` while either is
+                    // still in flight makes the keyboard inherit the
+                    // sideways translation of the navigation transition
+                    // and slide in from the right instead of up.
+                    try? await Task.sleep(for: .milliseconds(700))
                     controller.focus()
                 }
             }
