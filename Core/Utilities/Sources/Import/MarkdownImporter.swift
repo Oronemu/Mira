@@ -67,7 +67,7 @@ public struct MarkdownImporter: Sendable {
             return [
                 EntrySnapshot(
                     createdAt: frontmatter.date ?? fallbackDate,
-                    plainContent: plain,
+                    content: MarkdownToAttributedString.parse(plain),
                     mood: frontmatter.mood,
                     tags: frontmatter.tags
                 )
@@ -83,7 +83,7 @@ public struct MarkdownImporter: Sendable {
             let date = section.date ?? frontmatter.date ?? fallbackDate
             return EntrySnapshot(
                 createdAt: date,
-                plainContent: trimmedBody,
+                content: MarkdownToAttributedString.parse(trimmedBody),
                 mood: section.mood ?? frontmatter.mood,
                 tags: section.tags.isEmpty ? frontmatter.tags : section.tags
             )
