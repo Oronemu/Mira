@@ -81,20 +81,38 @@ struct StatsVolatilityCard: View {
         case .gentle: "Gentle swings"
         case .strong: "Strong swings"
         }
-        return HStack(alignment: .firstTextBaseline, spacing: 6) {
-            Text(label)
-                .font(.system(size: 14, weight: .semibold, design: .serif))
-                .foregroundStyle(MiraPalette.primaryText)
-            Text("·")
-                .foregroundStyle(.secondary)
-            Text(String(format: String(localized: "%lld entries"), v.count))
-                .font(MiraTypography.caption)
-                .foregroundStyle(.secondary)
-            Text("·")
-                .foregroundStyle(.secondary)
-            Text(rangeSubtitle)
-                .font(MiraTypography.caption)
-                .foregroundStyle(.secondary)
+        let bucket = Text(label)
+            .font(.system(size: 14, weight: .semibold, design: .serif))
+            .foregroundStyle(MiraPalette.primaryText)
+        let entries = Text(String(format: String(localized: "%lld entries"), v.count))
+            .font(MiraTypography.caption)
+            .foregroundStyle(.secondary)
+        let range = Text(rangeSubtitle)
+            .font(MiraTypography.caption)
+            .foregroundStyle(.secondary)
+        let dot = Text("·").foregroundStyle(.secondary)
+
+        // Horizontal one-liner fits English comfortably; in Russian the
+        // labels grow and would wrap mid-phrase, so fall back to a
+        // two-row layout (bucket on its own line, metadata beneath).
+        return ViewThatFits(in: .horizontal) {
+            HStack(alignment: .firstTextBaseline, spacing: 6) {
+                bucket
+                dot
+                entries
+                dot
+                range
+            }
+            .lineLimit(1)
+
+            VStack(alignment: .leading, spacing: 4) {
+                bucket
+                HStack(alignment: .firstTextBaseline, spacing: 6) {
+                    entries
+                    dot
+                    range
+                }
+            }
         }
     }
 }

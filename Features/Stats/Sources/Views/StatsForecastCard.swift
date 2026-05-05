@@ -28,6 +28,8 @@ struct StatsForecastCard: View {
             Text("Built from your weekday averages. Faded days have less history to lean on.")
                 .font(MiraTypography.caption)
                 .foregroundStyle(.secondary)
+                .multilineTextAlignment(.leading)
+                .fixedSize(horizontal: false, vertical: true)
         }
         .padding(18)
         .frame(maxWidth: .infinity, alignment: .leading)
