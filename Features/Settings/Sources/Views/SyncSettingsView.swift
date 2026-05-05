@@ -62,6 +62,19 @@ public struct SyncSettingsView: View {
 
                 if state.sync.isEnabled {
                     syncActions(state: state)
+                } else if case .failed(let message) = state.syncStatus {
+                    // Surface the reason a toggle-on was blocked (e.g.
+                    // "Sign in to iCloud", "iCloud is temporarily
+                    // unavailable") — otherwise the toggle just snaps
+                    // back with no explanation.
+                    failureBanner(message: message)
+                        .transition(
+                            .asymmetric(
+                                insertion: .move(edge: .top)
+                                    .combined(with: .opacity),
+                                removal: .opacity
+                            )
+                        )
                 }
 
                 Text("Payloads are encrypted on this device before upload. Disabling sync rotates the key so a future re-enable starts clean.")
@@ -74,8 +87,16 @@ public struct SyncSettingsView: View {
             .padding(.horizontal, 20)
             .padding(.top, 4)
             .animation(.spring(duration: 0.4, bounce: 0.15), value: state.sync.isEnabled)
+            .animation(.spring(duration: 0.45, bounce: 0.18), value: failureMessage(state.syncStatus))
         }
         .scrollIndicators(.hidden)
+    }
+
+    /// Extracts the failure reason as a stable Equatable key so the banner
+    /// can drive its insert/remove transition off `.animation(value:)`.
+    private func failureMessage(_ status: SyncStatus) -> String? {
+        if case .failed(let message) = status { return message }
+        return nil
     }
 
     // MARK: - Pieces
@@ -112,6 +133,22 @@ public struct SyncSettingsView: View {
         .padding(14)
         .frame(maxWidth: .infinity, alignment: .leading)
         .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+    }
+
+    private func failureBanner(message: String) -> some View {
+        HStack(alignment: .firstTextBaseline, spacing: 10) {
+            Image(systemName: "exclamationmark.triangle.fill")
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundStyle(Color.red.opacity(0.85))
+            Text(message)
+                .font(.system(size: 13))
+                .foregroundStyle(MiraPalette.primaryText.opacity(0.9))
+                .fixedSize(horizontal: false, vertical: true)
+            Spacer(minLength: 0)
+        }
+        .padding(14)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
     }
 
     private func syncActions(state: SettingsState) -> some View {
