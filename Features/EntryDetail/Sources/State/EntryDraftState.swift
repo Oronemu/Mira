@@ -269,8 +269,17 @@ public final class EntryDraftState {
 
     public func removePhoto(_ photo: PhotoAssetSnapshot) async {
         photos.removeAll { $0.id == photo.id }
-        try? await photoStore.delete(relativePath: photo.relativePath)
+        if originalPhotoIDs.contains(photo.id) {
+            // Defer disk delete until save commits — if the user backs out
+            // without tapping save, the persisted entry still references
+            // this file and would render a broken thumbnail next time.
+            pendingPhotoDeletions.append(photo.relativePath)
+        } else {
+            try? await photoStore.delete(relativePath: photo.relativePath)
+        }
     }
+
+    private var pendingPhotoDeletions: [String] = []
 
     // MARK: - Stickers
 
@@ -364,6 +373,11 @@ public final class EntryDraftState {
             try await repository.save(snapshot)
             HapticsService().play(.success)
             analyticsService.log(event: "entry_edited", parameters: ["source": .string("detail")])
+            let pendingDeletions = pendingPhotoDeletions
+            pendingPhotoDeletions = []
+            for path in pendingDeletions {
+                try? await photoStore.delete(relativePath: path)
+            }
             let id = snapshot.id
             let plain = snapshot.plainContent
             let repository = repository
