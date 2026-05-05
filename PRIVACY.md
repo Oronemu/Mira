@@ -53,7 +53,7 @@ This Policy applies to:
 
 This Policy does **not** apply to:
 
-- third-party services accessed through Mira when you explicitly choose to use them (Anthropic, OpenAI, OpenRouter, Apple iCloud/CloudKit, Google Firebase, Hugging Face). Those services process data according to their own privacy policies, to which we link in **Section 8**;
+- third-party services accessed through Mira when you explicitly choose to use them (Anthropic, Apple iCloud/CloudKit, Google Firebase, Hugging Face). Those services process data according to their own privacy policies, to which we link in **Section 8**;
 - data you voluntarily export and share with other apps or persons via the iOS share sheet.
 
 ---
@@ -62,7 +62,7 @@ This Policy does **not** apply to:
 
 Before listing categories of data, we summarise our design principles so that this Policy is easier to interpret:
 
-1. **Content stays on-device by default.** Journal text, photos, mood, tags, and embeddings are processed locally using Apple's on-device frameworks. Free users receive AI features (Ask Mira, weekly reflections) through Apple Foundation Models running entirely on your iPhone — your text never leaves the device.
+1. **Content stays on-device by default.** Journal text, photos, mood, tags, and embeddings are processed locally on your device. Free users receive AI features (Ask Mira, weekly reflections) through an on-device language model running entirely on your iPhone — your text never leaves the device.
 2. **Pro AI is proxied, never stored.** When you subscribe to Mira Pro and use a Pro AI feature, the question text and a small RAG-selected slice of your journal are sent through Mira's own Cloudflare Worker to Anthropic's Claude API. **We do not store this content** on the worker; Anthropic processes it under their commercial API terms and does not train on it. See Section 5.11 and Section 8.
 3. **Any outbound transfer is opt-in and transparent.** iCloud sync, Pro AI, analytics, and crash reporting are either disabled by default or require explicit user action (subscription, settings toggle, consent prompt).
 4. **Minimisation.** We process only what is strictly necessary for the feature you enabled.
@@ -85,7 +85,7 @@ This section enumerates **every category** of personal data the App currently pr
 - Photographs attached to entries (up to 3 per entry, stored in the app's Documents container).
 - *(planned)* Voice recordings and their transcripts if the future voice-entry feature is released.
 - AI-generated insights, weekly reflections, and "Ask Mira" conversation history produced from your entries.
-- Vector embeddings of your entries (512-dimensional floating-point vectors generated on-device by Apple's NaturalLanguage framework) used for semantic search.
+- Vector embeddings of your entries (512-dimensional floating-point vectors generated on-device) used for semantic search.
 
 **Storage locations:** local SwiftData database on the device; optionally, **encrypted** copies in your personal iCloud (see 5.6).
 
@@ -97,10 +97,6 @@ This section enumerates **every category** of personal data the App currently pr
 - Device passcode fallback state (managed by iOS).
 
 **Legal basis (GDPR):** Art. 6(1)(b) and Art. 6(1)(f) — our legitimate interest in protecting user data with a standard security mechanism.
-
-### 5.3. User-Provided API Keys *(legacy, no longer offered)*
-
-Earlier development builds let users supply their own Anthropic / OpenAI / OpenRouter API keys for a "bring-your-own-key" Remote AI mode. The released version of Mira does **not** ask for or accept user-supplied API keys — Pro AI is delivered exclusively through Mira's hosted proxy (Section 5.11). Any keys remaining in the iOS Keychain from prior builds can be deleted at **Settings → Intelligence**; we do not transmit or process them.
 
 ### 5.4. Application Preferences
 
@@ -173,7 +169,7 @@ When you purchase Mira Pro through the iOS App Store, the following data flows f
 
 - `originalTransactionId` — Apple's stable identifier for your subscription (does **not** identify you personally; specific to Mira on this Apple ID).
 - `transactionId` — per-transaction identifier for renewals and refunds.
-- `productId` — which Mira Pro plan you bought (`com.veilbytesoft.Mira.pro.monthly` or `.yearly`).
+- `productId` — which Mira Pro subscription plan you bought.
 - `purchaseDate`, `expiresDate`, `revocationDate` — subscription lifecycle timestamps.
 - `bundleId` — confirms the transaction is for our app.
 - `environment` — `Production` or `Sandbox`.
@@ -221,7 +217,7 @@ We process the data listed above for the following purposes only:
 | # | Purpose | Categories used (cross-ref) | Legal basis (GDPR) |
 |---|---|---|---|
 | 6.1 | Providing the core journaling service (create, read, update, delete entries; render UI) | 5.1, 5.4, 5.9 | Art. 6(1)(b) |
-| 6.2 | On-device AI features (embedding, semantic search, reflections, Ask Mira) with Apple Foundation Models | 5.1 | Art. 6(1)(b); Art. 9(2)(a) for mood |
+| 6.2 | On-device AI features (embedding, semantic search, reflections, Ask Mira) running locally on your device | 5.1 | Art. 6(1)(b); Art. 9(2)(a) for mood |
 | 6.3 | Protecting the App with biometric lock | 5.2 | Art. 6(1)(f) |
 | 6.4 | Optional encrypted iCloud sync between your own devices | 5.6 | Art. 6(1)(a) |
 | 6.5 | Hosted Pro AI (Ask Mira, weekly reflections via Anthropic Claude through Mira's proxy) for active subscribers | 5.7, 5.11, 5.12 | Art. 6(1)(b); Art. 9(2)(a) for mood |
@@ -247,7 +243,7 @@ We do **not** use your personal data for:
 Mira uses automated processing in the following ways:
 
 - **On-device embedding generation** to enable semantic search. No legal or similarly significant effect is produced.
-- **On-device generative AI (Apple Foundation Models)** to produce reflections and answer your questions. Output is displayed only to you.
+- **On-device generative AI** to produce reflections and answer your questions. Output is displayed only to you.
 - **Remote generative AI (optional)** to produce higher-quality reflections. Output is displayed only to you.
 
 These features are **decision-support** tools. Mira does not make legal or similarly significant decisions about you. Mira is **not a medical device**, does not provide medical, psychological, or therapeutic advice, and is not intended to diagnose, treat, prevent, or cure any disease or mental-health condition. In cases of distress, please consult a qualified professional.
@@ -264,7 +260,7 @@ The following third parties may receive data when the corresponding feature is a
 
 - **iCloud / CloudKit** (optional, only if iCloud Sync is enabled): stores encrypted journal records in your personal iCloud container.
 - **APNs** (Apple Push Notification service): delivers push notifications.
-- **Apple Foundation Models** and **NaturalLanguage** framework: run on your device; no data leaves the device for these.
+- **On-device system frameworks** (e.g., for natural-language processing and embeddings): run on your device; no data leaves the device for these.
 
 Privacy policy: <https://www.apple.com/legal/privacy/>.
 
@@ -296,11 +292,11 @@ Mira's hosted-AI proxy, App Store Server Notifications endpoint, redeem-code sys
 Privacy policy: <https://www.cloudflare.com/privacypolicy/>.
 DPA / sub-processors: <https://www.cloudflare.com/cloudflare-customer-dpa/>.
 
-### 8.5. OpenAI, L.L.C., OpenRouter, Hugging Face — *not used*
+### 8.5. Hugging Face, Inc. — *on-device model downloads*
 
-Earlier development builds offered alternative AI providers. The released app does not use OpenAI or OpenRouter. The Hugging Face Hub may be contacted only if you download an on-device model file (no journal content is transmitted, only file-download HTTPS requests).
+The on-device language model that powers free AI features is delivered as a model file hosted on the Hugging Face Hub. The first time you enable on-device AI, the App contacts `huggingface.co` over HTTPS solely to download the model file. **No journal content is transmitted** — only the file-download requests themselves and standard HTTP metadata required to fetch a static asset. Once downloaded, the model lives on your device and runs without any network connection.
 
-Hugging Face privacy policy: <https://huggingface.co/privacy>.
+Privacy policy: <https://huggingface.co/privacy>.
 
 ### 8.6. No Other Recipients
 
@@ -333,7 +329,6 @@ For data subjects in the Russian Federation, we note that we **do not** maintain
 | Mira Pro entitlement snapshot in Cloudflare KV | Up to 365 days; refreshed on each App Store Server Notification | Cancel subscription → next renewal lapses → entry expires; or contact us to delete |
 | Hosted AI usage counters in Cloudflare KV | Auto-expire 90 days after last write; reset monthly | — |
 | Redeem code redemption record | Until manually purged from KV; counters tied to a single device-bound id | — |
-| Legacy API keys (if any remain from earlier builds) | Until you remove them | Settings → Intelligence (legacy fields) |
 | Firebase Installation ID, analytics events | Default Google retention of up to 14 months (configurable by the Developer) | Disable Diagnostics & Analytics; uninstall the App (regenerates Installation ID) |
 | Crash reports | Default Crashlytics retention of up to 90 days | Disable Diagnostics & Analytics |
 | Push tokens | Until you revoke notification permission or uninstall | iOS Settings → Notifications → Mira → Off |
@@ -348,7 +343,7 @@ Uninstalling the App removes all local data, including the local SwiftData datab
 We implement the following technical and organisational measures:
 
 - **End-to-end encryption** of CloudKit records using ChaChaPoly-256 with keys stored in your own iCloud Keychain.
-- **Keychain storage** of sensitive material (API keys, encryption keys) with device-only or synchronisable attributes as appropriate.
+- **Keychain storage** of sensitive material (encryption keys) with device-only or synchronisable attributes as appropriate.
 - **Biometric app lock** (Face ID / Touch ID) with passcode fallback.
 - **TLS 1.2 or higher** for all outbound network connections (enforced by iOS App Transport Security).
 - **Privacy manifests** (`PrivacyInfo.xcprivacy`) declaring all collected data categories and required-reason APIs.

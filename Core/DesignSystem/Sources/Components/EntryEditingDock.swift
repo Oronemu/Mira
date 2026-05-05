@@ -17,6 +17,11 @@ public struct EntryEditingDock: View {
     /// State for a dock slot.
     public struct Slot {
         public let indicator: Color?
+        /// Glyph (typically a single emoji) to render in place of the SF
+        /// symbol when the slot is active. Used by the mood slot so the
+        /// dock shows the picked face emoji instead of an opaque colour
+        /// dot. Takes precedence over `indicator` when both are set.
+        public let emoji: String?
         public let badgeCount: Int?
         public let isActive: Bool
         public let isDisabled: Bool
@@ -24,12 +29,14 @@ public struct EntryEditingDock: View {
 
         public init(
             indicator: Color? = nil,
+            emoji: String? = nil,
             badgeCount: Int? = nil,
             isActive: Bool = false,
             isDisabled: Bool = false,
             action: @escaping () -> Void
         ) {
             self.indicator = indicator
+            self.emoji = emoji
             self.badgeCount = badgeCount
             self.isActive = isActive
             self.isDisabled = isDisabled
@@ -129,6 +136,7 @@ public struct EntryEditingDock: View {
             systemImage: systemImage,
             badgeCount: slot.badgeCount,
             indicator: slot.indicator,
+            emoji: slot.emoji,
             isActive: slot.isActive,
             action: slot.action
         )

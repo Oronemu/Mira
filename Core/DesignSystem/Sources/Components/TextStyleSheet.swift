@@ -294,23 +294,24 @@ public struct TextStyleSheet: View {
             .contentShape(Circle())
         }
         .buttonStyle(.plain)
-        .background(
-            // Hidden host that drives a UIKit color picker. SwiftUI's own
-            // ColorPicker has a fixed-size hit target inside its swatch
-            // that doesn't scale with .scaleEffect or .frame, so taps on
-            // the visible 44pt circle were missing it. Routing through
-            // UIColorPickerViewController gives us a Button-driven flow
-            // where the entire visible circle is the tap target.
-            SystemColorPickerHost(
-                isPresented: $showSystemColorPicker,
-                color: $customColor,
-                onColorChange: { newColor in
+        .sheet(isPresented: $showSystemColorPicker) {
+            // Color picker hosted as a SwiftUI sheet so iOS doesn't try
+            // to stack a UIKit modal on top of the parent TextStyleSheet
+            // (that's the "Currently, only presenting a single sheet is
+            // supported" path that left the previous attempt silent).
+            // Picking a color updates the entry immediately; Done just
+            // dismisses the sheet.
+            ColorPickerSheet(
+                initialColor: customColor,
+                onChange: { newColor in
+                    customColor = newColor
                     onTextColor(.custom(hex: newColor.toHexString()))
-                }
+                },
+                onDismiss: { showSystemColorPicker = false }
             )
-            .frame(width: 0, height: 0)
-            .allowsHitTesting(false)
-        )
+            .ignoresSafeArea()
+            .presentationDetents([.large])
+        }
         .accessibilityLabel("Custom colour")
     }
 
@@ -374,56 +375,51 @@ private extension Color {
     }
 }
 
-/// Host that programmatically presents `UIColorPickerViewController`.
-/// Lets us drive the system colour picker from a SwiftUI Button instead
-/// of using SwiftUI's `ColorPicker`, whose intrinsic-sized swatch ignores
-/// `.scaleEffect` / `.frame` for hit-testing — the cause of the
-/// "rainbow circle is unclickable" bug.
-private struct SystemColorPickerHost: UIViewControllerRepresentable {
-    @Binding var isPresented: Bool
-    @Binding var color: Color
-    var onColorChange: (Color) -> Void
+/// Wraps `UIColorPickerViewController` so it can be hosted as the
+/// content of a SwiftUI `.sheet`. Presenting the system colour picker
+/// this way avoids the "Currently, only presenting a single sheet is
+/// supported" warning that fires when UIKit tries to stack a modal
+/// on top of an active SwiftUI sheet.
+private struct ColorPickerSheet: UIViewControllerRepresentable {
+    let initialColor: Color
+    var onChange: (Color) -> Void
+    var onDismiss: () -> Void
 
-    func makeUIViewController(context: Context) -> UIViewController {
-        UIViewController()
+    func makeUIViewController(context: Context) -> UIColorPickerViewController {
+        let picker = UIColorPickerViewController()
+        picker.supportsAlpha = false
+        picker.selectedColor = UIColor(initialColor)
+        picker.delegate = context.coordinator
+        return picker
     }
 
-    func updateUIViewController(_ host: UIViewController, context: Context) {
-        guard isPresented else { return }
-        guard host.presentedViewController == nil else { return }
-        // Wait until the host is in a window — otherwise `present` is a
-        // no-op and the picker never appears.
-        DispatchQueue.main.async {
-            guard host.view.window != nil else { return }
-            let picker = UIColorPickerViewController()
-            picker.supportsAlpha = false
-            picker.selectedColor = UIColor(color)
-            picker.delegate = context.coordinator
-            host.present(picker, animated: true)
-        }
+    func updateUIViewController(_ controller: UIColorPickerViewController, context: Context) {
+        // Keep the coordinator's reference to the latest closures so the
+        // delegate calls forward to the right state if the host view
+        // re-renders mid-pick.
+        context.coordinator.onChange = onChange
+        context.coordinator.onDismiss = onDismiss
     }
 
     func makeCoordinator() -> Coordinator {
-        Coordinator(parent: self)
+        Coordinator(onChange: onChange, onDismiss: onDismiss)
     }
 
     final class Coordinator: NSObject, UIColorPickerViewControllerDelegate {
-        var parent: SystemColorPickerHost
+        var onChange: (Color) -> Void
+        var onDismiss: () -> Void
 
-        init(parent: SystemColorPickerHost) {
-            self.parent = parent
+        init(onChange: @escaping (Color) -> Void, onDismiss: @escaping () -> Void) {
+            self.onChange = onChange
+            self.onDismiss = onDismiss
         }
 
         func colorPickerViewControllerDidSelectColor(_ vc: UIColorPickerViewController) {
-            let swiftColor = Color(vc.selectedColor)
-            parent.color = swiftColor
-            parent.onColorChange(swiftColor)
+            onChange(Color(vc.selectedColor))
         }
 
         func colorPickerViewControllerDidFinish(_ vc: UIColorPickerViewController) {
-            // Keep the bound state in sync so the picker can be raised
-            // again on a subsequent tap.
-            parent.isPresented = false
+            onDismiss()
         }
     }
 }

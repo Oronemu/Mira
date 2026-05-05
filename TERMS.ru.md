@@ -47,8 +47,8 @@ Apple является сторонним выгодоприобретателе
 
 Mira предлагает автоматически продляемую подписку («Mira Pro») в двух тарифных планах:
 
-- **Месячный** — `com.veilbytesoft.Mira.pro.monthly` (5,99 USD или эквивалент в местной валюте/мес).
-- **Годовой** — `com.veilbytesoft.Mira.pro.yearly` (49,99 USD или эквивалент в местной валюте/год, ~30% скидка относительно месячного).
+- **Месячный** — 5,99 USD или эквивалент в местной валюте/мес.
+- **Годовой** — 49,99 USD или эквивалент в местной валюте/год (~30% скидка относительно месячного).
 
 Оба тарифа включают **7-дневный пробный период** для новых подписчиков. Цена в вашем регионе определяется Apple в момент покупки и отображается на экране paywall в Приложении.
 
@@ -143,7 +143,7 @@ Mira Pro **не поддерживает** Family Sharing. Подписка яв
 
 Mira взаимодействует с рядом сторонних сервисов. Использование этих сервисов регулируется их собственными условиями:
 
-- **Apple Inc.** — App Store, StoreKit, iCloud / CloudKit, APNs, Apple Intelligence / Foundation Models. <https://www.apple.com/legal/>.
+- **Apple Inc.** — App Store, StoreKit, iCloud / CloudKit, APNs. <https://www.apple.com/legal/>.
 - **Anthropic, PBC** — Claude API для Pro AI. <https://www.anthropic.com/legal/commercial-terms>.
 - **Cloudflare, Inc.** — Workers + KV для размещения нашего backend. <https://www.cloudflare.com/terms/>.
 - **Google LLC / Google Ireland Ltd.** — Firebase Analytics, Crashlytics, Cloud Messaging, Remote Config (только при наличии вашего согласия в Приложении). <https://firebase.google.com/terms>.

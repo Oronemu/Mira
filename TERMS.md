@@ -47,8 +47,8 @@ The App is licensed, not sold. All rights not expressly granted to you are reser
 
 Mira offers an auto-renewable subscription ("Mira Pro") in two billing cadences:
 
-- **Monthly** — `com.veilbytesoft.Mira.pro.monthly` ($5.99 USD or local equivalent / month).
-- **Yearly** — `com.veilbytesoft.Mira.pro.yearly` ($49.99 USD or local equivalent / year, ~30% off vs monthly).
+- **Monthly** — $5.99 USD or local equivalent / month.
+- **Yearly** — $49.99 USD or local equivalent / year (~30% off vs monthly).
 
 Both plans include a **7-day free trial** for new subscribers. Pricing in your region is determined by Apple at purchase time and shown on the in-app paywall.
 
@@ -143,7 +143,7 @@ We may suspend or terminate your access for serious or repeated violations. Wher
 
 Mira interoperates with several third-party services. Your use of those services is subject to their own terms:
 
-- **Apple Inc.** — App Store, StoreKit, iCloud / CloudKit, APNs, Apple Intelligence / Foundation Models. <https://www.apple.com/legal/>.
+- **Apple Inc.** — App Store, StoreKit, iCloud / CloudKit, APNs. <https://www.apple.com/legal/>.
 - **Anthropic, PBC** — Claude API for Pro AI. <https://www.anthropic.com/legal/commercial-terms>.
 - **Cloudflare, Inc.** — Workers + KV hosting our backend. <https://www.cloudflare.com/terms/>.
 - **Google LLC / Google Ireland Ltd.** — Firebase Analytics, Crashlytics, Cloud Messaging, Remote Config (subject to your in-app consent). <https://firebase.google.com/terms>.

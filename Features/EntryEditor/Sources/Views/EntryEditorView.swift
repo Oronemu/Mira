@@ -400,7 +400,7 @@ public struct EntryEditorView: View {
         EntryEditingDock(
             isExpanded: canvasFocused,
             mood: EntryEditingDock.Slot(
-                indicator: state.mood.map { MiraPalette.mood(level: $0.rawValue) },
+                emoji: state.mood?.emoji,
                 isActive: state.mood != nil,
                 isDisabled: !state.isEditable,
                 action: { showMoodSheet = true }

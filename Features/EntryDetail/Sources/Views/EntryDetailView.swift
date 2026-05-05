@@ -503,7 +503,7 @@ public struct EntryDetailView: View {
         EntryEditingDock(
             isExpanded: canvasFocused,
             mood: EntryEditingDock.Slot(
-                indicator: draft.mood.map { MiraPalette.mood(level: $0.rawValue) },
+                emoji: draft.mood?.emoji,
                 isActive: draft.mood != nil,
                 action: { showMoodSheet = true }
             ),

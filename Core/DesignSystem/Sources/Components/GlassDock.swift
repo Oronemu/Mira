@@ -28,6 +28,7 @@ public struct GlassDockButton: View {
     private let systemImage: String
     private let badgeCount: Int?
     private let indicator: Color?
+    private let emoji: String?
     private let isActive: Bool
     private let activeTint: Color?
     private let symbolEffectActive: Bool
@@ -37,6 +38,7 @@ public struct GlassDockButton: View {
         systemImage: String,
         badgeCount: Int? = nil,
         indicator: Color? = nil,
+        emoji: String? = nil,
         isActive: Bool = false,
         activeTint: Color? = nil,
         symbolEffectActive: Bool = false,
@@ -45,6 +47,7 @@ public struct GlassDockButton: View {
         self.systemImage = systemImage
         self.badgeCount = badgeCount
         self.indicator = indicator
+        self.emoji = emoji
         self.isActive = isActive
         self.activeTint = activeTint
         self.symbolEffectActive = symbolEffectActive
@@ -62,7 +65,14 @@ public struct GlassDockButton: View {
     public var body: some View {
         Button(action: action) {
             ZStack {
-                if let indicator {
+                if let emoji {
+                    // Show the active emoji glyph (e.g. picked mood face)
+                    // in place of the SF symbol. Sized to match the
+                    // symbol's optical weight at this button size.
+                    Text(emoji)
+                        .font(.system(size: 22))
+                        .transition(.scale.combined(with: .opacity))
+                } else if let indicator {
                     Circle()
                         .fill(indicator)
                         .frame(width: 22, height: 22)
