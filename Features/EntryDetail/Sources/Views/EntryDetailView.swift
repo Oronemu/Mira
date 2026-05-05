@@ -241,6 +241,10 @@ public struct EntryDetailView: View {
                     .frame(height: 330)
                 }
 
+                if !snapshot.tags.isEmpty {
+                    tagRow(snapshot)
+                }
+
                 // Sticker `y` is stored as an offset from the top of the
                 // editing canvas (which has a date eyebrow + spacing above
                 // the text). Mirror that same eyebrow inset here as an
@@ -267,10 +271,6 @@ public struct EntryDetailView: View {
                         onUpdate: { _ in },
                         onRemove: { _ in }
                     )
-                }
-
-                if !snapshot.tags.isEmpty {
-                    tagRow(snapshot)
                 }
 
                 Color.clear.frame(height: 32)

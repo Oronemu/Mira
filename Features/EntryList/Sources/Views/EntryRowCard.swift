@@ -33,9 +33,9 @@ public struct EntryRowCard: View {
 
             VStack(alignment: .leading, spacing: 10) {
                 header
-                if !entry.tags.isEmpty { tagsRow }
                 body_text
                 if !entry.photos.isEmpty { photosRow }
+                if !entry.tags.isEmpty { tagsRow }
             }
         }
         .padding(14)

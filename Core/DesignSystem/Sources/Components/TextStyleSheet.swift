@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 import CoreKit
 
 /// Bottom sheet that edits the formatting of the current selection. Unlike
@@ -24,6 +25,7 @@ public struct TextStyleSheet: View {
     @Environment(\.paywallPresenter) private var paywallPresenter
     @State private var customColor: Color = .black
     @State private var isPro: Bool = false
+    @State private var showSystemColorPicker: Bool = false
 
     public init(
         current: EntrySelectionStyle,
@@ -250,69 +252,65 @@ public struct TextStyleSheet: View {
     }
 
     private var customSwatch: some View {
-        ZStack {
-            // Rainbow gradient — purely decorative.
-            Circle()
-                .fill(
-                    AngularGradient(
-                        gradient: Gradient(colors: [
-                            .red, .orange, .yellow, .green, .cyan, .blue, .purple, .pink, .red
-                        ]),
-                        center: .center
-                    )
-                )
-                .frame(width: 36, height: 36)
-            if case .custom = current.color ?? .preset(.default) {
-                Circle()
-                    .stroke(MiraPalette.accent, lineWidth: 2.5)
-                    .frame(width: 44, height: 44)
-                Circle()
-                    .fill(customColor)
-                    .frame(width: 22, height: 22)
-            }
-
-            // Hit handling. Free users get a Button that raises the paywall;
-            // Pro users get the system ColorPicker. The ColorPicker is
-            // scaled up so its (intrinsically small) tap target covers the
-            // full 44pt swatch — without scaleEffect the hit area was a
-            // sliver in the middle, which is what the user saw as "not
-            // clickable".
-            if isPro {
-                ColorPicker(
-                    "",
-                    selection: Binding(
-                        get: { customColor },
-                        set: { newColor in
-                            customColor = newColor
-                            onTextColor(.custom(hex: newColor.toHexString()))
-                        }
-                    ),
-                    supportsOpacity: false
-                )
-                .labelsHidden()
-                .scaleEffect(2.0)
-                .opacity(0.02)
-            } else {
-                Button {
-                    paywallPresenter.present(.feature(.themesAndIcons))
-                } label: {
-                    Color.clear
-                        .frame(width: 44, height: 44)
-                        .contentShape(Circle())
-                }
-                .buttonStyle(.plain)
-            }
-
-            // Pro badge — top-right of the swatch, non-interactive so it
-            // doesn't intercept taps meant for the picker / button.
+        Button {
             if !isPro {
-                ProBadge()
-                    .scaleEffect(0.6)
-                    .offset(x: 18, y: -18)
-                    .allowsHitTesting(false)
+                paywallPresenter.present(.feature(.themesAndIcons))
+                return
             }
+            showSystemColorPicker = true
+        } label: {
+            ZStack {
+                // Rainbow gradient — visible target.
+                Circle()
+                    .fill(
+                        AngularGradient(
+                            gradient: Gradient(colors: [
+                                .red, .orange, .yellow, .green, .cyan, .blue, .purple, .pink, .red
+                            ]),
+                            center: .center
+                        )
+                    )
+                    .frame(width: 36, height: 36)
+
+                if case .custom = current.color ?? .preset(.default) {
+                    Circle()
+                        .stroke(MiraPalette.accent, lineWidth: 2.5)
+                        .frame(width: 44, height: 44)
+                    Circle()
+                        .fill(customColor)
+                        .frame(width: 22, height: 22)
+                }
+
+                // Pro badge — top-right of the swatch, non-interactive so
+                // taps go through to the Button.
+                if !isPro {
+                    ProBadge()
+                        .scaleEffect(0.6)
+                        .offset(x: 18, y: -18)
+                        .allowsHitTesting(false)
+                }
+            }
+            .frame(width: 44, height: 44)
+            .contentShape(Circle())
         }
-        .frame(width: 44, height: 44)
+        .buttonStyle(.plain)
+        .background(
+            // Hidden host that drives a UIKit color picker. SwiftUI's own
+            // ColorPicker has a fixed-size hit target inside its swatch
+            // that doesn't scale with .scaleEffect or .frame, so taps on
+            // the visible 44pt circle were missing it. Routing through
+            // UIColorPickerViewController gives us a Button-driven flow
+            // where the entire visible circle is the tap target.
+            SystemColorPickerHost(
+                isPresented: $showSystemColorPicker,
+                color: $customColor,
+                onColorChange: { newColor in
+                    onTextColor(.custom(hex: newColor.toHexString()))
+                }
+            )
+            .frame(width: 0, height: 0)
+            .allowsHitTesting(false)
+        )
         .accessibilityLabel("Custom colour")
     }
 
@@ -373,5 +371,59 @@ private extension Color {
         let gInt = Int((g * 255).rounded())
         let bInt = Int((b * 255).rounded())
         return String(format: "#%02X%02X%02X", rInt, gInt, bInt)
+    }
+}
+
+/// Host that programmatically presents `UIColorPickerViewController`.
+/// Lets us drive the system colour picker from a SwiftUI Button instead
+/// of using SwiftUI's `ColorPicker`, whose intrinsic-sized swatch ignores
+/// `.scaleEffect` / `.frame` for hit-testing — the cause of the
+/// "rainbow circle is unclickable" bug.
+private struct SystemColorPickerHost: UIViewControllerRepresentable {
+    @Binding var isPresented: Bool
+    @Binding var color: Color
+    var onColorChange: (Color) -> Void
+
+    func makeUIViewController(context: Context) -> UIViewController {
+        UIViewController()
+    }
+
+    func updateUIViewController(_ host: UIViewController, context: Context) {
+        guard isPresented else { return }
+        guard host.presentedViewController == nil else { return }
+        // Wait until the host is in a window — otherwise `present` is a
+        // no-op and the picker never appears.
+        DispatchQueue.main.async {
+            guard host.view.window != nil else { return }
+            let picker = UIColorPickerViewController()
+            picker.supportsAlpha = false
+            picker.selectedColor = UIColor(color)
+            picker.delegate = context.coordinator
+            host.present(picker, animated: true)
+        }
+    }
+
+    func makeCoordinator() -> Coordinator {
+        Coordinator(parent: self)
+    }
+
+    final class Coordinator: NSObject, UIColorPickerViewControllerDelegate {
+        var parent: SystemColorPickerHost
+
+        init(parent: SystemColorPickerHost) {
+            self.parent = parent
+        }
+
+        func colorPickerViewControllerDidSelectColor(_ vc: UIColorPickerViewController) {
+            let swiftColor = Color(vc.selectedColor)
+            parent.color = swiftColor
+            parent.onColorChange(swiftColor)
+        }
+
+        func colorPickerViewControllerDidFinish(_ vc: UIColorPickerViewController) {
+            // Keep the bound state in sync so the picker can be raised
+            // again on a subsequent tap.
+            parent.isPresented = false
+        }
     }
 }
