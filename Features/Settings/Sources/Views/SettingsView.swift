@@ -22,7 +22,7 @@ public struct SettingsView: View {
 
                     proBanner
 
-                    VStack(spacing: 10) {
+                    settingsSection("AI") {
                         SettingsCategoryLink(
                             icon: "sparkles",
                             title: "Intelligence",
@@ -37,13 +37,26 @@ public struct SettingsView: View {
                             moodLevel: 4
                         ) { ReflectionSettingsView() }
 
+                        habitsAndGoalsRow
+                    }
+
+                    settingsSection("Personalization") {
+                        SettingsCategoryLink(
+                            icon: "paintpalette",
+                            title: "Appearance",
+                            subtitle: "Theme and accent color",
+                            moodLevel: 3
+                        ) { AppearanceSettingsView() }
+
                         SettingsCategoryLink(
                             icon: "bell",
                             title: "Reminders",
                             subtitle: "Local pushes — daily check-in and a nudge if you've been quiet",
                             moodLevel: 5
                         ) { NotificationSettingsView() }
+                    }
 
+                    settingsSection("Privacy & data") {
                         SettingsCategoryLink(
                             icon: "lock",
                             title: "Privacy",
@@ -59,21 +72,14 @@ public struct SettingsView: View {
                         ) { SyncSettingsView() }
 
                         SettingsCategoryLink(
-                            icon: "paintpalette",
-                            title: "Appearance",
-                            subtitle: "Theme and accent color",
-                            moodLevel: 3
-                        ) { AppearanceSettingsView() }
-
-                        SettingsCategoryLink(
                             icon: "arrow.up.arrow.down",
                             title: "Import & export",
                             subtitle: "Take entries in or out — Markdown, PDF, Day One",
                             moodLevel: 2
                         ) { ImportExportSettingsView() }
+                    }
 
-                        habitsAndGoalsRow
-
+                    settingsSection("Support") {
                         SettingsCategoryLink(
                             icon: "questionmark.circle",
                             title: "Help & support",
@@ -104,6 +110,26 @@ public struct SettingsView: View {
             status = await subscriptionService.status
             for await snapshot in subscriptionService.statusUpdates {
                 status = snapshot
+            }
+        }
+    }
+
+    // MARK: - Section helper
+
+    /// Group of settings cards under an eyebrow header. Mirrors the
+    /// "Section" pattern of native iOS Settings but keeps our card-style
+    /// rows so the screen still reads as Mira's own surface.
+    @ViewBuilder
+    private func settingsSection<Content: View>(
+        _ title: LocalizedStringKey,
+        @ViewBuilder content: () -> Content
+    ) -> some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text(title)
+                .eyebrowStyle()
+                .padding(.horizontal, 4)
+            VStack(spacing: 10) {
+                content()
             }
         }
     }
