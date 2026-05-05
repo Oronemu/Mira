@@ -20,7 +20,10 @@ public struct TextStyleSheet: View {
     public let onToggleUnderline: () -> Void
 
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.subscriptionService) private var subscriptionService
+    @Environment(\.paywallPresenter) private var paywallPresenter
     @State private var customColor: Color = .black
+    @State private var isPro: Bool = false
 
     public init(
         current: EntrySelectionStyle,
@@ -61,6 +64,12 @@ public struct TextStyleSheet: View {
         .frame(maxWidth: .infinity, alignment: .top)
         .miraSheet([.medium, .large])
         .onAppear(perform: loadCustomColor)
+        .task {
+            isPro = (await subscriptionService.status).isPro
+            for await snapshot in subscriptionService.statusUpdates {
+                isPro = snapshot.isPro
+            }
+        }
     }
 
     // MARK: - Emphasis (B / I / U)
@@ -242,6 +251,7 @@ public struct TextStyleSheet: View {
 
     private var customSwatch: some View {
         ZStack {
+            // Rainbow gradient — purely decorative.
             Circle()
                 .fill(
                     AngularGradient(
@@ -260,23 +270,49 @@ public struct TextStyleSheet: View {
                     .fill(customColor)
                     .frame(width: 22, height: 22)
             }
+
+            // Hit handling. Free users get a Button that raises the paywall;
+            // Pro users get the system ColorPicker. The ColorPicker is
+            // scaled up so its (intrinsically small) tap target covers the
+            // full 44pt swatch — without scaleEffect the hit area was a
+            // sliver in the middle, which is what the user saw as "not
+            // clickable".
+            if isPro {
+                ColorPicker(
+                    "",
+                    selection: Binding(
+                        get: { customColor },
+                        set: { newColor in
+                            customColor = newColor
+                            onTextColor(.custom(hex: newColor.toHexString()))
+                        }
+                    ),
+                    supportsOpacity: false
+                )
+                .labelsHidden()
+                .scaleEffect(2.0)
+                .opacity(0.02)
+            } else {
+                Button {
+                    paywallPresenter.present(.feature(.themesAndIcons))
+                } label: {
+                    Color.clear
+                        .frame(width: 44, height: 44)
+                        .contentShape(Circle())
+                }
+                .buttonStyle(.plain)
+            }
+
+            // Pro badge — top-right of the swatch, non-interactive so it
+            // doesn't intercept taps meant for the picker / button.
+            if !isPro {
+                ProBadge()
+                    .scaleEffect(0.6)
+                    .offset(x: 18, y: -18)
+                    .allowsHitTesting(false)
+            }
         }
         .frame(width: 44, height: 44)
-        .overlay {
-            ColorPicker(
-                "",
-                selection: Binding(
-                    get: { customColor },
-                    set: { newColor in
-                        customColor = newColor
-                        onTextColor(.custom(hex: newColor.toHexString()))
-                    }
-                ),
-                supportsOpacity: false
-            )
-            .labelsHidden()
-            .opacity(0.02)
-        }
         .accessibilityLabel("Custom colour")
     }
 

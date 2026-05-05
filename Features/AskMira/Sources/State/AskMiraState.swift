@@ -55,6 +55,18 @@ public final class AskMiraState {
         )
     }
 
+    /// Provider for internal helper calls (query rewrite, title gen) that
+    /// shouldn't count against the user's askMira monthly cap. The hosted
+    /// proxy treats these intents as unlimited and routes them to the
+    /// cheap model.
+    private func helperProvider(for intent: HostedAIProvider.Intent) async -> any AIProvider {
+        await AIProviderFactory.provider(
+            for: intent,
+            fallback: aiProvider,
+            subscriptionService: subscriptionService
+        )
+    }
+
     public var canAsk: Bool {
         !draftQuestion.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && !isAnswering
     }
@@ -304,7 +316,7 @@ public final class AskMiraState {
             locale: locale
         )
         do {
-            let stream = try await currentProvider().stream(request)
+            let stream = try await helperProvider(for: .askMiraRewrite).stream(request)
             var rewritten = ""
             for try await chunk in stream {
                 rewritten += chunk.textDelta
@@ -329,7 +341,7 @@ public final class AskMiraState {
             locale: locale
         )
         do {
-            let stream = try await currentProvider().stream(request)
+            let stream = try await helperProvider(for: .askMiraTitle).stream(request)
             var accumulated = ""
             for try await chunk in stream {
                 accumulated += chunk.textDelta

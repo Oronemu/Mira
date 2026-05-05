@@ -19,6 +19,14 @@ public actor HostedAIProvider: AIProvider {
         case askMira
         case weeklyReflectionAuto
         case weeklyReflectionManual
+        /// Internal helper call used by AskMira to rephrase a follow-up
+        /// question for retrieval. Counts against neither user quota nor
+        /// the surface they triggered — it's a mechanism, not a turn.
+        case askMiraRewrite
+        /// Internal helper call used by AskMira to generate a polished
+        /// title for the first turn of a chat. Same rationale as
+        /// `askMiraRewrite` — does not consume the user's monthly cap.
+        case askMiraTitle
     }
 
     public struct Config: Sendable, Hashable {

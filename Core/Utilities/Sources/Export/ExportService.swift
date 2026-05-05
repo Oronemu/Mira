@@ -33,7 +33,7 @@ public struct ExportService: Sendable {
         dayFormatter.timeStyle = .none
 
         var lines: [String] = []
-        lines.append("# Journal")
+        lines.append("# " + String(localized: "Journal", bundle: .main))
         if let range {
             let intervalFormatter = DateIntervalFormatter()
             intervalFormatter.locale = locale
@@ -47,10 +47,10 @@ public struct ExportService: Sendable {
             lines.append("## \(dayFormatter.string(from: entry.createdAt))")
             var meta: [String] = []
             if let mood = entry.mood {
-                meta.append("mood: \(mood.rawValue)")
+                meta.append(String(localized: "mood: \(mood.rawValue)", bundle: .main))
             }
             if !entry.tags.isEmpty {
-                meta.append("tags: \(entry.tags.joined(separator: ", "))")
+                meta.append(String(localized: "tags: \(entry.tags.joined(separator: ", "))", bundle: .main))
             }
             if !meta.isEmpty {
                 lines.append("_\(meta.joined(separator: " · "))_")
