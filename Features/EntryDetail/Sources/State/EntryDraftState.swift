@@ -12,7 +12,6 @@ import Utilities
 public final class EntryDraftState {
     public var content: AttributedString
     public var mood: Mood?
-    public var selection: AttributedTextSelection?
     public private(set) var tags: [String]
     public private(set) var photos: [PhotoAssetSnapshot]
     public private(set) var stickers: [EntryStickerInstance]
@@ -97,148 +96,6 @@ public final class EntryDraftState {
     private var trimmedContent: String {
         plainContent.trimmingCharacters(in: .whitespacesAndNewlines)
     }
-
-    // MARK: - Selection helpers
-
-    public var cursorCharOffset: Int? {
-        guard let selection else { return nil }
-        switch selection.indices(in: content) {
-        case .insertionPoint(let idx):
-            return content.characters.distance(from: content.startIndex, to: idx)
-        case .ranges(let ranges):
-            guard let first = ranges.ranges.first else { return nil }
-            return content.characters.distance(from: content.startIndex, to: first.lowerBound)
-        }
-    }
-
-    public var currentLineToken: EntryLineToken? {
-        guard let offset = cursorCharOffset else { return nil }
-        return EntryContentEditor.lineInfo(in: content, at: offset)?.token
-    }
-
-    public func applyListAction(_ action: EntryContentEditor.ListAction) {
-        guard let offset = cursorCharOffset else { return }
-        guard let result = EntryContentEditor.applyListAction(action, in: content, at: offset) else {
-            return
-        }
-        content = result.content
-        setCursor(charOffset: result.cursorCharOffset)
-    }
-
-    public func handleContentChange(oldValue: AttributedString, newValue: AttributedString) {
-        // If the user applied a style with no selection, apply those attributes
-        // to the characters they just typed so the style shows up on new text.
-        var working = newValue
-        let delta = newValue.characters.count - oldValue.characters.count
-        if delta > 0, !pendingTyping.isEmpty, let offset = cursorCharOffset {
-            let insertedEnd = offset
-            let insertedStart = max(0, insertedEnd - delta)
-            if insertedStart < insertedEnd {
-                let chars = working.characters
-                let startIdx = chars.index(chars.startIndex, offsetBy: insertedStart)
-                let endIdx = chars.index(chars.startIndex, offsetBy: insertedEnd)
-                pendingTyping.apply(to: &working, in: startIdx..<endIdx)
-                pendingTyping = PendingTyping()
-                if content != working { content = working }
-            }
-        }
-
-        guard let offset = cursorCharOffset else { return }
-        guard let result = EntryContentEditor.handleEnterContinuation(
-            oldContent: oldValue,
-            newContent: working,
-            cursorCharOffset: offset
-        ) else { return }
-        content = result.content
-        setCursor(charOffset: result.cursorCharOffset)
-    }
-
-    private func setCursor(charOffset: Int) {
-        let chars = content.characters
-        let clamped = max(0, min(charOffset, chars.count))
-        let idx = chars.index(chars.startIndex, offsetBy: clamped)
-        selection = AttributedTextSelection(insertionPoint: idx)
-    }
-
-    // MARK: - Text style mutations
-
-    public var currentStyle: EntrySelectionStyle {
-        var style = EntrySelectionStyleReader.currentStyle(in: content, selection: selection)
-        pendingTyping.overlay(&style)
-        return style
-    }
-
-    public func applyFontFamily(_ family: EntryFontFamily) {
-        if hasRangeSelection {
-            applyToRange { $0[EntryFontFamilyAttribute.self] = family }
-        } else {
-            pendingTyping.family = family
-        }
-    }
-
-    public func applyFontSize(_ size: EntryFontSize) {
-        if hasRangeSelection {
-            applyToRange { $0[EntryFontSizeAttribute.self] = size }
-        } else {
-            pendingTyping.size = size
-        }
-    }
-
-    public func applyTextColor(_ color: EntryTextColor) {
-        if hasRangeSelection {
-            applyToRange { $0[EntryTextColorAttribute.self] = color }
-        } else {
-            pendingTyping.color = color
-        }
-    }
-
-    public func toggleBold() {
-        let on = currentStyle.bold == true
-        if hasRangeSelection {
-            applyToRange { $0[EntryBoldAttribute.self] = on ? nil : true }
-        } else {
-            pendingTyping.bold = !on
-        }
-    }
-
-    public func toggleItalic() {
-        let on = currentStyle.italic == true
-        if hasRangeSelection {
-            applyToRange { $0[EntryItalicAttribute.self] = on ? nil : true }
-        } else {
-            pendingTyping.italic = !on
-        }
-    }
-
-    public func toggleUnderline() {
-        let on = currentStyle.underline == true
-        if hasRangeSelection {
-            applyToRange { $0[EntryUnderlineAttribute.self] = on ? nil : true }
-        } else {
-            pendingTyping.underline = !on
-        }
-    }
-
-    private var hasRangeSelection: Bool {
-        guard let sel = selection else { return false }
-        switch sel.indices(in: content) {
-        case .insertionPoint: return false
-        case .ranges(let ranges):
-            return ranges.ranges.contains { $0.lowerBound < $0.upperBound }
-        }
-    }
-
-    private func applyToRange(_ body: (inout AttributeContainer) -> Void) {
-        guard var sel = selection else { return }
-        content.transformAttributes(in: &sel) { container in
-            body(&container)
-        }
-        selection = sel
-    }
-
-    // MARK: - Pending typing attributes
-
-    private var pendingTyping = PendingTyping()
 
     // MARK: - Tags
 
@@ -436,41 +293,5 @@ public final class EntryDraftState {
             crashReporter.recordError(error, reason: "entry_draft.delete")
             return false
         }
-    }
-}
-
-/// Per-facet tri-state override applied to the next characters the user
-/// types. `nil` means "no pending change"; a concrete value overrides whatever
-/// would otherwise be inherited from the preceding run. Cleared in
-/// `handleContentChange` once the new characters carry the attributes.
-private struct PendingTyping {
-    var family: EntryFontFamily?
-    var size: EntryFontSize?
-    var color: EntryTextColor?
-    var bold: Bool?
-    var italic: Bool?
-    var underline: Bool?
-
-    var isEmpty: Bool {
-        family == nil && size == nil && color == nil
-            && bold == nil && italic == nil && underline == nil
-    }
-
-    func overlay(_ style: inout EntrySelectionStyle) {
-        if let v = family { style.family = v }
-        if let v = size { style.size = v }
-        if let v = color { style.color = v }
-        if let v = bold { style.bold = v }
-        if let v = italic { style.italic = v }
-        if let v = underline { style.underline = v }
-    }
-
-    func apply(to content: inout AttributedString, in range: Range<AttributedString.Index>) {
-        if let v = family { content[range][EntryFontFamilyAttribute.self] = v }
-        if let v = size { content[range][EntryFontSizeAttribute.self] = v }
-        if let v = color { content[range][EntryTextColorAttribute.self] = v }
-        if let v = bold { content[range][EntryBoldAttribute.self] = v ? true : nil }
-        if let v = italic { content[range][EntryItalicAttribute.self] = v ? true : nil }
-        if let v = underline { content[range][EntryUnderlineAttribute.self] = v ? true : nil }
     }
 }
