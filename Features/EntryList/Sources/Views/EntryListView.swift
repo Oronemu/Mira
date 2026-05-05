@@ -48,6 +48,15 @@ public struct EntryListView: View {
         injectedState ?? ownedState
     }
 
+    /// Stable identity of whichever state we're currently using. Lets the
+    /// observe-task re-fire if the injected state arrives *after* the view
+    /// already created an ownedState (RootView wires `entryListState`
+    /// asynchronously in its own .task — the swap from owned to injected
+    /// otherwise leaves the new state un-observed and the loader spinning).
+    private var stateIdentity: ObjectIdentifier? {
+        state.map(ObjectIdentifier.init)
+    }
+
     public var body: some View {
         ZStack {
             AmbientBackground(moodLevels: ambientMoodLevels)
@@ -72,7 +81,7 @@ public struct EntryListView: View {
             guard !Task.isCancelled else { return }
             state?.updateSearchText(searchText)
         }
-        .task {
+        .task(id: stateIdentity) {
             if injectedState == nil, ownedState == nil {
                 ownedState = EntryListState(
                     repository: repository,

@@ -154,17 +154,18 @@ struct RootView: View {
 
     private var journalTab: some View {
         NavigationStack(path: $journalRouter.path) {
-            Group {
-                if let entryListState {
-                    EntryListView(
-                        state: entryListState,
-                        onCreateNew: { journalRouter.openEditor(.new) },
-                        onSelectEntry: { id in journalRouter.openDetail(id) }
-                    )
-                } else {
-                    AmbientBackground(moodLevels: [])
-                }
-            }
+            // Always keep EntryListView as the stack's root, even before
+            // `entryListState` is wired up. EntryListView handles a nil
+            // state internally with its own ProgressView. Swapping the
+            // root view in/out of NavigationStack used to make
+            // `.searchable` lose its drawer slot on the first render and
+            // the bottom safe-area inset stop being honoured until the
+            // user toggled tabs.
+            EntryListView(
+                state: entryListState,
+                onCreateNew: { journalRouter.openEditor(.new) },
+                onSelectEntry: { id in journalRouter.openDetail(id) }
+            )
             .safeAreaPadding(.bottom, MiraTabBarLayout.reservedHeight)
             .ignoresSafeArea(.keyboard)
             .navigationDestination(for: AppRouter.Route.self) { route in
