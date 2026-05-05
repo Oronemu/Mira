@@ -49,18 +49,18 @@ public struct InsightsListView: View {
             Text("Reflections"),
             subtitle: insightsSubtitleText
         )
-        .confirmationDialog(
+        .alert(
             "Delete this reflection?",
             isPresented: deletionPresented,
-            titleVisibility: .visible
-        ) {
+            presenting: pendingDeletionID
+        ) { id in
             Button("Delete", role: .destructive) {
-                if let id = pendingDeletionID {
-                    Task { await state.delete(id: id) }
-                }
+                Task { await state.delete(id: id) }
                 pendingDeletionID = nil
             }
             Button("Cancel", role: .cancel) { pendingDeletionID = nil }
+        } message: { _ in
+            Text("This reflection will be permanently removed.")
         }
     }
 

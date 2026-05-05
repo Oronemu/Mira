@@ -321,7 +321,10 @@ public struct MiraRichTextEditor: UIViewRepresentable {
         tv.delegate = context.coordinator
         tv.isScrollEnabled = false
         tv.isEditable = isEditable
-        tv.allowsEditingTextAttributes = true
+        // The custom dock (font/size/color/B/I/U + lists) owns all styling.
+        // Disable the system Format edit-menu so users don't get a parallel
+        // path that bypasses our sticky typing attributes.
+        tv.allowsEditingTextAttributes = false
         tv.backgroundColor = .clear
         tv.textContainer.lineFragmentPadding = 0
         tv.textContainerInset = UIEdgeInsets(top: 8, left: 4, bottom: 8, right: 4)

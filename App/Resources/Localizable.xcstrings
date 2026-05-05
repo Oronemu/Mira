@@ -10173,6 +10173,23 @@
         }
       }
     },
+    "This reflection will be permanently removed.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This reflection will be permanently removed."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Эта рефлексия будет удалена навсегда."
+          }
+        }
+      }
+    },
     "This device has %@ GB of RAM. %lld GB are required.": {
       "extractionState": "stale",
       "localizations": {
