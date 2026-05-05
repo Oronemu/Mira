@@ -64,6 +64,7 @@ struct MiraApp: App {
                         .environment(\.crashReporter, container.crashReporter)
                         .environment(\.pushNotificationService, container.pushNotificationService)
                         .environment(\.remoteConfigService, container.remoteConfigService)
+                        .environment(\.legalLinks, container.legalLinks)
                         .environment(\.modelDownloadCoordinator, container.modelDownloadCoordinator)
                         .environment(\.syncService, container.syncService)
                         .environment(\.subscriptionService, container.subscriptionService)
@@ -184,9 +185,11 @@ struct MiraApp: App {
         )
         seedAnalyticsUserProperties()
         let remoteConfig = container.remoteConfigService
+        let legalLinks = container.legalLinks
         Task.detached {
-            await remoteConfig.setDefaults([:])
+            await remoteConfig.setDefaults(LegalLinks.remoteConfigDefaults)
             _ = try? await remoteConfig.fetchAndActivate()
+            await legalLinks.refresh(from: remoteConfig)
         }
         // Kick APNs registration so iOS hands the device token to
         // `AppDelegate.didRegisterForRemoteNotificationsWithDeviceToken`,

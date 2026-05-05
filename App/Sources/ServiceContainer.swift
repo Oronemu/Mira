@@ -20,6 +20,7 @@ struct ServiceContainer {
     let crashReporter: any CrashReporter
     let pushNotificationService: any PushNotificationService
     let remoteConfigService: any RemoteConfigService
+    let legalLinks: LegalLinks
     let modelDownloadCoordinator: ModelDownloadCoordinator
     let syncService: SyncService
     let subscriptionService: any SubscriptionService
@@ -64,6 +65,7 @@ struct ServiceContainer {
                 crashReporter: FirebaseCrashReporter(),
                 pushNotificationService: FirebasePushNotificationService(),
                 remoteConfigService: FirebaseRemoteConfigService(),
+                legalLinks: LegalLinks(),
                 modelDownloadCoordinator: coordinator,
                 syncService: syncService,
                 subscriptionService: makeSubscriptionService()

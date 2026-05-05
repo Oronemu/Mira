@@ -1,5 +1,6 @@
 import SwiftUI
 import CoreKit
+import Utilities
 import DesignSystem
 import StoreKit
 
@@ -10,6 +11,7 @@ import StoreKit
 public struct ProSettingsView: View {
     @Environment(\.subscriptionService) private var subscriptionService
     @Environment(\.paywallPresenter) private var paywallPresenter
+    @Environment(\.legalLinks) private var legalLinks
     @Environment(\.openURL) private var openURL
 
     @State private var status: CoreKit.SubscriptionStatus = .unknown
@@ -326,10 +328,10 @@ public struct ProSettingsView: View {
             Text(String(localized: "Subscriptions auto-renew until cancelled in App Store settings at least 24 hours before the end of the current period."))
             HStack(spacing: 16) {
                 Button(String(localized: "Privacy")) {
-                    if let url = URL(string: "https://mira-diary.com/privacy") { openURL(url) }
+                    openURL(legalLinks.privacyURL)
                 }
                 Button(String(localized: "Terms")) {
-                    if let url = URL(string: "https://mira-diary.com/terms") { openURL(url) }
+                    openURL(legalLinks.termsURL)
                 }
             }
             .font(MiraTypography.caption.weight(.semibold))

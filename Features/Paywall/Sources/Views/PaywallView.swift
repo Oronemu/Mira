@@ -1,5 +1,6 @@
 import SwiftUI
 import CoreKit
+import Utilities
 import DesignSystem
 
 /// Full-screen paywall presented as a sheet. Warm AmbientBackground
@@ -9,6 +10,7 @@ import DesignSystem
 public struct PaywallView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.subscriptionService) private var subscriptionService
+    @Environment(\.legalLinks) private var legalLinks
     @Environment(\.openURL) private var openURL
 
     private let context: PaywallContext
@@ -221,11 +223,11 @@ public struct PaywallView: View {
                 }
 
                 Button(String(localized: "Privacy")) {
-                    if let url = URL(string: "https://mira-diary.com/privacy") { openURL(url) }
+                    openURL(legalLinks.privacyURL)
                 }
 
                 Button(String(localized: "Terms")) {
-                    if let url = URL(string: "https://mira-diary.com/terms") { openURL(url) }
+                    openURL(legalLinks.termsURL)
                 }
             }
             .font(MiraTypography.caption)

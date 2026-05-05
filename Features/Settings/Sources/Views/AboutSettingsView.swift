@@ -1,7 +1,10 @@
 import SwiftUI
+import Utilities
 import DesignSystem
 
 public struct AboutSettingsView: View {
+    @Environment(\.legalLinks) private var legalLinks
+
     public init() {}
 
     public var body: some View {
@@ -19,8 +22,14 @@ public struct AboutSettingsView: View {
                         linkCard(
                             icon: "hand.raised",
                             title: "Privacy policy",
-                            destination: privacyPolicyURL,
+                            destination: legalLinks.privacyURL,
                             moodLevel: 4
+                        )
+                        linkCard(
+                            icon: "doc.text",
+                            title: "Terms of Service",
+                            destination: legalLinks.termsURL,
+                            moodLevel: 3
                         )
                     }
 
@@ -93,8 +102,8 @@ public struct AboutSettingsView: View {
 
     // MARK: - Links
 
-    private func linkCard(icon: String, title: LocalizedStringKey, destination: String, moodLevel: Int) -> some View {
-        Link(destination: URL(string: destination)!) {
+    private func linkCard(icon: String, title: LocalizedStringKey, destination: URL, moodLevel: Int) -> some View {
+        Link(destination: destination) {
             HStack(spacing: 14) {
                 Image(systemName: icon)
                     .font(.system(size: 14, weight: .semibold))
@@ -123,16 +132,6 @@ public struct AboutSettingsView: View {
 
     private var versionLabel: String {
         "v\(appVersion) · Build \(appBuild)"
-    }
-
-    /// Picks the privacy policy gist matching the user's current
-    /// language preference. Falls back to English for any locale other
-    /// than Russian.
-    private var privacyPolicyURL: String {
-        let isRussian = Locale.current.language.languageCode?.identifier == "ru"
-        return isRussian
-            ? "https://gist.github.com/Oronemu/9f9e89620e45f128bf9abb14f4083a45"
-            : "https://gist.github.com/Oronemu/ab9bcf463cc61ac8efaacf183b58023c"
     }
 
     private var appVersion: String {
