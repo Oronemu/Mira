@@ -24,6 +24,15 @@ public final class MiraRichTextController {
     /// programmatic edit don't bounce back through the binding.
     fileprivate var isApplyingProgrammaticEdit = false
 
+    /// Source of truth for the attributes the *next* typed character should
+    /// inherit. UITextView's `typingAttributes` silently drops our custom
+    /// shadow keys (familyKey/sizeKey/colorKey) right after every insertion,
+    /// so relying on it gives only the first character the picked style. We
+    /// keep our own copy and use it directly in `shouldChangeTextIn` to
+    /// stamp every inserted character with the full set.
+    fileprivate var stickyTypingAttributes: [NSAttributedString.Key: Any] =
+        RichTextAttributeBridge.defaultAttributes()
+
     public init() {}
 
     // MARK: - Focus
@@ -56,9 +65,28 @@ public final class MiraRichTextController {
 
     private func resolvedStyle(in tv: UITextView) -> EntrySelectionStyle {
         if tv.selectedRange.length == 0 {
-            return styleFromAttributes(tv.typingAttributes)
+            // Read from sticky, not tv.typingAttributes — UIKit strips our
+            // custom shadow keys after each insertion, so typingAttributes
+            // would make the dock highlight blink off after every keystroke.
+            return styleFromAttributes(stickyTypingAttributes)
         }
         return styleFromRunsInRange(tv.selectedRange, storage: tv.textStorage)
+    }
+
+    /// Reads the storage attrs at the character preceding the cursor and
+    /// stores them as `stickyTypingAttributes`. Used after a real cursor
+    /// move (no edit) so the dock highlight + the next typed character
+    /// reflect the surrounding style.
+    fileprivate func syncStickyFromCursor() {
+        guard let tv = textView else { return }
+        let storage = tv.textStorage
+        guard storage.length > 0 else {
+            stickyTypingAttributes = RichTextAttributeBridge.defaultAttributes()
+            return
+        }
+        let cursor = tv.selectedRange.location
+        let pos = max(0, min(cursor - 1, storage.length - 1))
+        stickyTypingAttributes = storage.attributes(at: pos, effectiveRange: nil)
     }
 
     private func styleFromAttributes(_ attrs: [NSAttributedString.Key: Any]) -> EntrySelectionStyle {
@@ -196,8 +224,10 @@ public final class MiraRichTextController {
 
     /// Single mutation path — applies `body` to the relevant attribute dict.
     /// For a range selection, we walk every run inside the range so the
-    /// change is uniform. For an insertion point, we mutate `typingAttributes`
-    /// only — UITextView carries those over to the next typed character.
+    /// change is uniform. For an insertion point, we mutate
+    /// `stickyTypingAttributes` (and mirror to `typingAttributes` for the
+    /// system Format menu's sake), and `shouldChangeTextIn` will stamp the
+    /// next typed character with the full set.
     private func mutateAttributes(
         in tv: UITextView,
         _ body: (inout [NSAttributedString.Key: Any]) -> Void
@@ -215,15 +245,18 @@ public final class MiraRichTextController {
                 storage.setAttributes(mut, range: runRange)
             }
             storage.endEditing()
-            // Keep typing attributes consistent so further typing inherits
-            // the edited style.
-            var typing = tv.typingAttributes
+            // Keep sticky + typingAttributes consistent so further typing
+            // inherits the edited style. We build from sticky (not
+            // tv.typingAttributes) because UIKit strips our shadow keys.
+            var typing = stickyTypingAttributes
             body(&typing)
+            stickyTypingAttributes = typing
             tv.typingAttributes = typing
             tv.selectedRange = editRange
         } else {
-            var typing = tv.typingAttributes
+            var typing = stickyTypingAttributes
             body(&typing)
+            stickyTypingAttributes = typing
             tv.typingAttributes = typing
         }
         refreshFromTextView()
@@ -245,6 +278,7 @@ public final class MiraRichTextController {
         tv.attributedText = ns
         let location = min(result.cursorCharOffset, ns.length)
         tv.selectedRange = NSRange(location: location, length: 0)
+        syncStickyFromCursor()
         refreshFromTextView()
         tv.delegate?.textViewDidChange?(tv)
     }
@@ -299,8 +333,10 @@ public struct MiraRichTextEditor: UIViewRepresentable {
         tv.attributedText = RichTextAttributeBridge.nsAttributedString(from: content)
 
         controller.textView = tv
+        controller.stickyTypingAttributes = initialAttrs
         context.coordinator.textView = tv
         DispatchQueue.main.async {
+            controller.syncStickyFromCursor()
             controller.refreshFromTextView()
         }
         return tv
@@ -320,6 +356,10 @@ public struct MiraRichTextEditor: UIViewRepresentable {
             let safeLength = min(cursor.length, ns.length - safeLocation)
             tv.selectedRange = NSRange(location: safeLocation, length: safeLength)
             tv.invalidateIntrinsicContentSize()
+            // Storage was just replaced; refresh sticky from the (possibly
+            // new) cursor position so the next typed character inherits
+            // the surrounding style rather than stale defaults.
+            controller.syncStickyFromCursor()
         }
     }
 
@@ -344,28 +384,52 @@ public struct MiraRichTextEditor: UIViewRepresentable {
             shouldChangeTextIn range: NSRange,
             replacementText text: String
         ) -> Bool {
+            // Empty replacement text is a deletion — let UIKit handle it.
+            if text.isEmpty { return true }
+
             // Enter-continuation: when the user presses Return on a list
             // line, mirror the marker on the next line (or strip it if the
             // marker had no body — exits list mode).
-            guard text == "\n" else { return true }
-            let oldNS = textView.attributedText ?? NSAttributedString()
-            let mutable = NSMutableAttributedString(attributedString: oldNS)
-            mutable.replaceCharacters(in: range, with: "\n")
-            let newAttributed = RichTextAttributeBridge.attributedString(from: mutable)
-            let cursorAfterNewline = range.location + 1
-            guard let result = EntryContentEditor.handleEnterContinuation(
-                oldContent: RichTextAttributeBridge.attributedString(from: oldNS),
-                newContent: newAttributed,
-                cursorCharOffset: cursorAfterNewline
-            ) else {
-                return true
+            if text == "\n" {
+                let oldNS = textView.attributedText ?? NSAttributedString()
+                let mutable = NSMutableAttributedString(attributedString: oldNS)
+                mutable.replaceCharacters(in: range, with: "\n")
+                let newAttributed = RichTextAttributeBridge.attributedString(from: mutable)
+                let cursorAfterNewline = range.location + 1
+                if let result = EntryContentEditor.handleEnterContinuation(
+                    oldContent: RichTextAttributeBridge.attributedString(from: oldNS),
+                    newContent: newAttributed,
+                    cursorCharOffset: cursorAfterNewline
+                ) {
+                    parent.controller.isApplyingProgrammaticEdit = true
+                    defer { parent.controller.isApplyingProgrammaticEdit = false }
+                    let ns = RichTextAttributeBridge.nsAttributedString(from: result.content)
+                    textView.attributedText = ns
+                    let location = min(result.cursorCharOffset, ns.length)
+                    textView.selectedRange = NSRange(location: location, length: 0)
+                    textViewDidChange(textView)
+                    return false
+                }
+                // Fall through: regular (non-list) "\n" stamped with sticky.
             }
+
+            // Stamp the inserted text with the controller's sticky attrs.
+            // We bypass UIKit's `typingAttributes` because UIKit drops our
+            // custom shadow keys (familyKey/sizeKey/colorKey) from it after
+            // every insertion, so only the first typed character would
+            // otherwise carry the picked style.
+            let attrs = parent.controller.stickyTypingAttributes
+            let storage = textView.textStorage
             parent.controller.isApplyingProgrammaticEdit = true
             defer { parent.controller.isApplyingProgrammaticEdit = false }
-            let ns = RichTextAttributeBridge.nsAttributedString(from: result.content)
-            textView.attributedText = ns
-            let location = min(result.cursorCharOffset, ns.length)
-            textView.selectedRange = NSRange(location: location, length: 0)
+            storage.beginEditing()
+            storage.replaceCharacters(
+                in: range,
+                with: NSAttributedString(string: text, attributes: attrs)
+            )
+            storage.endEditing()
+            let newCursor = range.location + (text as NSString).length
+            textView.selectedRange = NSRange(location: newCursor, length: 0)
             textViewDidChange(textView)
             return false
         }
@@ -380,6 +444,17 @@ public struct MiraRichTextEditor: UIViewRepresentable {
         }
 
         public func textViewDidChangeSelection(_ textView: UITextView) {
+            // Resync sticky from the storage at the new cursor so the dock
+            // highlight + the next typed character match the surrounding
+            // style. We read directly from storage (which keeps our shadow
+            // keys) rather than from `tv.typingAttributes` (which UIKit
+            // strips them from). The `isApplyingProgrammaticEdit` guard
+            // skips selection callbacks fired during our own storage edits
+            // — those leave sticky as the user picked it, not as the
+            // surrounding text.
+            if !parent.controller.isApplyingProgrammaticEdit {
+                parent.controller.syncStickyFromCursor()
+            }
             parent.controller.refreshFromTextView()
         }
 
