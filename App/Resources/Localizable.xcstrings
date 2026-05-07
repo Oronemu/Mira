@@ -12394,6 +12394,91 @@
           }
         }
       }
+    },
+    "Anything downloaded by a previous version of the app will appear here.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Anything downloaded by a previous version of the app will appear here."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Здесь появятся модели, скачанные прошлыми версиями приложения."
+          }
+        }
+      }
+    },
+    "These models aren't in the current catalog. Pick one to keep using, or remove it to free up storage.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "These models aren't in the current catalog. Pick one to keep using, or remove it to free up storage."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Этих моделей нет в текущем каталоге. Выбери одну, чтобы продолжить ей пользоваться, либо удали, чтобы освободить место."
+          }
+        }
+      }
+    },
+    "Remove": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Remove"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Удалить"
+          }
+        }
+      }
+    },
+    "Remove this download?": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Remove this download?"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Удалить эту загрузку?"
+          }
+        }
+      }
+    },
+    "%@ will be deleted from this device.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ will be deleted from this device."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ будет удалена с этого устройства."
+          }
+        }
+      }
     }
   },
   "version": "1.0"

@@ -60,7 +60,7 @@ public struct LegacyDownloadsView: View {
                     .symbolRenderingMode(.hierarchical)
             }
         } description: {
-            Text(String(localized: "Anything that was downloaded for a previous version of the app will appear here."))
+            Text(String(localized: "Anything downloaded by a previous version of the app will appear here."))
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
@@ -69,7 +69,7 @@ public struct LegacyDownloadsView: View {
     private func scrollContent(state: LegacyDownloadsState) -> some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
-                Text(String(localized: "These models aren't part of the current catalog. Pick one to keep using it, or remove it to free up storage."))
+                Text(String(localized: "These models aren't in the current catalog. Pick one to keep using, or remove it to free up storage."))
                     .font(.footnote)
                     .foregroundStyle(.secondary)
                     .padding(.horizontal, 4)
@@ -96,13 +96,21 @@ public struct LegacyDownloadsView: View {
     @ViewBuilder
     private func card(for orphan: LocalModelManager.OrphanedDownload, state: LegacyDownloadsState) -> some View {
         let isCurrent = state.isCurrent(orphan)
-        GlassCard(tintLevel: isCurrent ? 4 : nil, padding: 18) {
+        GlassCard(padding: 18) {
             VStack(alignment: .leading, spacing: 14) {
                 header(for: orphan, isCurrent: isCurrent)
                 metaRow(for: orphan)
                 actionRow(for: orphan, state: state, isCurrent: isCurrent)
             }
         }
+        .overlay {
+            if isCurrent {
+                RoundedRectangle(cornerRadius: 20, style: .continuous)
+                    .strokeBorder(MiraPalette.mood(level: 4).opacity(0.45), lineWidth: 1)
+                    .allowsHitTesting(false)
+            }
+        }
+        .animation(.easeInOut(duration: 0.2), value: isCurrent)
         .confirmationDialog(
             Text(String(localized: "Remove this download?")),
             isPresented: Binding(
@@ -209,17 +217,20 @@ public struct LegacyDownloadsView: View {
                 Text(title)
                     .font(.system(size: 14, weight: .semibold))
             }
-            .foregroundStyle(isDisabled ? .secondary : tint)
+            .foregroundStyle(isDisabled ? Color.secondary : tint)
             .frame(maxWidth: .infinity)
             .padding(.vertical, 11)
             .padding(.horizontal, 14)
             .contentShape(Capsule())
         }
         .buttonStyle(.plain)
-        .background(
-            Capsule().fill(tint.opacity(isDisabled ? 0.06 : 0.14))
-        )
         .glassEffect(.regular.interactive(), in: Capsule())
+        .overlay(
+            Capsule()
+                .strokeBorder(tint.opacity(isDisabled ? 0.18 : 0.4), lineWidth: 0.75)
+                .allowsHitTesting(false)
+        )
+        .opacity(isDisabled ? 0.65 : 1)
         .disabled(isDisabled)
         .sensoryFeedback(.impact(weight: .light), trigger: isDisabled)
     }
