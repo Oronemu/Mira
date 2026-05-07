@@ -22,7 +22,7 @@ public struct SettingsView: View {
 
                     proBanner
 
-                    settingsSection("AI") {
+                    settingsSection("Artificial intelligence") {
                         SettingsCategoryLink(
                             icon: "sparkles",
                             title: "Intelligence",
@@ -36,11 +36,11 @@ public struct SettingsView: View {
                             subtitle: "How often Mira drafts a reflection for you",
                             moodLevel: 4
                         ) { ReflectionSettingsView() }
-
-                        habitsAndGoalsRow
                     }
 
                     settingsSection("Personalization") {
+                        habitsAndGoalsRow
+
                         SettingsCategoryLink(
                             icon: "paintpalette",
                             title: "Appearance",

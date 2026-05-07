@@ -557,6 +557,23 @@
         }
       }
     },
+    "Artificial intelligence" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Artificial intelligence"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Искусственный интеллект"
+          }
+        }
+      }
+    },
     "AI provider is not available right now.": {
       "extractionState": "stale",
       "localizations": {
