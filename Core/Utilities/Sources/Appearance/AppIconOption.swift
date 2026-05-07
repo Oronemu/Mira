@@ -11,37 +11,37 @@ import Foundation
 /// so Xcode bundles them as switchable icons.
 public enum AppIconOption: String, Sendable, Hashable, CaseIterable, Codable {
     case `default`
-    case calm
-    case solace
-    case quiet
-    case reflect
-    case stoic
-    case editorial
-    case minimal
+    case neon
+    case rainy
+    case stars
+    case sea
 
     /// Bundle identifier passed to `UIApplication.setAlternateIconName`.
     /// `nil` for the primary icon (the API expects `nil` to revert to it).
     public var alternateIconName: String? {
         switch self {
-        case .default:   return nil
-        case .calm:      return "AppIcon-Calm"
-        case .solace:    return "AppIcon-Solace"
-        case .quiet:     return "AppIcon-Quiet"
-        case .reflect:   return "AppIcon-Reflect"
-        case .stoic:     return "AppIcon-Stoic"
-        case .editorial: return "AppIcon-Editorial"
-        case .minimal:   return "AppIcon-Minimal"
+        case .default: return nil
+        case .neon:    return "AppIcon-Neon"
+        case .rainy:   return "AppIcon-Rainy"
+        case .stars:   return "AppIcon-Stars"
+        case .sea:     return "AppIcon-Sea"
         }
     }
 
-    /// Asset catalog name of the .appiconset to render as a preview
-    /// inside the picker. Distinct from `alternateIconName` only for the
-    /// primary, where the runtime switch wants `nil` but the preview
-    /// still needs the asset.
+    /// Regular Image Set in the asset catalog used to render the
+    /// preview inside the picker. Kept distinct from the .appiconset
+    /// because alternates registered via
+    /// `ASSETCATALOG_COMPILER_ALTERNATE_APPICON_NAMES` are emitted
+    /// into `Assets.car` in a way that `UIImage(named:)` can't reach
+    /// — a parallel `IconPreview-*` Image Set guarantees a working
+    /// thumbnail without relying on `CFBundleIcons` lookups.
     public var previewAssetName: String {
         switch self {
-        case .default: return "AppIcon"
-        default:       return alternateIconName ?? "AppIcon"
+        case .default: return "IconPreview-Default"
+        case .neon:    return "IconPreview-Neon"
+        case .rainy:   return "IconPreview-Rainy"
+        case .stars:   return "IconPreview-Stars"
+        case .sea:     return "IconPreview-Sea"
         }
     }
 

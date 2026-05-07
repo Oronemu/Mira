@@ -37,7 +37,7 @@ public struct LegacyDownloadsView: View {
                 }
             }
         }
-        .navigationTitle(Text(String(localized: "Old downloads")))
+        .navigationTitle(Text(String(localized: "Archived models")))
         .toolbarTitleDisplayMode(.inline)
         .task {
             if state == nil {

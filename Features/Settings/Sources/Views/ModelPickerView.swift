@@ -54,7 +54,7 @@ public struct ModelPickerView: View {
                     } label: {
                         Image(systemName: "tray.full")
                             .symbolRenderingMode(.hierarchical)
-                            .accessibilityLabel(Text(String(localized: "Old downloads")))
+                            .accessibilityLabel(Text(String(localized: "Archived models")))
                     }
                 }
             }

@@ -83,7 +83,7 @@ let project = Project(
                 // settings UI consults. Adding a new alternate means: new
                 // .appiconset, this list, and one enum case.
                 "ASSETCATALOG_COMPILER_APPICON_NAME": "AppIcon",
-                "ASSETCATALOG_COMPILER_ALTERNATE_APPICON_NAMES": "AppIcon-Calm AppIcon-Solace AppIcon-Quiet AppIcon-Reflect AppIcon-Stoic AppIcon-Editorial AppIcon-Minimal",
+                "ASSETCATALOG_COMPILER_ALTERNATE_APPICON_NAMES": "AppIcon-Neon AppIcon-Rainy AppIcon-Stars AppIcon-Sea",
                 "ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS": "YES",
             ])
         ),

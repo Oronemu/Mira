@@ -12242,19 +12242,19 @@
         }
       }
     },
-    "Old downloads": {
+    "Archived models": {
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Old downloads"
+            "value": "Archived models"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Старые загрузки"
+            "value": "Архивные модели"
           }
         }
       }
@@ -12476,6 +12476,74 @@
           "stringUnit": {
             "state": "translated",
             "value": "%@ будет удалена с этого устройства."
+          }
+        }
+      }
+    },
+    "Neon": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Neon"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Неоновая"
+          }
+        }
+      }
+    },
+    "Rainy": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rainy"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Дождливая"
+          }
+        }
+      }
+    },
+    "Stars": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stars"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Звёздная"
+          }
+        }
+      }
+    },
+    "Sea": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sea"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Морская"
           }
         }
       }

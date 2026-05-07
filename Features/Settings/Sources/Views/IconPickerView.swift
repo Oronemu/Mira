@@ -136,15 +136,12 @@ private struct IconCell: View {
 
     @ViewBuilder
     private var iconImage: some View {
-        // Asset catalogs expose the .appiconset under its name as a
-        // regular UIImage; SwiftUI's `Image(uiImage:)` is the only path
-        // since `Image(_:)` doesn't reach into the AppIcon namespace.
+        // `IconPreview-*` are dedicated Image Sets duplicated from each
+        // .appiconset specifically so `UIImage(named:)` can find them —
+        // the compiled `AppIcon-*` alternates aren't reachable this way.
         if let ui = UIImage(named: option.previewAssetName) {
             Image(uiImage: ui).resizable()
         } else {
-            // Last-resort placeholder if the asset is missing — Xcode
-            // builds will catch this in practice but a runtime fallback
-            // keeps the grid from collapsing.
             RoundedRectangle(cornerRadius: 18, style: .continuous)
                 .fill(MiraPalette.secondaryBackground)
                 .overlay(
@@ -159,14 +156,11 @@ private struct IconCell: View {
 private extension AppIconOption {
     var displayName: LocalizedStringKey {
         switch self {
-        case .default:   return "Default"
-        case .calm:      return "Calm"
-        case .solace:    return "Solace"
-        case .quiet:     return "Quiet"
-        case .reflect:   return "Reflect"
-        case .stoic:     return "Stoic"
-        case .editorial: return "Editorial"
-        case .minimal:   return "Minimal"
+        case .default: return "Default"
+        case .neon:    return "Neon"
+        case .rainy:   return "Rainy"
+        case .stars:   return "Stars"
+        case .sea:     return "Sea"
         }
     }
 }
