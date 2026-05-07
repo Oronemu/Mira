@@ -47,6 +47,15 @@ public protocol AIProvider: Sendable {
     /// API key valid, etc).
     var isAvailable: Bool { get async }
 
+    /// `true` when the provider runs a smaller / weaker model and prompt
+    /// assembly should switch to high-strictness wording so it resists
+    /// in-content instruction injection. Default `false`.
+    var requiresStrictPrompts: Bool { get async }
+
     /// Streams partial responses. Throws `AIError` on failure.
     func stream(_ request: AIRequest) async throws -> AsyncThrowingStream<AIResponseChunk, Error>
+}
+
+public extension AIProvider {
+    var requiresStrictPrompts: Bool { get async { false } }
 }

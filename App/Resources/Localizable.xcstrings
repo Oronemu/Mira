@@ -5135,6 +5135,23 @@
         }
       }
     },
+    "Life": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Life"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Жизнь"
+          }
+        }
+      }
+    },
     "Light": {
       "extractionState": "manual",
       "localizations": {
@@ -12170,6 +12187,210 @@
           "stringUnit": {
             "state": "translated",
             "value": "теги: %@"
+          }
+        }
+      }
+    },
+    "Everything on disk matches a current model.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Everything on disk matches a current model."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Все файлы на диске соответствуют моделям из текущего каталога."
+          }
+        }
+      }
+    },
+    "No old downloads": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No old downloads"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Старых загрузок нет"
+          }
+        }
+      }
+    },
+    "Old download": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Old download"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Старая загрузка"
+          }
+        }
+      }
+    },
+    "Old downloads": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Old downloads"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Старые загрузки"
+          }
+        }
+      }
+    },
+    "These models were downloaded by an earlier release. They aren't in the current catalog, but the files are still on disk.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "These models were downloaded by an earlier release. They aren't in the current catalog, but the files are still on disk."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Эти модели были скачаны прошлыми версиями приложения. Их больше нет в текущем каталоге, но файлы остались на диске."
+          }
+        }
+      }
+    },
+    "Use": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Use"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Использовать"
+          }
+        }
+      }
+    },
+    "%@ total": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ total"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Всего: %@"
+          }
+        }
+      }
+    },
+    "Compact 4B model from the Qwen 3.5 family — improved architecture and stronger reasoning than Qwen 3. Recommended default for 8 GB devices.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Compact 4B model from the Qwen 3.5 family — improved architecture and stronger reasoning than Qwen 3. Recommended default for 8 GB devices."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Компактная 4B-модель из семейства Qwen 3.5 — улучшенная архитектура и более сильное рассуждение, чем у Qwen 3. Рекомендуется для устройств с 8 ГБ ОЗУ."
+          }
+        }
+      }
+    },
+    "Larger 9B model from Qwen 3.5 for deeper reflections — close to much bigger models on independent benchmarks. Needs 12 GB.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Larger 9B model from Qwen 3.5 for deeper reflections — close to much bigger models on independent benchmarks. Needs 12 GB."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Более крупная 9B-модель из Qwen 3.5 для глубоких рефлексий — близко к куда более крупным моделям по независимым бенчмаркам. Нужно 12 ГБ."
+          }
+        }
+      }
+    },
+    "Selected": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Selected"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Выбрано"
+          }
+        }
+      }
+    },
+    "≈2.9 GB download, ≈5 GB RAM during generation": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "≈2.9 GB download, ≈5 GB RAM during generation"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "≈2,9 ГБ загрузка, ≈5 ГБ ОЗУ во время генерации"
+          }
+        }
+      }
+    },
+    "≈5.6 GB download — use Wi-Fi": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "≈5.6 GB download — use Wi-Fi"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "≈5,6 ГБ загрузка — используй Wi-Fi"
           }
         }
       }

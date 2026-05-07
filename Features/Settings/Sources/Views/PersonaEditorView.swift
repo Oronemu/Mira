@@ -26,13 +26,24 @@ struct PersonaEditorView: View {
                     }
 
                     Section(
-                        header: Text(String(localized: "System prompt")),
+                        header: HStack {
+                            Text(String(localized: "System prompt"))
+                            Spacer()
+                            Text("\(prompt.count)/\(AskMiraPersona.maxSystemPromptLength)")
+                                .font(.caption.monospacedDigit())
+                                .foregroundStyle(prompt.count >= AskMiraPersona.maxSystemPromptLength ? .red : .secondary)
+                        },
                         footer: Text(String(localized: "Examples: \"Use short, direct sentences\", \"Ask a Socratic question back\", \"Always end with a small actionable nudge\"."))
                     ) {
                         TextEditor(text: $prompt)
                             .frame(minHeight: 160)
                             .font(.system(.body, design: .serif))
                             .scrollContentBackground(.hidden)
+                            .onChange(of: prompt) { _, newValue in
+                                if newValue.count > AskMiraPersona.maxSystemPromptLength {
+                                    prompt = String(newValue.prefix(AskMiraPersona.maxSystemPromptLength))
+                                }
+                            }
                     }
 
                     if isEditing {
@@ -61,10 +72,11 @@ struct PersonaEditorView: View {
                         let finalName = trimmed.isEmpty
                             ? String(localized: "Untitled persona")
                             : trimmed
+                        let clampedPrompt = String(prompt.prefix(AskMiraPersona.maxSystemPromptLength))
                         let updated = AskMiraPersona(
                             id: persona?.id ?? UUID(),
                             name: finalName,
-                            systemPrompt: prompt,
+                            systemPrompt: clampedPrompt,
                             createdAt: persona?.createdAt ?? .now,
                             isBuiltIn: false
                         )

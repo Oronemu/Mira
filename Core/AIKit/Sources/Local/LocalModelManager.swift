@@ -61,6 +61,37 @@ public actor LocalModelManager {
         Self.modelDirectory(for: model)
     }
 
+    /// Resolves a stored model ID into a runnable `LocalModel`,
+    /// supporting both catalog entries and orphan picks. The provider
+    /// uses this instead of `LocalModelCatalog` directly so a
+    /// `legacy:<org>/<repo>` selection actually loads.
+    public func resolveModel(id: String) -> LocalModel? {
+        if let catalogModel = LocalModelCatalog.model(id: id) {
+            return catalogModel
+        }
+        let prefix = "legacy:"
+        guard id.hasPrefix(prefix) else { return nil }
+        let repoPath = String(id.dropFirst(prefix.count))
+        let parts = repoPath.split(separator: "/").map(String.init)
+        guard parts.count == 2 else { return nil }
+        let dir = Self.baseURL().appendingPathComponent("models/\(parts[0])/\(parts[1])", isDirectory: true)
+        let marker = dir.appendingPathComponent(Self.completionMarker)
+        guard FileManager.default.fileExists(atPath: marker.path) else { return nil }
+        let bytes = Self.directorySize(at: dir)
+        // Estimate RAM from disk weights — 4-bit quantised models need
+        // roughly 2× the weight size at runtime for KV cache + scratch.
+        let gb = max(8, Int(ceil(Double(bytes) * 2 / 1_073_741_824)))
+        return LocalModel(
+            id: id,
+            displayName: parts[1],
+            huggingFaceRepo: repoPath,
+            sizeBytes: bytes,
+            minimumRAMGB: gb,
+            description: "",
+            highlights: []
+        )
+    }
+
     /// Exposed so `MLXLocalProvider` and anything else that talks to
     /// the Hub shares the same download base directory.
     public var hub: HubApi { hubApi }
@@ -125,6 +156,87 @@ public actor LocalModelManager {
         let markerURL = dir.appendingPathComponent(Self.completionMarker)
         try Data().write(to: markerURL)
         Self.log.info("✓ Marked \(model.id, privacy: .public) complete")
+    }
+
+    /// A completed download whose HuggingFace repo no longer matches any
+    /// entry in `LocalModelCatalog`. Surfaced in Settings so the user can
+    /// reclaim the disk space when the catalog rolls forward.
+    public struct OrphanedDownload: Sendable, Hashable, Identifiable {
+        /// `legacy:<org>/<repo>` — distinct from any catalog id so it
+        /// can't be confused with a current model in stored preferences.
+        public let id: String
+        /// HF repo path, e.g. `mlx-community/Qwen3-4B-Instruct-2507-4bit`.
+        public let huggingFaceRepo: String
+        /// Best-effort display name — the repo name with quantization
+        /// suffix preserved so users can tell variants apart.
+        public let displayName: String
+        public let sizeBytes: Int64
+
+        public init(huggingFaceRepo: String, sizeBytes: Int64) {
+            self.id = "legacy:\(huggingFaceRepo)"
+            self.huggingFaceRepo = huggingFaceRepo
+            self.displayName = huggingFaceRepo.split(separator: "/").last.map(String.init) ?? huggingFaceRepo
+            self.sizeBytes = sizeBytes
+        }
+    }
+
+    /// Walks the on-disk model store, returns directories that look like
+    /// fully-completed downloads (have the completion marker) but whose
+    /// repo path is not in `LocalModelCatalog.all.huggingFaceRepo`.
+    /// Partial downloads are skipped — they get cleaned up the next time
+    /// the user retries the same model.
+    public func discoverOrphans() -> [OrphanedDownload] {
+        let fm = FileManager.default
+        let modelsRoot = Self.baseURL().appendingPathComponent("models", isDirectory: true)
+        guard fm.fileExists(atPath: modelsRoot.path) else { return [] }
+
+        let knownRepos = Set(LocalModelCatalog.all.map(\.huggingFaceRepo))
+        var orphans: [OrphanedDownload] = []
+
+        let orgDirs = (try? fm.contentsOfDirectory(at: modelsRoot, includingPropertiesForKeys: nil)) ?? []
+        for orgDir in orgDirs {
+            var isDir: ObjCBool = false
+            guard fm.fileExists(atPath: orgDir.path, isDirectory: &isDir), isDir.boolValue else { continue }
+            let repoDirs = (try? fm.contentsOfDirectory(at: orgDir, includingPropertiesForKeys: nil)) ?? []
+            for repoDir in repoDirs {
+                var isRepoDir: ObjCBool = false
+                guard fm.fileExists(atPath: repoDir.path, isDirectory: &isRepoDir), isRepoDir.boolValue else { continue }
+                let marker = repoDir.appendingPathComponent(Self.completionMarker)
+                guard fm.fileExists(atPath: marker.path) else { continue }
+                let repoPath = "\(orgDir.lastPathComponent)/\(repoDir.lastPathComponent)"
+                guard !knownRepos.contains(repoPath) else { continue }
+                let bytes = Self.directorySize(at: repoDir)
+                orphans.append(OrphanedDownload(huggingFaceRepo: repoPath, sizeBytes: bytes))
+            }
+        }
+
+        return orphans.sorted { $0.displayName.localizedCompare($1.displayName) == .orderedAscending }
+    }
+
+    /// Deletes an orphan's on-disk files. Called from the Settings
+    /// "Old downloads" screen.
+    public func remove(orphan: OrphanedDownload) throws {
+        let parts = orphan.huggingFaceRepo.split(separator: "/").map(String.init)
+        guard parts.count == 2 else { return }
+        let dir = Self.baseURL().appendingPathComponent("models/\(parts[0])/\(parts[1])", isDirectory: true)
+        guard FileManager.default.fileExists(atPath: dir.path) else { return }
+        Self.log.info("Removing orphan \(orphan.huggingFaceRepo, privacy: .public)")
+        try FileManager.default.removeItem(at: dir)
+    }
+
+    private static func directorySize(at url: URL) -> Int64 {
+        let fm = FileManager.default
+        guard let enumerator = fm.enumerator(at: url, includingPropertiesForKeys: [.fileSizeKey, .isRegularFileKey]) else {
+            return 0
+        }
+        var total: Int64 = 0
+        for case let fileURL as URL in enumerator {
+            let values = try? fileURL.resourceValues(forKeys: [.fileSizeKey, .isRegularFileKey])
+            if values?.isRegularFile == true, let size = values?.fileSize {
+                total += Int64(size)
+            }
+        }
+        return total
     }
 
     private static func baseURL() -> URL {

@@ -42,6 +42,23 @@ public struct ModelPickerView: View {
         .toolbarTitleDisplayMode(.inline)
         .toolbarBackground(.hidden, for: .navigationBar)
         .hideTabBar()
+        .toolbar {
+            // "Old downloads" — surfaced only when there are orphan
+            // model files on disk (e.g. a previous release shipped a
+            // different catalog). Hidden the rest of the time so the
+            // toolbar stays clean for users with a single download.
+            if let state, state.orphanCount > 0 {
+                ToolbarItem(placement: .topBarTrailing) {
+                    NavigationLink {
+                        LegacyDownloadsView(reloadService: reloadService)
+                    } label: {
+                        Image(systemName: "tray.full")
+                            .symbolRenderingMode(.hierarchical)
+                            .accessibilityLabel(Text(String(localized: "Old downloads")))
+                    }
+                }
+            }
+        }
         .task {
             if state == nil {
                 state = ModelPickerState(
@@ -176,10 +193,18 @@ private struct ModelCard: View {
             HStack(alignment: .firstTextBaseline) {
                 Text("On-device").eyebrowStyle()
                 Spacer()
-                if isCurrent {
+                if isCurrent, case .ready = status {
+                    // "In use" only when the model is *actually* runnable
+                    // — selected AND on disk. Otherwise the badge would
+                    // promise generation that can't happen yet.
                     Label("In use", systemImage: "checkmark.circle.fill")
                         .font(.system(size: 11, weight: .semibold))
                         .foregroundStyle(MiraPalette.mood(level: 5))
+                        .labelStyle(.titleAndIcon)
+                } else if isCurrent {
+                    Label("Selected", systemImage: "circle.dashed")
+                        .font(.system(size: 11, weight: .semibold))
+                        .foregroundStyle(MiraPalette.primaryText.opacity(0.55))
                         .labelStyle(.titleAndIcon)
                 }
             }

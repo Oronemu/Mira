@@ -1,0 +1,14 @@
+Sticker artwork
+===============
+
+The sticker pack bundled in `Stickers.xcassets/` consists of artwork
+sourced from a third-party provider. Two themed packs are shipped:
+"Life" (20 stickers) and "Nature" (20 stickers).
+
+TODO before public release:
+  - Record the source name, license, and any required attribution
+    text here.
+  - If the license requires in-app attribution, surface it in
+    Settings → About / Acknowledgements.
+  - If the license forbids redistribution, replace this pack with
+    licensed or original artwork before shipping.

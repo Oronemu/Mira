@@ -243,17 +243,20 @@ public final class AskMiraState {
         // persona in Settings takes effect for the next message
         // without restarting the chat.
         let persona = AskMiraPersonaStore().active()
+        let provider = await currentProvider()
+        let strictness: PromptTemplates.Strictness = await provider.requiresStrictPrompts ? .high : .standard
         let request = PromptTemplates.askMira(
             question: question,
             context: context,
             history: promptHistory,
             locale: locale,
-            personaPrompt: persona.systemPrompt.isEmpty ? nil : persona.systemPrompt
+            personaPrompt: persona.systemPrompt.isEmpty ? nil : persona.systemPrompt,
+            strictness: strictness
         )
 
         var accumulated = ""
         do {
-            let stream = try await currentProvider().stream(request)
+            let stream = try await provider.stream(request)
             for try await chunk in stream {
                 accumulated += chunk.textDelta
                 streamingAnswer = accumulated

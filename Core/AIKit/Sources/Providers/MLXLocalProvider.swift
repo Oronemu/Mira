@@ -19,14 +19,14 @@ public actor MLXLocalProvider: AIProvider {
     public var isAvailable: Bool {
         get async {
             let modelID = manager.currentModelID
-            guard let model = LocalModelCatalog.model(id: modelID) else { return false }
+            guard let model = await manager.resolveModel(id: modelID) else { return false }
             return await manager.isDownloaded(model)
         }
     }
 
     public func stream(_ request: AIRequest) async throws -> AsyncThrowingStream<AIResponseChunk, Error> {
         let modelID = manager.currentModelID
-        guard let model = LocalModelCatalog.model(id: modelID) else {
+        guard let model = await manager.resolveModel(id: modelID) else {
             throw AIError.noProviderConfigured
         }
         guard await manager.isDownloaded(model) else {

@@ -33,6 +33,11 @@ public struct RAGPipeline: Sendable {
         return RetrievalResult(snippets: scored)
     }
 
+    /// Produces the inner block that PromptTemplates wraps in
+    /// `<mira_journal>` tags. Entry content is escaped here so any
+    /// in-text attempt to close out of the wrapper (e.g. a literal
+    /// `</mira_journal>` typed into a journal entry) is neutralised
+    /// before it reaches the model.
     public func formatContext(_ result: RetrievalResult, locale: Locale = .autoupdatingCurrent) -> String {
         guard !result.snippets.isEmpty else { return "" }
         let formatter = DateFormatter()
@@ -41,7 +46,8 @@ public struct RAGPipeline: Sendable {
         formatter.timeStyle = .none
         return result.snippets.enumerated().map { index, scored in
             let header = "[\(index + 1)] \(formatter.string(from: scored.entry.createdAt))"
-            return "\(header)\n\(scored.entry.content)"
+            let safeContent = PromptTemplates.Sanitizer.escape(scored.entry.content)
+            return "\(header)\n\(safeContent)"
         }
         .joined(separator: "\n\n")
     }

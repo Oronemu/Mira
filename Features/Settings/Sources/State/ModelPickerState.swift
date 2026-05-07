@@ -20,6 +20,11 @@ public final class ModelPickerState {
     public private(set) var onDiskReady: [String: Bool] = [:]
     public private(set) var errors: [String: String] = [:]
 
+    /// Count of completed downloads on disk whose repo is no longer in
+    /// the catalog. Drives the "Old downloads" toolbar button — the
+    /// button hides when this is zero.
+    public private(set) var orphanCount: Int = 0
+
     private let coordinator: ModelDownloadCoordinator
     private let analyticsService: any AnalyticsService
     private let crashReporter: any CrashReporter
@@ -84,6 +89,8 @@ public final class ModelPickerState {
             onDiskReady[model.id] = downloaded
             if downloaded { coordinator.markReady(model.id) }
         }
+        let orphans = await LocalModelManager.shared.discoverOrphans()
+        orphanCount = orphans.count
     }
 
     // MARK: - Mutations

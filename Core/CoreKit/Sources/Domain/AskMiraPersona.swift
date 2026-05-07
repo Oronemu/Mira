@@ -46,4 +46,10 @@ public extension AskMiraPersona {
         createdAt: Date(timeIntervalSince1970: 0),
         isBuiltIn: true
     )
+
+    /// Hard cap on persona system prompt length. Enforced in the editor
+    /// UI and re-enforced at prompt-assembly time as defense in depth so
+    /// a tampered store can't stuff arbitrary prose into the system
+    /// message.
+    static let maxSystemPromptLength: Int = 700
 }

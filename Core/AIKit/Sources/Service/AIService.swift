@@ -34,6 +34,17 @@ public actor AIService: AIProvider {
         }
     }
 
+    /// Strict prompts cost only a few extra tokens, so if either side
+    /// of the chain might end up handling the request (and prefers
+    /// strict wording), assemble for strict. This errs toward safety
+    /// when the runtime fallback to MLX kicks in mid-request.
+    public var requiresStrictPrompts: Bool {
+        get async {
+            if await primary.requiresStrictPrompts { return true }
+            return await fallback.requiresStrictPrompts
+        }
+    }
+
     public func stream(_ request: AIRequest) async throws -> AsyncThrowingStream<AIResponseChunk, Error> {
         if await primary.isAvailable {
             do {

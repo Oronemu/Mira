@@ -35,7 +35,11 @@ public struct ReflectionService: Sendable {
         let entries = try await fetchEntries(in: range, repository: entryRepository)
         guard !entries.isEmpty else { return nil }
 
-        let request = PromptTemplates.weeklyReflection(entries: entries, locale: locale)
+        let request = PromptTemplates.reflection(
+            entries: entries,
+            period: kind == .monthlyReflection ? .month : .week,
+            locale: locale
+        )
         let answer = try await run(request: request, using: aiProvider)
         let trimmed = answer.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { throw AIError.requestFailed("Empty reflection") }

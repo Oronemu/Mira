@@ -6,9 +6,10 @@ import Foundation
 /// us rename/replace/extend the bundled pack without breaking existing
 /// entries.
 ///
-/// V2 ships full-colour PNG sticker artwork (Flaticon Free, attribution
-/// required — see `Resources/FLATICON_ATTRIBUTION.txt`) organised into
-/// five themed packs.
+/// V3 ships full-colour PNG sticker artwork organised into two themed
+/// packs: Life and Nature. Entries from earlier versions whose stickers
+/// are no longer in the catalog still load fine — the renderer falls
+/// back to a placeholder via `StickerImage`.
 public enum StickerLibrary {
     /// Stable category id used in UI segmenting. Title is localised at
     /// access time via `String(localized:)`.
@@ -42,42 +43,49 @@ public enum StickerLibrary {
     // MARK: - Catalog
 
     public static let packs: [Pack] = [
-        Pack(id: "kawaii", titleKey: "Cute", entries: [
-            mira("sun"),
-            mira("cloud_bright"),
-            mira("crown"),
+        Pack(id: "life", titleKey: "Life", entries: [
+            mira("sneaker"),
+            mira("heels"),
+            mira("cup"),
+            mira("trumpet"),
+            mira("glasses"),
+            mira("book"),
+            mira("gift"),
+            mira("globe"),
+            mira("sketchbook"),
             mira("pencil"),
-            mira("watermelon"),
-            mira("gold_star"),
-            mira("sparks"),
-            mira("windy"),
-            mira("smile_cat"),
-            mira("rice_cat"),
+            mira("bulb"),
+            mira("bubble"),
+            mira("plant"),
+            mira("tshirt"),
+            mira("guitar"),
+            mira("palette"),
+            mira("mirror"),
+            mira("sad_emoji"),
+            mira("funny_emoji"),
+            mira("picture"),
         ]),
-        Pack(id: "sleepy", titleKey: "Sleepy", entries: [
-            mira("cloud_sleepy"),
-            mira("moon"),
-        ]),
-        Pack(id: "sparkle", titleKey: "Love", entries: [
-            mira("heart_pink"),
-            mira("book_glitter"),
-            mira("love"),
-        ]),
-        Pack(id: "path", titleKey: "Adventures", entries: [
-            mira("mountain"),
-            mira("forest"),
-            mira("road_sign"),
-            mira("compass"),
-            mira("target"),
-            mira("notebooks"),
-            mira("lightbulb"),
-        ]),
-        Pack(id: "sketches", titleKey: "Sketches", entries: [
-            mira("pigeon"),
-            mira("wine"),
+        Pack(id: "nature", titleKey: "Nature", entries: [
+            mira("cat"),
+            mira("dog"),
+            mira("fish"),
             mira("flower"),
-            mira("leaf"),
-            mira("heart_lace"),
+            mira("beach"),
+            mira("stars"),
+            mira("water"),
+            mira("clouds"),
+            mira("palm_tree"),
+            mira("berries"),
+            mira("mushrooms"),
+            mira("fruits"),
+            mira("rain"),
+            mira("rainbow"),
+            mira("vegetables"),
+            mira("moon"),
+            mira("butterfly"),
+            mira("bug"),
+            mira("comet"),
+            mira("sun"),
         ]),
     ]
 
