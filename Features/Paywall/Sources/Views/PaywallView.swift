@@ -1,4 +1,5 @@
 import SwiftUI
+import StoreKit
 import CoreKit
 import Utilities
 import DesignSystem
@@ -15,7 +16,7 @@ public struct PaywallView: View {
 
     private let context: PaywallContext
     @State private var state: PaywallState?
-    @State private var showingRedeem = false
+    @State private var showingOfferCodeSheet = false
 
     public init(context: PaywallContext = .general) {
         self.context = context
@@ -46,10 +47,13 @@ public struct PaywallView: View {
         .onChange(of: state?.didUnlockPro ?? false) { _, unlocked in
             if unlocked { dismiss() }
         }
-        .sheet(isPresented: $showingRedeem) {
-            if let state {
-                RedeemCodeView(state: state)
-                    .presentationDetents([.medium])
+        .offerCodeRedemption(isPresented: $showingOfferCodeSheet) { result in
+            // Apple's sheet validates the code and triggers a Transaction
+            // update on success — `StoreKitSubscriptionService`'s listener
+            // will flip `status` to `.pro` and the paywall dismisses via
+            // the existing `didUnlockPro` observer. Surface only failures.
+            if case .failure(let error) = result {
+                state?.surfaceError(error.localizedDescription)
             }
         }
     }
@@ -219,7 +223,7 @@ public struct PaywallView: View {
 
                 Button(String(localized: "Redeem code")) {
                     state.clearError()
-                    showingRedeem = true
+                    showingOfferCodeSheet = true
                 }
 
                 Button(String(localized: "Privacy")) {

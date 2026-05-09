@@ -11,6 +11,16 @@ public final class InsightsListState {
     public private(set) var isGenerating: Bool = false
     public private(set) var errorMessage: String?
 
+    /// Reflects whether the configured AI provider can serve a reflection
+    /// request right now. Read together with `hasResolvedReadiness` so
+    /// the view doesn't render the empty-state-vs-CTA branch before the
+    /// first availability check completes.
+    public private(set) var isAIReady: Bool = true
+    public private(set) var providerKind: AISettings.ProviderKind = .local
+
+    /// `false` until the first `refreshAIReadiness()` call resolves.
+    public private(set) var hasResolvedReadiness: Bool = false
+
     private let repository: any InsightRepository
     private let entryRepository: any EntryRepository
     private let aiProvider: any AIProvider
@@ -38,6 +48,22 @@ public final class InsightsListState {
         for await snapshot in repository.observeAll() {
             insights = snapshot.sorted { $0.createdAt > $1.createdAt }
         }
+    }
+
+    /// Re-evaluates whether AI is configured well enough to serve a
+    /// reflection. Called when the Insights tab appears and when the app
+    /// comes back to active so changes made in Settings reflect on
+    /// return.
+    public func refreshAIReadiness() async {
+        let settings = AISettingsStore().load()
+        providerKind = settings.provider
+        let provider = await AIProviderFactory.provider(
+            for: .weeklyReflectionManual,
+            fallback: aiProvider,
+            subscriptionService: subscriptionService
+        )
+        isAIReady = await provider.isAvailable
+        hasResolvedReadiness = true
     }
 
     public func generateNow(locale: Locale = .autoupdatingCurrent) async {

@@ -17,6 +17,21 @@ public final class AskMiraState {
     public private(set) var isAnswering: Bool = false
     public private(set) var errorMessage: String?
 
+    /// Reflects whether the configured AI provider is ready to serve a
+    /// request — for `.off` it's always false, for `.local` it's true once
+    /// a model has been downloaded, for `.remote` it's true once an API
+    /// key is saved (or for Pro users via the hosted backend). The view
+    /// reads this together with `hasResolvedReadiness` to decide between
+    /// the suggestions strip and the AI setup CTA without flashing the
+    /// wrong state on the first frame.
+    public private(set) var isAIReady: Bool = true
+    public private(set) var providerKind: AISettings.ProviderKind = .local
+
+    /// `false` until the first `refreshAIReadiness()` call resolves —
+    /// views skip rendering the chat-vs-CTA branch in that window so the
+    /// user never sees one flash before the other.
+    public private(set) var hasResolvedReadiness: Bool = false
+
     private let repository: any AskMiraRepository
     private let aiProvider: any AIProvider
     private let subscriptionService: any SubscriptionService
@@ -69,6 +84,22 @@ public final class AskMiraState {
 
     public var canAsk: Bool {
         !draftQuestion.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && !isAnswering
+    }
+
+    // MARK: - AI readiness
+
+    /// Re-evaluates whether AI is configured well enough to send a
+    /// request. Called when the AskMira tab appears and when the app
+    /// becomes active so changes made in Settings reflect on return.
+    public func refreshAIReadiness() async {
+        let settings = AISettingsStore().load()
+        providerKind = settings.provider
+        // Use the same provider the next ask would use so the readiness
+        // check matches reality (Pro routes to hosted, free remote falls
+        // back to on-device, etc.).
+        let provider = await currentProvider()
+        isAIReady = await provider.isAvailable
+        hasResolvedReadiness = true
     }
 
     // MARK: - Observation

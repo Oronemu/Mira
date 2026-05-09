@@ -6,6 +6,7 @@ import DesignSystem
 public struct InsightsListView: View {
     @Environment(\.paywallPresenter) private var paywallPresenter
     @Environment(\.subscriptionService) private var subscriptionService
+    @Environment(\.scenePhase) private var scenePhase
 
     /// State is owned by `RootView` so manual reflection generation
     /// continues across tab switches and the screen doesn't reset every
@@ -16,15 +17,18 @@ public struct InsightsListView: View {
 
     private let onSelectInsight: (UUID) -> Void
     private let onOpenStats: () -> Void
+    private let onOpenAISettings: () -> Void
 
     public init(
         state: InsightsListState,
         onSelectInsight: @escaping (UUID) -> Void,
-        onOpenStats: @escaping () -> Void = {}
+        onOpenStats: @escaping () -> Void = {},
+        onOpenAISettings: @escaping () -> Void = {}
     ) {
         self.state = state
         self.onSelectInsight = onSelectInsight
         self.onOpenStats = onOpenStats
+        self.onOpenAISettings = onOpenAISettings
     }
 
     public var body: some View {
@@ -62,13 +66,36 @@ public struct InsightsListView: View {
         } message: { _ in
             Text("This reflection will be permanently removed.")
         }
+        .task { await state.refreshAIReadiness() }
+        .onAppear { Task { await state.refreshAIReadiness() } }
+        .onChange(of: scenePhase) { _, phase in
+            if phase == .active {
+                Task { await state.refreshAIReadiness() }
+            }
+        }
     }
 
     // MARK: - Scroll
 
     @ViewBuilder
     private func scroll(state: InsightsListState) -> some View {
-        if state.insights.isEmpty {
+        if state.insights.isEmpty && !state.hasResolvedReadiness {
+            // First-launch window before the readiness check resolves —
+            // suppress both the empty-state CTA and the AI setup screen
+            // so the user never sees one flash before the other.
+            Color.clear
+        } else if state.insights.isEmpty && !state.isAIReady {
+            // No reflections yet AND no AI configured — show the same
+            // centered setup CTA as Ask Mira so users land on the
+            // Intelligence settings instead of staring at a "Generate"
+            // button that would only fail.
+            AISetupCenter(
+                providerKind: state.providerKind,
+                onOpenSettings: onOpenAISettings
+            )
+            .padding(.bottom, 96)
+            .transition(.opacity)
+        } else if state.insights.isEmpty {
             // Empty path stays out of ScrollView so the placeholder can
             // anchor at the visual center of the screen rather than at
             // the top of an empty scroll view.
@@ -213,6 +240,14 @@ public struct InsightsListView: View {
     /// instead of triggering a provider-failure error.
     private func generateWithProGate(state: InsightsListState) {
         Task {
+            // Re-check readiness right before generating — the user may
+            // have just turned AI off or removed the API key without us
+            // getting an appearance signal.
+            await state.refreshAIReadiness()
+            guard state.isAIReady else {
+                onOpenAISettings()
+                return
+            }
             let provider = AISettingsStore().load().provider
             if provider == .remote {
                 let isPro = await subscriptionService.isEntitled(to: .hostedAI)

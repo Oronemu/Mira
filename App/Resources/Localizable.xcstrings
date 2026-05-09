@@ -12581,6 +12581,125 @@
           }
         }
       }
+    },
+    "Turn on Mira's AI": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Turn on Mira's AI"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Включите AI Mira"
+          }
+        }
+      }
+    },
+    "Download an on-device model": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Download an on-device model"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Загрузите модель на устройство"
+          }
+        }
+      }
+    },
+    "Finish setting up cloud AI": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Finish setting up cloud AI"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Завершите настройку облачного AI"
+          }
+        }
+      }
+    },
+    "Choose on-device for full privacy or cloud for richer answers. Either way, Mira needs a brain to talk to your journal.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choose on-device for full privacy or cloud for richer answers. Either way, Mira needs a brain to talk to your journal."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Выберите вариант на устройстве для полной приватности или облако для более глубоких ответов. В любом случае, Mira нужен мозг, чтобы говорить с вашим дневником."
+          }
+        }
+      }
+    },
+    "Pick a model in Intelligence settings — once it's downloaded, you can ask anything fully offline.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pick a model in Intelligence settings — once it's downloaded, you can ask anything fully offline."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Выберите модель в разделе Intelligence — как только она загрузится, сможете задавать вопросы полностью офлайн."
+          }
+        }
+      }
+    },
+    "Add an API key in Intelligence settings, or unlock Mira Pro to use the hosted backend.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add an API key in Intelligence settings, or unlock Mira Pro to use the hosted backend."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Добавьте API-ключ в разделе Intelligence или подключите Mira Pro, чтобы использовать облачный сервис."
+          }
+        }
+      }
+    },
+    "Open Intelligence settings": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open Intelligence settings"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Открыть настройки AI"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

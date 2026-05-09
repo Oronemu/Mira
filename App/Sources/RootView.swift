@@ -27,6 +27,7 @@ struct RootView: View {
     @State private var journalRouter = AppRouter()
     @State private var askMiraRouter = AppRouter()
     @State private var insightsRouter = AppRouter()
+    @State private var settingsRouter = AppRouter()
     @State private var selectedTab: AppTab = .journal
     @State private var isTabBarVisible: Bool = true
 
@@ -136,7 +137,7 @@ struct RootView: View {
         case .journal:  return journalRouter
         case .askMira:  return askMiraRouter
         case .insights: return insightsRouter
-        case .settings: return nil
+        case .settings: return settingsRouter
         }
     }
 
@@ -180,7 +181,15 @@ struct RootView: View {
                 if let askMiraState {
                     AskMiraView(
                         state: askMiraState,
-                        onSelectEntry: { id in askMiraRouter.openDetail(id) }
+                        onSelectEntry: { id in askMiraRouter.openDetail(id) },
+                        onOpenAISettings: {
+                            // Cross-tab navigation: switch to Settings and
+                            // push Intelligence so the user lands on the
+                            // exact screen needed to enable AI.
+                            selectedTab = .settings
+                            settingsRouter.popToRoot()
+                            settingsRouter.openIntelligenceSettings()
+                        }
                     )
                 } else {
                     AmbientBackground(moodLevels: [2, 4], intensity: 0.55)
@@ -199,7 +208,15 @@ struct RootView: View {
                     InsightsListView(
                         state: insightsState,
                         onSelectInsight: { id in insightsRouter.openInsight(id) },
-                        onOpenStats: { insightsRouter.openStats() }
+                        onOpenStats: { insightsRouter.openStats() },
+                        onOpenAISettings: {
+                            // Same pattern as Ask Mira: switch tabs and
+                            // push Intelligence so the user lands on the
+                            // exact screen needed to enable AI.
+                            selectedTab = .settings
+                            settingsRouter.popToRoot()
+                            settingsRouter.openIntelligenceSettings()
+                        }
                     )
                 } else {
                     AmbientBackground(moodLevels: [3], intensity: 0.7)
@@ -214,10 +231,13 @@ struct RootView: View {
     }
 
     private var settingsTab: some View {
-        NavigationStack {
+        NavigationStack(path: $settingsRouter.path) {
             SettingsView()
                 .safeAreaPadding(.bottom, MiraTabBarLayout.reservedHeight)
                 .ignoresSafeArea(.keyboard)
+                .navigationDestination(for: AppRouter.Route.self) { route in
+                    routeView(route, router: settingsRouter)
+                }
         }
     }
 
@@ -246,6 +266,9 @@ struct RootView: View {
             )
         case .stats:
             StatsView()
+        case .intelligenceSettings:
+            IntelligenceSettingsView()
+                .safeAreaPadding(.bottom, MiraTabBarLayout.reservedHeight)
         }
     }
 

@@ -21,10 +21,16 @@ public struct AskMiraView: View {
     @FocusState private var inputFocused: Bool
 
     private let onSelectEntry: (UUID) -> Void
+    private let onOpenAISettings: () -> Void
 
-    public init(state: AskMiraState, onSelectEntry: @escaping (UUID) -> Void) {
+    public init(
+        state: AskMiraState,
+        onSelectEntry: @escaping (UUID) -> Void,
+        onOpenAISettings: @escaping () -> Void
+    ) {
         self.state = state
         self.onSelectEntry = onSelectEntry
+        self.onOpenAISettings = onOpenAISettings
     }
 
     public var body: some View {
@@ -77,6 +83,13 @@ public struct AskMiraView: View {
         }
         .task {
             refreshAISettings()
+            await state.refreshAIReadiness()
+        }
+        .onAppear {
+            // Re-evaluate readiness on every reappear so flipping the
+            // provider in Settings (and tabbing back) immediately swaps
+            // the empty-state CTA for the suggestions strip.
+            Task { await state.refreshAIReadiness() }
         }
         .onReceive(NotificationCenter.default.publisher(for: .NSProcessInfoPowerStateDidChange)) { _ in
             let enabled = ProcessInfo.processInfo.isLowPowerModeEnabled
@@ -91,6 +104,7 @@ public struct AskMiraView: View {
                 if !enabled { lowPowerBannerDismissed = false }
                 isLowPowerMode = enabled
                 refreshAISettings()
+                Task { await state.refreshAIReadiness() }
             }
         }
     }
@@ -110,6 +124,14 @@ public struct AskMiraView: View {
     private func askWithProGate(state: AskMiraState) {
         inputFocused = false
         Task {
+            // Re-check readiness right before the request — the user may
+            // have just disabled AI in Settings without us getting an
+            // appearance signal.
+            await state.refreshAIReadiness()
+            guard state.isAIReady else {
+                onOpenAISettings()
+                return
+            }
             let provider = AISettingsStore().load().provider
             if provider == .remote {
                 let isPro = await subscriptionService.isEntitled(to: .hostedAI)
@@ -124,8 +146,34 @@ public struct AskMiraView: View {
 
     // MARK: - Content
 
+    private var shouldShowAISetupEmpty: Bool {
+        !state.isAIReady
+            && state.activeTurns.isEmpty
+            && !state.isAnswering
+            && state.streamingAnswer.isEmpty
+    }
+
     @ViewBuilder
     private func content(state: AskMiraState) -> some View {
+        if !state.hasResolvedReadiness {
+            // Hold the chat-vs-CTA decision until the first readiness
+            // check completes so the user never sees a flash of chat
+            // suggestions before the AI setup screen takes over.
+            Color.clear
+        } else if shouldShowAISetupEmpty {
+            AISetupCenter(
+                providerKind: state.providerKind,
+                onOpenSettings: onOpenAISettings
+            )
+            .padding(.bottom, MiraTabBarLayout.aboveBarInset)
+            .transition(.opacity)
+        } else {
+            chatContent(state: state)
+        }
+    }
+
+    @ViewBuilder
+    private func chatContent(state: AskMiraState) -> some View {
         VStack(spacing: 0) {
             ScrollViewReader { proxy in
                 ScrollView {

@@ -17,8 +17,7 @@ public struct ProSettingsView: View {
     @State private var status: CoreKit.SubscriptionStatus = .unknown
     @State private var isRestoring = false
     @State private var feedback: String?
-    @State private var showingRedeem = false
-    @State private var redeemCode = ""
+    @State private var showingOfferCodeSheet = false
     @State private var usage: UsageLoad = .idle
 
     private enum UsageLoad: Equatable {
@@ -75,9 +74,17 @@ public struct ProSettingsView: View {
                 usage = .idle
             }
         }
-        .sheet(isPresented: $showingRedeem) {
-            redeemSheet
-                .presentationDetents([.medium])
+        .offerCodeRedemption(isPresented: $showingOfferCodeSheet) { result in
+            // Apple's redeem sheet drives the StoreKit transaction flow
+            // directly. The bootstrap listener in `StoreKitSubscriptionService`
+            // refreshes `status`, so success has no work to do here. On
+            // failure surface a short message under the actions list.
+            switch result {
+            case .success:
+                feedback = nil
+            case .failure(let error):
+                feedback = error.localizedDescription
+            }
         }
     }
 
@@ -278,8 +285,8 @@ public struct ProSettingsView: View {
             actionRow(
                 icon: "ticket",
                 title: String(localized: "Redeem a code"),
-                subtitle: String(localized: "Apply a complimentary or beta access code.")
-            ) { showingRedeem = true }
+                subtitle: String(localized: "Apply an offer code from the App Store.")
+            ) { showingOfferCodeSheet = true }
         }
     }
 
@@ -341,44 +348,6 @@ public struct ProSettingsView: View {
         .foregroundStyle(.secondary)
     }
 
-    // MARK: - Redeem sheet
-
-    private var redeemSheet: some View {
-        MiraSheetChrome {
-            NavigationStack {
-                Form {
-                    Section {
-                        TextField(String(localized: "Code"), text: $redeemCode)
-                            .textInputAutocapitalization(.characters)
-                            .autocorrectionDisabled()
-                    } footer: {
-                        Text(String(localized: "Codes are issued for testing, beta access, or as gifts."))
-                    }
-
-                    if let feedback {
-                        Section { Text(feedback).font(MiraTypography.caption) }
-                    }
-                }
-                .scrollContentBackground(.hidden)
-                .navigationTitle(String(localized: "Redeem a code"))
-                .navigationBarTitleDisplayMode(.inline)
-                .toolbarBackground(.hidden, for: .navigationBar)
-                .toolbar {
-                    ToolbarItem(placement: .cancellationAction) {
-                        Button(String(localized: "Cancel")) { showingRedeem = false }
-                    }
-                    ToolbarItem(placement: .confirmationAction) {
-                        Button(String(localized: "Redeem")) {
-                            Task { await redeem() }
-                        }
-                        .disabled(redeemCode.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
-                    }
-                }
-            }
-        }
-        .miraSheet([.medium])
-    }
-
     // MARK: - Actions
 
     private func restore() async {
@@ -390,21 +359,6 @@ public struct ProSettingsView: View {
             feedback = restored.isPro
                 ? String(localized: "Pro restored.")
                 : String(localized: "No active subscription found for this Apple ID.")
-        } catch {
-            feedback = error.localizedDescription
-        }
-    }
-
-    private func redeem() async {
-        let code = redeemCode.trimmingCharacters(in: .whitespacesAndNewlines)
-        feedback = nil
-        do {
-            let result = try await subscriptionService.redeem(code: code)
-            if result.isPro {
-                redeemCode = ""
-                showingRedeem = false
-                feedback = String(localized: "Pro unlocked.")
-            }
         } catch {
             feedback = error.localizedDescription
         }

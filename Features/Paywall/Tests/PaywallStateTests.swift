@@ -87,41 +87,21 @@ struct PaywallStateTests {
         #expect(state.didUnlockPro == false)
     }
 
-    @Test("redeem with empty code does not call the service")
-    func redeemEmptyCode() async {
+    @Test("surfaceError populates the banner for side-channel flows")
+    func surfaceErrorPopulatesBanner() async {
         let service = MockSubscriptionService(products: Self.sampleProducts)
         let state = PaywallState(context: .general, subscriptionService: service)
 
-        await state.redeem(code: "   ")
+        state.surfaceError("Offer code redemption failed.")
 
-        #expect(state.errorMessage != nil)
-        let calls = await service.redeemCalls
-        #expect(calls.isEmpty)
-    }
-
-    @Test("redeem forwards the trimmed code")
-    func redeemForwards() async {
-        let proStatus = SubscriptionStatus.pro(
-            .init(plan: .yearly, renewalDate: nil, isInTrial: false, source: .redeemCode("GIFT"))
-        )
-        let service = MockSubscriptionService(
-            products: Self.sampleProducts,
-            redeemHandler: { _ in proStatus }
-        )
-        let state = PaywallState(context: .general, subscriptionService: service)
-
-        await state.redeem(code: "  GIFT  ")
-
-        let calls = await service.redeemCalls
-        #expect(calls == ["GIFT"])
-        #expect(state.didUnlockPro)
+        #expect(state.errorMessage == "Offer code redemption failed.")
     }
 
     @Test("clearError zeroes the message")
     func clearErrorResets() async {
         let service = MockSubscriptionService(products: Self.sampleProducts)
         let state = PaywallState(context: .general, subscriptionService: service)
-        await state.redeem(code: "")
+        state.surfaceError("Something went wrong.")
         #expect(state.errorMessage != nil)
 
         state.clearError()

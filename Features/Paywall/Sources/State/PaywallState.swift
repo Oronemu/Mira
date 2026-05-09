@@ -20,7 +20,6 @@ public final class PaywallState {
     public private(set) var isLoading: Bool = true
     public private(set) var isPurchasing: Bool = false
     public private(set) var isRestoring: Bool = false
-    public private(set) var isRedeeming: Bool = false
     public private(set) var errorMessage: String?
 
     /// Currently highlighted SKU. Defaults to the yearly plan since it's
@@ -73,6 +72,14 @@ public final class PaywallState {
         errorMessage = nil
     }
 
+    /// Surfaces an error from a side-channel flow (e.g. Apple's offer-code
+    /// redeem sheet) into the paywall's existing error banner. Successful
+    /// redemptions arrive via the StoreKit transaction listener and don't
+    /// route through here.
+    public func surfaceError(_ message: String) {
+        errorMessage = message
+    }
+
     public func purchaseSelected() async {
         guard let id = selectedProductID, !isPurchasing else { return }
         isPurchasing = true
@@ -94,23 +101,6 @@ public final class PaywallState {
         defer { isRestoring = false }
         do {
             _ = try await subscriptionService.restorePurchases()
-        } catch {
-            errorMessage = error.localizedDescription
-        }
-    }
-
-    public func redeem(code: String) async {
-        guard !isRedeeming else { return }
-        let trimmed = code.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmed.isEmpty else {
-            errorMessage = String(localized: "Enter a code to continue.")
-            return
-        }
-        isRedeeming = true
-        errorMessage = nil
-        defer { isRedeeming = false }
-        do {
-            _ = try await subscriptionService.redeem(code: trimmed)
         } catch {
             errorMessage = error.localizedDescription
         }
