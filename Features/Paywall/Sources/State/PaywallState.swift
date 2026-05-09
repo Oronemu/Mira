@@ -124,6 +124,15 @@ public final class PaywallState {
         do {
             let fetched = try await subscriptionService.availableProducts()
             products = fetched
+            if fetched.isEmpty {
+                // StoreKit returned an empty catalog without throwing —
+                // typically means the Paid Apps Agreement isn't active,
+                // the IAPs aren't attached to this build, or App Store
+                // Connect can't reach the device. Surface a message so
+                // the screen isn't silently empty.
+                errorMessage = String(localized: "Subscriptions are unavailable right now. Please try again later.")
+                return
+            }
             if selectedProductID == nil {
                 // Default to yearly because it's the "save 30%" SKU.
                 selectedProductID = fetched.first(where: { $0.plan == .yearly })?.id

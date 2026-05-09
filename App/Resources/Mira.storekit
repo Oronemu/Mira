@@ -1,142 +1,161 @@
 {
+  "appPolicies" : {
+    "eula" : "",
+    "policies" : [
+      {
+        "locale" : "en_US",
+        "policyText" : "",
+        "policyURL" : ""
+      }
+    ]
+  },
   "identifier" : "3E0253FA-DF6E-4616-8CE3-DE2B1630E67F",
-  "nonRenewingSubscriptions" : [],
-  "products" : [],
+  "nonRenewingSubscriptions" : [
+
+  ],
+  "products" : [
+
+  ],
   "settings" : {
-    "_applicationInternalID" : "0",
-    "_developerTeamID" : "",
+    "_applicationInternalID" : "6763016649",
+    "_askToBuyEnabled" : false,
+    "_billingGracePeriodEnabled" : false,
+    "_billingIssuesEnabled" : false,
+    "_developerTeamID" : "NWH8D69Z95",
+    "_disableDialogs" : false,
     "_failTransactionsEnabled" : false,
-    "_lastSynchronizedDate" : 0,
+    "_lastSynchronizedDate" : 799847219.53431702,
     "_locale" : "en_US",
+    "_renewalBillingIssuesEnabled" : false,
     "_storefront" : "USA",
     "_storeKitErrors" : [
       {
-        "current" : null,
         "enabled" : false,
         "name" : "Load Products"
       },
       {
-        "current" : null,
         "enabled" : false,
         "name" : "Purchase"
       },
       {
-        "current" : null,
         "enabled" : false,
         "name" : "Verification"
       },
       {
-        "current" : null,
         "enabled" : false,
         "name" : "App Store Sync"
       },
       {
-        "current" : null,
         "enabled" : false,
         "name" : "Subscription Status"
       },
       {
-        "current" : null,
         "enabled" : false,
         "name" : "App Transaction"
       },
       {
-        "current" : null,
         "enabled" : false,
         "name" : "Manage Subscriptions Sheet"
       },
       {
-        "current" : null,
         "enabled" : false,
         "name" : "Refund Request Sheet"
       },
       {
-        "current" : null,
         "enabled" : false,
         "name" : "Offer Code Redeem Sheet"
       }
-    ]
+    ],
+    "_timeRate" : 0
   },
   "subscriptionGroups" : [
     {
-      "id" : "494FE957-F32E-4288-953E-E458988AE5B4",
+      "id" : "22064850",
       "localizations" : [
-        {
-          "description" : "Mira Pro",
-          "displayName" : "Mira Pro",
-          "locale" : "en_US"
-        },
-        {
-          "description" : "Mira Pro",
-          "displayName" : "Mira Pro",
-          "locale" : "ru"
-        }
+
       ],
       "name" : "Mira Pro",
       "subscriptions" : [
         {
-          "adHocOffers" : [],
-          "codeOffers" : [],
+          "adHocOffers" : [
+
+          ],
+          "codeOffers" : [
+
+          ],
           "displayPrice" : "5.99",
           "familyShareable" : false,
           "groupNumber" : 1,
-          "internalID" : "1760C8A0-A27F-44C5-A937-04D24D3B79B5",
+          "internalID" : "6765970007",
           "introductoryOffer" : {
-            "displayPrice" : "0",
-            "internalID" : "F8FC2D5E-9E3A-4889-A5C7-C0E045774131",
+            "internalID" : "FE9FECED",
             "numberOfPeriods" : 1,
             "paymentMode" : "free",
             "subscriptionPeriod" : "P1W"
           },
           "localizations" : [
             {
-              "description" : "Hosted Ask Mira and reflections, advanced analytics, themes, PDF templates, smart filters, and more.",
-              "displayName" : "Mira Pro — Monthly",
-              "locale" : "en_US"
+              "description" : "Облачный AI, темы, статистика и больше",
+              "displayName" : "Mira Pro · Месячная",
+              "locale" : "ru"
             },
             {
-              "description" : "Облачный Ask Mira и рефлексии, расширенная аналитика, темы, PDF-шаблоны, умные фильтры и многое другое.",
-              "displayName" : "Mira Pro — Месячная",
-              "locale" : "ru"
+              "description" : "Hosted AI, themes, stats, exports and more",
+              "displayName" : "Mira Pro · Monthly",
+              "locale" : "en_US"
             }
           ],
           "productID" : "com.veilbytesoft.Mira.pro.monthly",
           "recurringSubscriptionPeriod" : "P1M",
           "referenceName" : "Mira Pro Monthly",
-          "subscriptionGroupID" : "494FE957-F32E-4288-953E-E458988AE5B4",
-          "type" : "RecurringSubscription"
+          "subscriptionGroupID" : "22064850",
+          "type" : "RecurringSubscription",
+          "winbackOffers" : [
+
+          ]
         },
         {
-          "adHocOffers" : [],
-          "codeOffers" : [],
+          "adHocOffers" : [
+
+          ],
+          "codeOffers" : [
+            {
+              "eligibility" : [
+                "new"
+              ],
+              "internalID" : "BEB68D43",
+              "isStackable" : false,
+              "numberOfPeriods" : 1,
+              "paymentMode" : "free",
+              "referenceName" : "Welcome to Mira",
+              "subscriptionPeriod" : "P1Y"
+            }
+          ],
           "displayPrice" : "49.99",
           "familyShareable" : false,
           "groupNumber" : 1,
-          "internalID" : "506FECBA-C440-47E8-BCA4-8BCDCFC080B0",
-          "introductoryOffer" : {
-            "displayPrice" : "0",
-            "internalID" : "7E32372E-6E06-47DD-B9AF-28FB51CA7BA5",
-            "numberOfPeriods" : 1,
-            "paymentMode" : "free",
-            "subscriptionPeriod" : "P1W"
-          },
+          "internalID" : "6765970439",
+          "introductoryOffer" : null,
           "localizations" : [
             {
-              "description" : "Hosted Ask Mira and reflections, advanced analytics, themes, PDF templates, smart filters, and more. Save 30% vs monthly.",
-              "displayName" : "Mira Pro — Yearly",
-              "locale" : "en_US"
+              "description" : "Облачный AI и все Pro-функции. Скидка 30%.",
+              "displayName" : "Mira Pro · Годовая",
+              "locale" : "ru"
             },
             {
-              "description" : "Облачный Ask Mira и рефлексии, расширенная аналитика, темы, PDF-шаблоны, умные фильтры и многое другое. Экономия 30% по сравнению с месячной.",
-              "displayName" : "Mira Pro — Годовая",
-              "locale" : "ru"
+              "description" : "Hosted AI + everything in Pro. Save 30%.",
+              "displayName" : "Mira Pro · Yearly",
+              "locale" : "en_US"
             }
           ],
           "productID" : "com.veilbytesoft.Mira.pro.yearly",
           "recurringSubscriptionPeriod" : "P1Y",
           "referenceName" : "Mira Pro Yearly",
-          "subscriptionGroupID" : "494FE957-F32E-4288-953E-E458988AE5B4",
-          "type" : "RecurringSubscription"
+          "subscriptionGroupID" : "22064850",
+          "type" : "RecurringSubscription",
+          "winbackOffers" : [
+
+          ]
         }
       ]
     }

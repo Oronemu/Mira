@@ -9476,6 +9476,23 @@
         }
       }
     },
+    "Subscriptions are unavailable right now. Please try again later.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Subscriptions are unavailable right now. Please try again later."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Подписки сейчас недоступны. Попробуйте позже."
+          }
+        }
+      }
+    },
     "Subscription service is not configured.": {
       "extractionState": "manual",
       "localizations": {
