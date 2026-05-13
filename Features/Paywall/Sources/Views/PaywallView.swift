@@ -230,7 +230,7 @@ public struct PaywallView: View {
                     openURL(legalLinks.privacyURL)
                 }
 
-                Button(String(localized: "Terms")) {
+                Button(String(localized: "EULA")) {
                     openURL(legalLinks.termsURL)
                 }
             }

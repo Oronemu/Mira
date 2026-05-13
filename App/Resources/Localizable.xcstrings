@@ -12700,6 +12700,23 @@
           }
         }
       }
+    },
+    "EULA": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EULA"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EULA"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

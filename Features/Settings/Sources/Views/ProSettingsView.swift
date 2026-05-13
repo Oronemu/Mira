@@ -337,7 +337,7 @@ public struct ProSettingsView: View {
                 Button(String(localized: "Privacy")) {
                     openURL(legalLinks.privacyURL)
                 }
-                Button(String(localized: "Terms")) {
+                Button(String(localized: "EULA")) {
                     openURL(legalLinks.termsURL)
                 }
             }
