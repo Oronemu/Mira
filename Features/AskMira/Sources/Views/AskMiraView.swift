@@ -15,6 +15,7 @@ public struct AskMiraView: View {
 
     @State private var isInfoPresented = false
     @State private var isHistoryPresented = false
+    @State private var isConsentPresented = false
     @State private var isLowPowerMode = ProcessInfo.processInfo.isLowPowerModeEnabled
     @State private var isLocalAI = false
     @State private var lowPowerBannerDismissed = false
@@ -81,6 +82,14 @@ public struct AskMiraView: View {
                 onRename: { id, title in Task { await state.renameChat(id: id, title: title) } }
             )
         }
+        .sheet(isPresented: $isConsentPresented) {
+            RemoteAIConsentSheet(
+                onAllow: {
+                    Task { await state.ask() }
+                },
+                onDeny: {}
+            )
+        }
         .task {
             refreshAISettings()
             await state.refreshAIReadiness()
@@ -137,6 +146,14 @@ public struct AskMiraView: View {
                 let isPro = await subscriptionService.isEntitled(to: .hostedAI)
                 guard isPro else {
                     paywallPresenter.present(.feature(.hostedAI))
+                    return
+                }
+                // App Store 5.1.1(i): the question + RAG-selected entries
+                // are about to leave the device for Anthropic. Apple
+                // requires explicit in-app consent before that happens —
+                // a policy entry alone is not enough.
+                guard RemoteAIConsentStore().load().hasGiven else {
+                    await MainActor.run { isConsentPresented = true }
                     return
                 }
             }

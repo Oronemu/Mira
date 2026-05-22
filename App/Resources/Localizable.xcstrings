@@ -557,19 +557,19 @@
         }
       }
     },
-    "Artificial intelligence" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Artificial intelligence"
+    "Artificial intelligence": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Artificial intelligence"
           }
         },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Искусственный интеллект"
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Искусственный интеллект"
           }
         }
       }
@@ -12378,23 +12378,6 @@
         }
       }
     },
-    "Selected": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Selected"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Выбрано"
-          }
-        }
-      }
-    },
     "≈2.9 GB download, ≈5 GB RAM during generation": {
       "extractionState": "manual",
       "localizations": {
@@ -12717,6 +12700,204 @@
           }
         }
       }
+    },
+    "Allow": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Allow"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Разрешить"
+          }
+        }
+      },
+      "comment": "Remote AI consent — primary action, grants permission"
+    },
+    "Don't Allow": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Don't Allow"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не разрешать"
+          }
+        }
+      },
+      "comment": "Remote AI consent — secondary action, declines permission"
+    },
+    "Use Mira's cloud AI?": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Use Mira's cloud AI?"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Включить облачный ИИ?"
+          }
+        }
+      },
+      "comment": "Remote AI consent — sheet title (short, non-technical)"
+    },
+    "Cloud AI gives you deeper answers and richer reflections. To do that, Mira needs to send a small amount of your writing to an outside AI service.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cloud AI gives you deeper answers and richer reflections. To do that, Mira needs to send a small amount of your writing to an outside AI service."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "С облачным ИИ Mira даёт более глубокие ответы и подробные рефлексии. Для этого часть вашего текста нужно отправлять во внешний ИИ-сервис."
+          }
+        }
+      },
+      "comment": "Remote AI consent — warm intro paragraph"
+    },
+    "What Mira sends": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "What Mira sends"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Что отправляется"
+          }
+        }
+      },
+      "comment": "Remote AI consent — bullet section heading"
+    },
+    "Your question or prompt": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your question or prompt"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Текст вашего вопроса"
+          }
+        }
+      },
+      "comment": "Remote AI consent — bullet 1"
+    },
+    "Who receives it": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Who receives it"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Кому уходит"
+          }
+        }
+      },
+      "comment": "Remote AI consent — recipient card heading"
+    },
+    "The AI service is Anthropic. They use your request only to generate the reply and don't train their models on it. Mira doesn't keep the content of your messages or entries on its servers.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The AI service is Anthropic. They use your request only to generate the reply and don't train their models on it. Mira doesn't keep the content of your messages or entries on its servers."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Это сервис Anthropic. Запрос используется только для ответа и не идёт на обучение их моделей. Сама Mira не хранит содержимое ваших сообщений и записей на серверах."
+          }
+        }
+      },
+      "comment": "Remote AI consent — recipient/handling explanation"
+    },
+    "Privacy Policy": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Privacy Policy"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Политика конфиденциальности"
+          }
+        }
+      },
+      "comment": "Link to the in-app privacy policy"
+    },
+    "You can change this anytime in Settings.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You can change this anytime in Settings."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Это можно изменить в любой момент в настройках."
+          }
+        }
+      },
+      "comment": "Remote AI consent — settings hint"
+    },
+    "A few of your most relevant journal entries - text, mood, tags": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A few of your most relevant journal entries - text, mood, tags"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Несколько самых подходящих записей из дневника - текст, настроение, теги"
+          }
+        }
+      },
+      "comment": "Remote AI consent — bullet 2"
     }
   },
   "version": "1.0"

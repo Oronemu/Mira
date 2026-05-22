@@ -15,6 +15,7 @@ public struct IntelligenceSettingsView: View {
     @Environment(\.paywallPresenter) private var paywallPresenter
     @State private var state: SettingsState?
     @State private var status: SubscriptionStatus = .unknown
+    @State private var isConsentPresented = false
 
     public init() {}
 
@@ -57,6 +58,14 @@ public struct IntelligenceSettingsView: View {
             for await snapshot in subscriptionService.statusUpdates {
                 status = snapshot
             }
+        }
+        .sheet(isPresented: $isConsentPresented) {
+            RemoteAIConsentSheet(
+                onAllow: {
+                    Task { await state?.setProvider(.remote) }
+                },
+                onDeny: {}
+            )
         }
     }
 
@@ -185,7 +194,15 @@ public struct IntelligenceSettingsView: View {
             ) {
                 Task {
                     if await subscriptionService.isEntitled(to: .hostedAI) {
-                        await state.setProvider(.remote)
+                        // App Store 5.1.1(i): never enable Cloud routing
+                        // without an explicit in-app consent first. The
+                        // sheet writes the consent flag itself and only
+                        // then calls back to flip the provider.
+                        if RemoteAIConsentStore().load().hasGiven {
+                            await state.setProvider(.remote)
+                        } else {
+                            isConsentPresented = true
+                        }
                     } else {
                         paywallPresenter.present(.feature(.hostedAI))
                     }

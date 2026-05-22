@@ -30,12 +30,23 @@ public enum AIProviderFactory {
         fallback: any AIProvider,
         subscriptionService: any SubscriptionService,
         hostedConfig: HostedAIProvider.Config = MiraBackend.defaultConfig,
-        settingsStore: AISettingsStore = AISettingsStore()
+        settingsStore: AISettingsStore = AISettingsStore(),
+        consentStore: RemoteAIConsentStore = RemoteAIConsentStore()
     ) async -> any AIProvider {
         let settings = settingsStore.load()
         // The user's explicit "On-device" / "Off" choice always wins.
         // Hosted only enters the picture for `.remote`.
         guard settings.provider == .remote else {
+            return fallback
+        }
+        // App Store guideline 5.1.1(i) / 5.1.2(i): no journal context may
+        // be sent to Anthropic without an explicit in-app consent. The UI
+        // gates Settings → Cloud / Ask Mira / Reflections separately, but
+        // we belt-and-suspenders the factory so any code path (including
+        // the BGTask weekly-reflection handler) that forgets to ask first
+        // falls through to the on-device fallback instead of silently
+        // sending data.
+        guard consentStore.load().hasGiven else {
             return fallback
         }
         guard await subscriptionService.latestSignedTransaction() != nil else {

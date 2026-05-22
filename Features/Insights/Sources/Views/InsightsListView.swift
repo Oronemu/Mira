@@ -14,6 +14,7 @@ public struct InsightsListView: View {
     private let state: InsightsListState
 
     @State private var pendingDeletionID: UUID?
+    @State private var isConsentPresented = false
 
     private let onSelectInsight: (UUID) -> Void
     private let onOpenStats: () -> Void
@@ -72,6 +73,14 @@ public struct InsightsListView: View {
             if phase == .active {
                 Task { await state.refreshAIReadiness() }
             }
+        }
+        .sheet(isPresented: $isConsentPresented) {
+            RemoteAIConsentSheet(
+                onAllow: {
+                    Task { await state.generateNow() }
+                },
+                onDeny: {}
+            )
         }
     }
 
@@ -253,6 +262,13 @@ public struct InsightsListView: View {
                 let isPro = await subscriptionService.isEntitled(to: .hostedAI)
                 guard isPro else {
                     paywallPresenter.present(.feature(.hostedAI))
+                    return
+                }
+                // App Store 5.1.1(i): reflection prompts include entry
+                // content; surface the in-app consent the first time the
+                // user triggers a Cloud reflection.
+                guard RemoteAIConsentStore().load().hasGiven else {
+                    await MainActor.run { isConsentPresented = true }
                     return
                 }
             }
