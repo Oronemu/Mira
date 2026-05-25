@@ -30,6 +30,7 @@ struct RootView: View {
     @State private var settingsRouter = AppRouter()
     @State private var selectedTab: AppTab = .journal
     @State private var isTabBarVisible: Bool = true
+    @State private var redeemAlertMessage: String?
 
     // Feature states are hoisted to the root so streaming chat answers,
     // reflection generation, and live observers keep running when the
@@ -61,6 +62,17 @@ struct RootView: View {
         }
         .ignoresSafeArea(.keyboard, edges: .bottom)
         .onOpenURL(perform: handleDeepLink)
+        .alert(
+            "Redeem Code",
+            isPresented: Binding(
+                get: { redeemAlertMessage != nil },
+                set: { if !$0 { redeemAlertMessage = nil } }
+            )
+        ) {
+            Button("OK") { redeemAlertMessage = nil }
+        } message: {
+            if let msg = redeemAlertMessage { Text(msg) }
+        }
         .task {
             ensureFeatureStates()
             // Kick the chat / insight observers once. Both methods are
@@ -294,10 +306,19 @@ struct RootView: View {
             journalRouter.popToRoot()
             journalRouter.openEditor(.new)
         case "paywall":
-            // Lock-screen / Pro widgets call this when a free user
-            // taps a locked tile — surface the paywall with the
-            // .extraWidgets context so the headline matches.
             paywallPresenter.present(.feature(.extraWidgets))
+        case "redeem":
+            guard let components = URLComponents(url: url, resolvingAgainstBaseURL: false),
+                  let code = components.queryItems?.first(where: { $0.name == "code" })?.value,
+                  !code.isEmpty else { return }
+            Task {
+                do {
+                    try await subscriptionService.redeem(code: code)
+                    redeemAlertMessage = String(localized: "Pro activated! Enjoy Mira Pro.")
+                } catch {
+                    redeemAlertMessage = error.localizedDescription
+                }
+            }
         default:
             break
         }

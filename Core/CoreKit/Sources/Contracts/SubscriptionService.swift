@@ -63,6 +63,12 @@ public protocol SubscriptionService: Sendable {
     /// verified transaction yet.
     func latestSignedTransaction() async -> String?
 
+    /// Device-bound identifier stored after a successful custom redeem
+    /// code grant. The hosted AI client sends this as `redeemUserId`
+    /// when no StoreKit JWS is available. Returns `nil` when the user
+    /// never redeemed a custom code.
+    var redeemUserID: String? { get async }
+
     /// Fetches the caller's current monthly usage against hosted-AI
     /// caps. The Pro settings screen calls this to render "X of Y left
     /// this month" without having to poll the AI endpoint. Throws if

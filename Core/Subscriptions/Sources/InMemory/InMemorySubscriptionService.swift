@@ -120,6 +120,8 @@ public actor InMemorySubscriptionService: SubscriptionService {
         nil
     }
 
+    public var redeemUserID: String? { nil }
+
     public func fetchUsage() async throws -> UsageSnapshot {
         // Dev/preview-only: no real backend, so report a clean slate
         // for the current month so the Pro screen's usage section

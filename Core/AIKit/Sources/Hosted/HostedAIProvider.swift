@@ -65,15 +65,24 @@ public actor HostedAIProvider: AIProvider {
     }
 
     public var isAvailable: Bool {
-        get async { await subscriptionService.latestSignedTransaction() != nil }
+        get async {
+            if await subscriptionService.latestSignedTransaction() != nil { return true }
+            if await subscriptionService.redeemUserID != nil { return true }
+            return false
+        }
     }
 
     public func stream(_ request: AIRequest) async throws -> AsyncThrowingStream<AIResponseChunk, Error> {
-        guard let signedTransaction = await subscriptionService.latestSignedTransaction() else {
+        let credential: BackendCredential
+        if let jws = await subscriptionService.latestSignedTransaction() {
+            credential = .jws(jws)
+        } else if let rid = await subscriptionService.redeemUserID {
+            credential = .redeem(rid)
+        } else {
             throw AIError.providerUnavailable
         }
 
-        let urlRequest = try makeURLRequest(request: request, signedTransaction: signedTransaction)
+        let urlRequest = try makeURLRequest(request: request, credential: credential)
 
         Self.log.info("→ hosted AI request • intent=\(self.intent.rawValue, privacy: .public) • messages=\(request.messages.count, privacy: .public)")
 
@@ -111,7 +120,12 @@ public actor HostedAIProvider: AIProvider {
 
     // MARK: - Private
 
-    private func makeURLRequest(request: AIRequest, signedTransaction: String) throws -> URLRequest {
+    private enum BackendCredential {
+        case jws(String)
+        case redeem(String)
+    }
+
+    private func makeURLRequest(request: AIRequest, credential: BackendCredential) throws -> URLRequest {
         let url = config.baseURL.appendingPathComponent("v1/ai/messages")
         var urlRequest = URLRequest(url: url)
         urlRequest.httpMethod = "POST"
@@ -122,8 +136,6 @@ public actor HostedAIProvider: AIProvider {
             urlRequest.setValue(assertion, forHTTPHeaderField: "X-App-Attest-Assertion")
         }
 
-        // The worker accepts a body shape that wraps the inner Anthropic
-        // request — see mira-backend/src/routes/ai.ts.
         let system = request.messages.first(where: { $0.role == .system })?.content
         let messages: [[String: String]] = request.messages
             .filter { $0.role != .system }
@@ -137,11 +149,16 @@ public actor HostedAIProvider: AIProvider {
         ]
         if let system { inner["system"] = system }
 
-        let payload: [String: Any] = [
-            "signedTransaction": signedTransaction,
+        var payload: [String: Any] = [
             "intent": intent.rawValue,
             "request": inner,
         ]
+        switch credential {
+        case .jws(let jws):
+            payload["signedTransaction"] = jws
+        case .redeem(let rid):
+            payload["redeemUserId"] = rid
+        }
         urlRequest.httpBody = try JSONSerialization.data(withJSONObject: payload)
         return urlRequest
     }

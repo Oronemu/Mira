@@ -96,12 +96,15 @@ public actor MockSubscriptionService: SubscriptionService {
 
     public func latestSignedTransaction() async -> String? { stubbedSignedTransaction }
 
+    public var redeemUserID: String? { stubbedRedeemUserID }
+
     public func fetchUsage() async throws -> UsageSnapshot {
         if let stubbedUsage { return stubbedUsage }
         throw SubscriptionError.unimplemented
     }
 
     private var stubbedSignedTransaction: String?
+    private var stubbedRedeemUserID: String?
     private var stubbedUsage: UsageSnapshot?
 
     /// Test hook — pre-load the JWS that `latestSignedTransaction()`
@@ -114,6 +117,10 @@ public actor MockSubscriptionService: SubscriptionService {
     /// return. Defaults to throwing `.unimplemented` when unset.
     public func setUsage(_ usage: UsageSnapshot?) {
         stubbedUsage = usage
+    }
+
+    public func setRedeemUserID(_ id: String?) {
+        stubbedRedeemUserID = id
     }
 
     /// Test hook — flips the status without running through a purchase

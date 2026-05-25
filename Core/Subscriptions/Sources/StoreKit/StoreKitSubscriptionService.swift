@@ -1,5 +1,6 @@
 import Foundation
 import StoreKit
+import UIKit
 import CoreKit
 import Utilities
 
@@ -15,16 +16,20 @@ import Utilities
 /// 4. Materialise the user's current entitlement on launch via
 ///    `Transaction.currentEntitlements` and on every "Restore Purchases".
 ///
-/// Phase 1's redeem-code flow does not exist in StoreKit — it requires a
-/// server. This implementation throws `.unimplemented` for `redeem(code:)`;
-/// the App layer can pick a fallback (Apple offer-code sheet via
-/// `AppStore.presentOfferCodeRedeemSheet(in:)`, or our future Cloudflare
-/// Worker) once the backend is in place.
+/// Custom redeem codes bypass StoreKit entirely — `redeem(code:)` calls
+/// the Cloudflare Worker (`POST /v1/redeem`), which validates the code
+/// and writes a synthetic Pro entitlement keyed on the device's vendor
+/// identifier. The device ID is persisted in Keychain so subsequent
+/// AI and usage calls can authenticate via `redeemUserId`.
 public actor StoreKitSubscriptionService: SubscriptionService {
     public typealias ProductIDs = (monthly: String, yearly: String)
 
     private let productIDs: Set<String>
     private let productOrder: [String]
+
+    private let keychain: KeychainStore
+    private static let redeemUserIDKey = "redeem_user_id"
+    private static let redeemCodeKey = "redeem_code"
 
     private var loadedProducts: [String: Product] = [:]
     private var currentStatus: CoreKit.SubscriptionStatus = .unknown
@@ -34,12 +39,16 @@ public actor StoreKitSubscriptionService: SubscriptionService {
     /// - Parameter productIDs: ordered (monthly, yearly) identifiers
     ///   matching App Store Connect / Mira.storekit. Defaults to the
     ///   canonical `SubscriptionPlan.appStoreProductID` mapping.
-    public init(productIDs: ProductIDs = (
-        monthly: SubscriptionPlan.monthly.appStoreProductID,
-        yearly: SubscriptionPlan.yearly.appStoreProductID
-    )) {
+    public init(
+        productIDs: ProductIDs = (
+            monthly: SubscriptionPlan.monthly.appStoreProductID,
+            yearly: SubscriptionPlan.yearly.appStoreProductID
+        ),
+        keychain: KeychainStore = KeychainStore()
+    ) {
         self.productIDs = [productIDs.monthly, productIDs.yearly]
         self.productOrder = [productIDs.monthly, productIDs.yearly]
+        self.keychain = keychain
     }
 
     /// Spin up the transaction listener and load the user's current
@@ -137,16 +146,62 @@ public actor StoreKitSubscriptionService: SubscriptionService {
 
     @discardableResult
     public func redeem(code: String) async throws -> CoreKit.SubscriptionStatus {
-        // StoreKit doesn't expose a programmatic redeem path for our own
-        // codes — Apple's offer-code redeem sheet is a UI-level affair.
-        // The hosted Cloudflare Worker (Phase 3) will validate Mira-issued
-        // codes and flip the entitlement on the server.
-        _ = code
-        throw SubscriptionError.unimplemented
+        let deviceID = await UIDevice.current.identifierForVendor?.uuidString ?? UUID().uuidString
+        let url = MiraBackendURL.resolve().appendingPathComponent("v1/redeem")
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        let body: [String: String] = ["code": code.trimmingCharacters(in: .whitespacesAndNewlines), "deviceID": deviceID]
+        request.httpBody = try JSONSerialization.data(withJSONObject: body)
+
+        let data: Data
+        let response: URLResponse
+        do {
+            (data, response) = try await URLSession.shared.data(for: request)
+        } catch {
+            throw SubscriptionError.networkUnavailable
+        }
+        guard let http = response as? HTTPURLResponse else {
+            throw SubscriptionError.backendUnavailable
+        }
+        switch http.statusCode {
+        case 200:
+            break
+        case 404:
+            throw SubscriptionError.redeemCodeInvalid
+        case 409:
+            throw SubscriptionError.redeemCodeAlreadyUsed
+        case 429:
+            throw SubscriptionError.networkUnavailable
+        default:
+            throw SubscriptionError.backendUnavailable
+        }
+
+        let dto = try JSONDecoder().decode(RedeemResponseDTO.self, from: data)
+        try await keychain.setString(deviceID, for: Self.redeemUserIDKey)
+        try await keychain.setString(code, for: Self.redeemCodeKey)
+
+        let renewalDate: Date? = dto.renewalDate.flatMap { Self.iso8601.date(from: $0) }
+        let newStatus: CoreKit.SubscriptionStatus = .pro(.init(
+            plan: .yearly,
+            renewalDate: renewalDate,
+            isInTrial: false,
+            source: .redeemCode(code)
+        ))
+        publish(newStatus)
+        return newStatus
+    }
+
+    public var redeemUserID: String? {
+        get async { try? await keychain.string(for: Self.redeemUserIDKey) }
     }
 
     public func refresh() async {
-        let resolved = await currentEntitlement()
+        var resolved = await currentEntitlement()
+        if !resolved.isPro, let code = try? await keychain.string(for: Self.redeemCodeKey),
+           await redeemUserID != nil {
+            resolved = .pro(.init(plan: .yearly, renewalDate: nil, isInTrial: false, source: .redeemCode(code)))
+        }
         publish(resolved)
     }
 
@@ -165,19 +220,18 @@ public actor StoreKitSubscriptionService: SubscriptionService {
     }
 
     public func fetchUsage() async throws -> CoreKit.UsageSnapshot {
-        guard let jws = await latestSignedTransaction() else {
-            // The Pro screen only opens this path when status.isPro is
-            // true. If we reach here without a JWS, StoreKit either
-            // hasn't materialised the transaction yet or the user is in
-            // a redeem-grant state that StoreKit doesn't track. Both
-            // map to "couldn't verify — try Restore" for the user.
+        let payload: [String: String]
+        if let jws = await latestSignedTransaction() {
+            payload = ["signedTransaction": jws]
+        } else if let rid = await redeemUserID {
+            payload = ["redeemUserId": rid]
+        } else {
             throw SubscriptionError.verificationFailed
         }
         let url = MiraBackendURL.resolve().appendingPathComponent("v1/usage")
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        let payload: [String: String] = ["signedTransaction": jws]
         request.httpBody = try JSONSerialization.data(withJSONObject: payload)
 
         let data: Data
@@ -226,8 +280,13 @@ public actor StoreKitSubscriptionService: SubscriptionService {
         )
     }
 
-    /// Mirrors the `POST /v1/usage` response shape from `mira-backend`.
-    /// Kept private so the `UsageSnapshot` domain type stays JSON-free.
+    private struct RedeemResponseDTO: Decodable, Sendable {
+        let isPro: Bool
+        let plan: String
+        let renewalDate: String?
+        let isInTrial: Bool
+    }
+
     private struct UsageWireDTO: Decodable, Sendable {
         struct Dimension: Decodable, Sendable {
             let used: Int
