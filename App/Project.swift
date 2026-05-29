@@ -70,7 +70,7 @@ let project = Project(
                 "DEVELOPMENT_TEAM": "NWH8D69Z95",
                 "CODE_SIGN_STYLE": "Automatic",
                 "MARKETING_VERSION": "1.0.1",
-                "CURRENT_PROJECT_VERSION": "67",
+                "CURRENT_PROJECT_VERSION": "68",
                 // Firebase / GoogleUtilities ship Objective-C categories
                 // (e.g. `gul_dataByGzippingData:`). Static linking strips
                 // their class selectors unless the linker keeps all Obj-C

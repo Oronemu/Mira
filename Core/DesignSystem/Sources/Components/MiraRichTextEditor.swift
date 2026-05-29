@@ -416,25 +416,13 @@ public struct MiraRichTextEditor: UIViewRepresentable {
                 // Fall through: regular (non-list) "\n" stamped with sticky.
             }
 
-            // Stamp the inserted text with the controller's sticky attrs.
-            // We bypass UIKit's `typingAttributes` because UIKit drops our
-            // custom shadow keys (familyKey/sizeKey/colorKey) from it after
-            // every insertion, so only the first typed character would
-            // otherwise carry the picked style.
-            let attrs = parent.controller.stickyTypingAttributes
-            let storage = textView.textStorage
-            parent.controller.isApplyingProgrammaticEdit = true
-            defer { parent.controller.isApplyingProgrammaticEdit = false }
-            storage.beginEditing()
-            storage.replaceCharacters(
-                in: range,
-                with: NSAttributedString(string: text, attributes: attrs)
-            )
-            storage.endEditing()
-            let newCursor = range.location + (text as NSString).length
-            textView.selectedRange = NSRange(location: newCursor, length: 0)
-            textViewDidChange(textView)
-            return false
+            // Let UIKit handle the insertion normally so that predictive
+            // text, autocomplete, and marked-text tracking stay in sync.
+            // Restore our custom shadow keys in typingAttributes right
+            // before — UIKit strips them after each edit, but the current
+            // insertion uses whatever is in typingAttributes at this moment.
+            textView.typingAttributes = parent.controller.stickyTypingAttributes
+            return true
         }
 
         public func textViewDidChange(_ textView: UITextView) {
