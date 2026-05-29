@@ -296,6 +296,7 @@ public actor CKDatabaseAdapter: CloudKitDatabase {
             (.insight, "Insight"),
             (.deleted, "Deleted"),
             (.photo, "PhotoBlob"),
+            (.userSticker, "UserStickerBlob"),
         ]
         let subscriptions: [CKSubscription] = kinds.map { kind, recordType in
             let subscriptionID = "sync.subscription.\(kind.rawValue).v1"
@@ -341,6 +342,7 @@ public actor CKDatabaseAdapter: CloudKitDatabase {
         case .insight: "Insight"
         case .deleted: "Deleted"
         case .photo: "PhotoBlob"
+        case .userSticker: "UserStickerBlob"
         }
     }
 

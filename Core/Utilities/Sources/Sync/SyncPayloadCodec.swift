@@ -76,6 +76,16 @@ public struct SyncPayloadCodec: Sendable {
         try await decode(ciphertext, expecting: .photo)
     }
 
+    // MARK: - User sticker blob
+
+    public func encode(_ blob: CustomStickerBlobSnapshot) async throws -> Data {
+        try await encode(envelopeFor: .userSticker, payload: blob)
+    }
+
+    public func decodeUserStickerBlob(_ ciphertext: Data) async throws -> CustomStickerBlobSnapshot {
+        try await decode(ciphertext, expecting: .userSticker)
+    }
+
     /// Seals raw asset bytes (e.g. JPEG data) for the companion `CKAsset`
     /// field. The envelope stays in the record's inline `ciphertext`
     /// field; this sealed buffer rides in the asset file so large photos

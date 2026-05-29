@@ -64,7 +64,8 @@ struct PhotoBlobSyncTests {
             queue: queue,
             entries: deviceAEntries,
             insights: deviceAInsights,
-            photos: deviceAPhotos
+            photos: deviceAPhotos,
+            customStickers: MockCustomStickerStoring()
         )
         await pusher.enqueueEntry(.upserted(entrySnapshot))
         await pusher.flushOnce()
@@ -84,7 +85,8 @@ struct PhotoBlobSyncTests {
             tokens: ChangeTokenStore.ephemeral(),
             entries: deviceBEntries,
             insights: deviceBInsights,
-            photos: deviceBPhotos
+            photos: deviceBPhotos,
+            customStickers: MockCustomStickerStoring()
         )
         await puller.pullOnce()
 
@@ -127,7 +129,8 @@ struct PhotoBlobSyncTests {
             tokens: ChangeTokenStore.ephemeral(),
             entries: StubEntryRepository(),
             insights: StubInsightRepository(),
-            photos: deviceBPhotos
+            photos: deviceBPhotos,
+            customStickers: MockCustomStickerStoring()
         )
         await puller.pullOnce()
 

@@ -11,4 +11,9 @@ public enum SyncRecordKind: String, Sendable, Hashable, Codable {
     /// binary payloads ride in a `CKAsset` field instead of inflating
     /// the entry record's ciphertext.
     case photo
+    /// Encrypted PNG bytes for a user-created sticker (subject lifted
+    /// from a photo). Like `photo`, the bytes ride in a `CKAsset`
+    /// field on a `UserStickerBlob` record so the entry envelope only
+    /// carries the `libraryRef`.
+    case userSticker
 }

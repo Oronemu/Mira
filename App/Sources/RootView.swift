@@ -332,6 +332,7 @@ struct RootView: View {
         .environment(\.aiProvider, UnimplementedAIProvider())
         .environment(\.embeddingProvider, UnimplementedEmbeddingProvider())
         .environment(\.photoStoring, UnimplementedPhotoStoring())
+        .environment(\.customStickerStore, UnimplementedCustomStickerStoring())
         .environment(\.subscriptionService, UnimplementedSubscriptionService())
         .environment(\.paywallPresenter, UnimplementedPaywallPresenter())
 }

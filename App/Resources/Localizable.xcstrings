@@ -12898,6 +12898,348 @@
         }
       },
       "comment": "Remote AI consent — bullet 2"
+    },
+    "Choose a photo to begin": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choose a photo to begin"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Выберите фото для начала"
+          }
+        }
+      },
+      "comment": "Sticker creator — empty preview prompt"
+    },
+    "Choose photo": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choose photo"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Выбрать фото"
+          }
+        }
+      },
+      "comment": "Sticker creator — PhotosPicker CTA"
+    },
+    "Lift a subject from your photos.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lift a subject from your photos."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Вырезайте субъект из своих фото."
+          }
+        }
+      },
+      "comment": "Sticker picker — Make-your-own button subtitle"
+    },
+    "Lift the subject from any photo and drop it onto your page.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lift the subject from any photo and drop it onto your page."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Вырежьте субъект из любого фото и добавьте на страницу."
+          }
+        }
+      },
+      "comment": "Paywall — customStickers subheadline"
+    },
+    "Make a sticker": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Make a sticker"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Создать стикер"
+          }
+        }
+      },
+      "comment": "Sticker creator sheet — title"
+    },
+    "Make your own": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Make your own"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Создать свой"
+          }
+        }
+      },
+      "comment": "Sticker picker — Pro-gated CTA"
+    },
+    "Make your own sticker": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Make your own sticker"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Создать свой стикер"
+          }
+        }
+      },
+      "comment": "Sticker picker — Pro-gated CTA accessibility label"
+    },
+    "No subject found. Pick a photo with a clear foreground.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No subject found. Pick a photo with a clear foreground."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Субъект не найден. Выберите фото с чётким передним планом."
+          }
+        }
+      },
+      "comment": "Sticker creator — Vision noSubjectDetected error"
+    },
+    "Opens the sticker creator.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Opens the sticker creator."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Открывает создание стикеров."
+          }
+        }
+      },
+      "comment": "Sticker picker — accessibility hint for Pro user"
+    },
+    "Pick a photo — we'll lift the subject and turn it into a sticker.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pick a photo — we'll lift the subject and turn it into a sticker."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Выберите фото — мы вырежем субъект и превратим в стикер."
+          }
+        }
+      },
+      "comment": "Sticker creator sheet — subtitle"
+    },
+    "Pro feature. Opens the upgrade screen.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pro feature. Opens the upgrade screen."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pro-функция. Открывает экран подписки."
+          }
+        }
+      },
+      "comment": "Sticker picker — accessibility hint for free user"
+    },
+    "Processing…": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Processing…"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Обработка…"
+          }
+        }
+      },
+      "comment": "Sticker creator — Vision in-flight label"
+    },
+    "Save sticker": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Save sticker"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Сохранить стикер"
+          }
+        }
+      },
+      "comment": "Sticker creator — save CTA"
+    },
+    "Something went wrong while cutting out the subject.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Something went wrong while cutting out the subject."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Что-то пошло не так при вырезании субъекта."
+          }
+        }
+      },
+      "comment": "Sticker creator — Vision maskingFailed error"
+    },
+    "Try another": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Try another"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Другое фото"
+          }
+        }
+      },
+      "comment": "Sticker creator — reset CTA"
+    },
+    "Turn your photos into stickers": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Turn your photos into stickers"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Превращайте фото в стикеры"
+          }
+        }
+      },
+      "comment": "Paywall — customStickers headline"
+    },
+    "We couldn't load that photo.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "We couldn't load that photo."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не удалось загрузить фото."
+          }
+        }
+      },
+      "comment": "Sticker creator — PhotosPickerItem load failure"
+    },
+    "We couldn't read that photo. Try another image.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "We couldn't read that photo. Try another image."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не удалось прочитать фото. Попробуйте другое."
+          }
+        }
+      },
+      "comment": "Sticker creator — Vision decodeFailed error"
+    },
+    "Your sticker": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your sticker"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ваш стикер"
+          }
+        }
+      },
+      "comment": "Sticker picker — user sticker accessibility label"
     }
   },
   "version": "1.0"

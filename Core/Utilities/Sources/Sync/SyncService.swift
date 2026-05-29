@@ -46,6 +46,7 @@ public actor SyncService {
 
     private let defaults: UserDefaults
     private static let photoBackfillFlag = "mira.sync.photoBlobBackfill.v1"
+    private static let customStickerBackfillFlag = "mira.sync.customStickerBlobBackfill.v1"
 
     public init(
         encryption: SyncEncryption = SyncEncryption(),
@@ -97,6 +98,7 @@ public actor SyncService {
             return
         }
         await runPhotoBackfillIfNeeded()
+        await runCustomStickerBackfillIfNeeded()
         // Push first so a fresh device's pull sees what this device
         // generated locally before the new remote state arrives.
         await components.pusher.flushOnce()
@@ -115,15 +117,26 @@ public actor SyncService {
         defaults.set(true, forKey: Self.photoBackfillFlag)
     }
 
+    /// Ships user-created stickers that existed before the sticker sync
+    /// pipeline shipped. Same one-shot gating as the photo backfill.
+    private func runCustomStickerBackfillIfNeeded() async {
+        guard let components else { return }
+        guard !defaults.bool(forKey: Self.customStickerBackfillFlag) else { return }
+        await components.pusher.backfillCustomStickerBlobs()
+        defaults.set(true, forKey: Self.customStickerBackfillFlag)
+    }
+
     /// Stops pushes, wipes the change token, rotates the encryption
     /// key, and drops anything queued. Safe to call whether or not
     /// components are wired.
     public func reset() async {
         setStatus(.idle)
-        // Clear the backfill flag so a later re-enable re-uploads every
-        // photo under a freshly rotated key — skipping this would leave
-        // blobs in the cloud that the new key can't decrypt.
+        // Clear the backfill flags so a later re-enable re-uploads every
+        // photo / user sticker under a freshly rotated key — skipping
+        // this would leave blobs in the cloud that the new key can't
+        // decrypt.
         defaults.removeObject(forKey: Self.photoBackfillFlag)
+        defaults.removeObject(forKey: Self.customStickerBackfillFlag)
         guard let components else {
             try? await encryption.rotateKey()
             return

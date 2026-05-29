@@ -16,6 +16,7 @@ struct ServiceContainer {
     let aiService: AIService
     let embeddingProvider: any EmbeddingProvider
     let photoStoring: any PhotoStoring
+    let customStickerStore: any CustomStickerStoring
     let analyticsService: any AnalyticsService
     let crashReporter: any CrashReporter
     let pushNotificationService: any PushNotificationService
@@ -49,10 +50,12 @@ struct ServiceContainer {
             let entryRepository = SwiftDataEntryRepository(modelContainer: modelContainer)
             let insightRepository = SwiftDataInsightRepository(modelContainer: modelContainer)
             let photoStoring: any PhotoStoring = try PhotoStorageService()
+            let customStickerStore: any CustomStickerStoring = try CustomStickerStorageService()
             let syncService = try makeSyncService(
                 entryRepository: entryRepository,
                 insightRepository: insightRepository,
-                photoStoring: photoStoring
+                photoStoring: photoStoring,
+                customStickerStore: customStickerStore
             )
             return ServiceContainer(
                 entryRepository: entryRepository,
@@ -61,6 +64,7 @@ struct ServiceContainer {
                 aiService: aiService,
                 embeddingProvider: NLEmbeddingProvider() ?? UnimplementedEmbeddingProvider(),
                 photoStoring: photoStoring,
+                customStickerStore: customStickerStore,
                 analyticsService: FirebaseAnalyticsService(),
                 crashReporter: FirebaseCrashReporter(),
                 pushNotificationService: FirebasePushNotificationService(),
@@ -94,7 +98,8 @@ struct ServiceContainer {
     private static func makeSyncService(
         entryRepository: any EntryRepository,
         insightRepository: any InsightRepository,
-        photoStoring: any PhotoStoring
+        photoStoring: any PhotoStoring,
+        customStickerStore: any CustomStickerStoring
     ) throws -> SyncService {
         guard let groupURL = FileManager.default.containerURL(
             forSecurityApplicationGroupIdentifier: AppGroup.identifier
@@ -116,7 +121,8 @@ struct ServiceContainer {
             queue: queue,
             entries: entryRepository,
             insights: insightRepository,
-            photos: photoStoring
+            photos: photoStoring,
+            customStickers: customStickerStore
         )
         let puller = CloudKitPuller(
             database: database,
@@ -124,7 +130,8 @@ struct ServiceContainer {
             tokens: tokens,
             entries: entryRepository,
             insights: insightRepository,
-            photos: photoStoring
+            photos: photoStoring,
+            customStickers: customStickerStore
         )
         return SyncService(
             encryption: encryption,

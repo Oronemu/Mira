@@ -15,6 +15,7 @@ public actor CloudKitPusher {
     private let entries: any EntryRepository
     private let insights: any InsightRepository
     private let photos: any PhotoStoring
+    private let customStickers: any CustomStickerStoring
     private let batchLimit: Int
     private let debounce: Duration
     private let clock: any Clock<Duration>
@@ -28,6 +29,7 @@ public actor CloudKitPusher {
         entries: any EntryRepository,
         insights: any InsightRepository,
         photos: any PhotoStoring,
+        customStickers: any CustomStickerStoring,
         batchLimit: Int = 50,
         debounce: Duration = .seconds(2),
         clock: any Clock<Duration> = ContinuousClock()
@@ -38,6 +40,7 @@ public actor CloudKitPusher {
         self.entries = entries
         self.insights = insights
         self.photos = photos
+        self.customStickers = customStickers
         self.batchLimit = batchLimit
         self.debounce = debounce
         self.clock = clock
@@ -157,6 +160,7 @@ public actor CloudKitPusher {
         await withTaskGroup(of: Void.self) { group in
             group.addTask { [self] in await observeEntries() }
             group.addTask { [self] in await observeInsights() }
+            group.addTask { [self] in await observeCustomStickers() }
             group.addTask { [self] in await flushLoop() }
         }
     }
@@ -172,6 +176,27 @@ public actor CloudKitPusher {
         for await change in await insights.changes() {
             if Task.isCancelled { return }
             await enqueueInsight(change)
+        }
+    }
+
+    private nonisolated func observeCustomStickers() async {
+        for await change in customStickers.changes() {
+            if Task.isCancelled { return }
+            await enqueueCustomSticker(change)
+        }
+    }
+
+    public func enqueueCustomSticker(_ change: CustomStickerChange) async {
+        switch change {
+        case .upserted(let asset):
+            try? await queue.enqueue(
+                .init(id: asset.id, kind: .userSticker, operation: .upsert, updatedAt: asset.createdAt)
+            )
+            MiraLog.logger(.general).info("Sync: enqueued user sticker \(asset.id.uuidString, privacy: .public)")
+        case .deleted(let id):
+            try? await queue.enqueue(
+                .init(id: id, kind: .userSticker, operation: .delete, updatedAt: .now)
+            )
         }
     }
 
@@ -209,6 +234,8 @@ public actor CloudKitPusher {
                 )
             case .photo:
                 return try await resolvePhotoUpsert(item: item)
+            case .userSticker:
+                return try await resolveCustomStickerUpsert(item: item)
             case .deleted:
                 return nil
             }
@@ -249,6 +276,48 @@ public actor CloudKitPusher {
     /// collide with entry or insight records in the same zone.
     public static func photoRecordID(for id: UUID) -> String {
         "photo-\(id.uuidString)"
+    }
+
+    private func resolveCustomStickerUpsert(item: PendingPushQueue.Item) async throws -> SyncCloudRecord? {
+        let relativePath = Self.customStickerRelativePath(for: item.id)
+        guard await customStickers.exists(id: item.id) else {
+            MiraLog.logger(.general).error("Sync: user sticker missing on disk for \(item.id.uuidString, privacy: .public) — skipping push")
+            return nil
+        }
+        let bytes = try await customStickers.read(relativePath: relativePath)
+        let blob = CustomStickerBlobSnapshot(id: item.id, createdAt: item.updatedAt)
+        let envelope = try await codec.encode(blob)
+        let assetCiphertext = try await codec.sealAsset(bytes)
+        return SyncCloudRecord(
+            id: Self.customStickerRecordID(for: item.id),
+            kind: .userSticker,
+            ciphertext: envelope,
+            assetCiphertext: assetCiphertext,
+            updatedAt: item.updatedAt
+        )
+    }
+
+    /// One-time backfill for installs that predate the user-sticker sync
+    /// pipeline. Same shape as `backfillPhotoBlobs()` — enumerates the
+    /// local store and enqueues an upsert for each existing sticker.
+    public func backfillCustomStickerBlobs() async {
+        let assets = (try? await customStickers.list()) ?? []
+        for asset in assets {
+            try? await queue.enqueue(
+                .init(id: asset.id, kind: .userSticker, operation: .upsert, updatedAt: asset.createdAt)
+            )
+        }
+    }
+
+    /// Canonical disk location for a user sticker id. Must match
+    /// `CustomStickerStorageService.save(_:id:createdAt:)`.
+    private static func customStickerRelativePath(for id: UUID) -> String {
+        "Stickers/\(id.uuidString).png"
+    }
+
+    /// Namespaced CloudKit record name for a user-sticker blob.
+    public static func customStickerRecordID(for id: UUID) -> String {
+        "sticker-\(id.uuidString)"
     }
 
     private func resolveTombstone(item: PendingPushQueue.Item) async -> SyncCloudRecord? {

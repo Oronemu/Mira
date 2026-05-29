@@ -55,6 +55,8 @@ public enum PaywallContext: Sendable, Hashable, Identifiable {
             String(localized: "Build habits with your journal")
         case .feature(.importers):
             String(localized: "Bring everything to Mira")
+        case .feature(.customStickers):
+            String(localized: "Turn your photos into stickers")
         }
     }
 
@@ -81,6 +83,8 @@ public enum PaywallContext: Sendable, Hashable, Identifiable {
             String(localized: "Track tag-driven habits and goals alongside your journal.")
         case .feature(.importers):
             String(localized: "Import from Day One, Apple Notes, and Markdown files.")
+        case .feature(.customStickers):
+            String(localized: "Lift the subject from any photo and drop it onto your page.")
         }
     }
 }

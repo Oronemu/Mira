@@ -60,6 +60,7 @@ struct MiraApp: App {
                         .environment(\.aiService, container.aiService)
                         .environment(\.embeddingProvider, container.embeddingProvider)
                         .environment(\.photoStoring, container.photoStoring)
+                        .environment(\.customStickerStore, container.customStickerStore)
                         .environment(\.analyticsService, container.analyticsService)
                         .environment(\.crashReporter, container.crashReporter)
                         .environment(\.pushNotificationService, container.pushNotificationService)

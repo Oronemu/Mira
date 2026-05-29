@@ -38,6 +38,10 @@ public enum ProEntitlement: String, Sendable, Hashable, CaseIterable, Codable {
     /// Day One / Apple Notes / Markdown importers.
     case importers
 
+    /// User-created stickers lifted from photos with on-device background
+    /// removal. The bundled drawstyle pack remains free.
+    case customStickers
+
     /// Stable snake_case identifier for analytics. The enum's `rawValue`
     /// is camelCase to match Swift idioms; this version is for event
     /// parameters where the rest of the project uses snake_case
@@ -53,6 +57,7 @@ public enum ProEntitlement: String, Sendable, Hashable, CaseIterable, Codable {
         case .smartFilters:       return "smart_filters"
         case .goalsAndHabits:     return "goals_and_habits"
         case .importers:          return "importers"
+        case .customStickers:     return "custom_stickers"
         }
     }
 }

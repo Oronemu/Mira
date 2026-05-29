@@ -19,6 +19,7 @@ public actor CloudKitPuller {
     private let entries: any EntryRepository
     private let insights: any InsightRepository
     private let photos: any PhotoStoring
+    private let customStickers: any CustomStickerStoring
 
     public init(
         database: any CloudKitDatabase,
@@ -26,7 +27,8 @@ public actor CloudKitPuller {
         tokens: ChangeTokenStore,
         entries: any EntryRepository,
         insights: any InsightRepository,
-        photos: any PhotoStoring
+        photos: any PhotoStoring,
+        customStickers: any CustomStickerStoring
     ) {
         self.database = database
         self.codec = codec
@@ -34,6 +36,7 @@ public actor CloudKitPuller {
         self.entries = entries
         self.insights = insights
         self.photos = photos
+        self.customStickers = customStickers
     }
 
     /// Drains all pending CloudKit changes in one call. Loops until the
@@ -85,6 +88,8 @@ public actor CloudKitPuller {
                 await applyTombstone(record)
             case .photo:
                 await applyPhotoBlob(record)
+            case .userSticker:
+                await applyCustomStickerBlob(record)
             }
         }
 
@@ -94,6 +99,15 @@ public actor CloudKitPuller {
         // companion "-tombstone" cleanup too; the tombstone payload is
         // what drives the local delete.
         for id in batch.deletedRecordIDs where !id.hasSuffix("-tombstone") {
+            // User-sticker records use a "sticker-<uuid>" record name so
+            // they can't collide with entry/insight UUIDs. A bare delete
+            // on one of these means the user removed it on another
+            // device — propagate locally.
+            if id.hasPrefix("sticker-"),
+               let uuid = UUID(uuidString: String(id.dropFirst("sticker-".count))) {
+                try? await customStickers.delete(id: uuid)
+                continue
+            }
             if let uuid = UUID(uuidString: id) {
                 try? await entries.delete(id: uuid)
                 try? await insights.delete(id: uuid)
@@ -102,7 +116,13 @@ public actor CloudKitPuller {
     }
 
     private nonisolated func photoPriority(_ kind: SyncRecordKind) -> Int {
-        kind == .photo ? 0 : 1
+        // Both photo blobs and user-sticker blobs are assets the entry
+        // references — land them first so the entry's overlay has bytes
+        // to render against the moment it arrives.
+        switch kind {
+        case .photo, .userSticker: 0
+        default: 1
+        }
     }
 
     private func applyEntryUpsert(_ record: SyncCloudRecord) async {
@@ -154,6 +174,23 @@ public actor CloudKitPuller {
         }
     }
 
+    private func applyCustomStickerBlob(_ record: SyncCloudRecord) async {
+        do {
+            let blob = try await codec.decodeUserStickerBlob(record.ciphertext)
+            if await customStickers.exists(id: blob.id) {
+                return
+            }
+            guard let assetCiphertext = record.assetCiphertext else {
+                MiraLog.logger(.general).error("User sticker blob \(record.id) had no asset payload")
+                return
+            }
+            let bytes = try await codec.openAsset(assetCiphertext)
+            _ = try await customStickers.save(bytes, id: blob.id, createdAt: record.updatedAt)
+        } catch {
+            MiraLog.logger(.general).error("Failed to apply user sticker blob \(record.id): \(error.localizedDescription)")
+        }
+    }
+
     private func applyTombstone(_ record: SyncCloudRecord) async {
         do {
             let tombstone = try await codec.decodeTombstone(record.ciphertext)
@@ -172,10 +209,12 @@ public actor CloudKitPuller {
                     return
                 }
                 try await insights.delete(id: tombstone.id)
-            case .deleted, .photo:
-                // Photo blobs have no tombstones in the current pipeline —
-                // orphaned blobs in the user's private CK zone are cheap
-                // and will be garbage-collected in a later pass.
+            case .deleted, .photo, .userSticker:
+                // Asset blobs (photos, user stickers) don't get tombstones
+                // in the current pipeline — orphaned blobs in the user's
+                // private CK zone are cheap and a later pass can sweep
+                // them. Live deletes of user stickers ride as normal
+                // record-delete operations, applied via batch.deletedRecordIDs.
                 break
             }
         } catch {

@@ -1,10 +1,17 @@
 import SwiftUI
+import CoreKit
+import UIKit
 
-/// Renders a sticker by its `libraryRef`. Falls back to a placeholder when
-/// the ref isn't recognised (e.g. an entry from a future pack version on an
-/// older binary). Renders the artwork in its original colours — the bundled
-/// pack is full-colour PNG, not single-tone vector glyphs, so we keep the
-/// designer's palette intact.
+/// Renders a sticker by its `libraryRef`. Three resolution paths,
+/// dispatched off the ref's namespace prefix:
+///
+/// - `"user:<uuid>"`: a user-created sticker. Bytes come from the
+///   environment `CustomStickerStoring` via `CustomStickerByteCache`,
+///   so re-mounts don't hit disk twice. Renders as transparent PNG.
+/// - `"mira:<name>"`: bundled artwork — looked up in `StickerLibrary`
+///   and drawn from `Stickers.xcassets`.
+/// - anything else: forward-compat placeholder so a future ref shape
+///   doesn't crash an older build.
 public struct StickerImage: View {
     /// Kept for source-compatibility with the previous template-tinting
     /// API; ignored now that the bundled artwork is full-colour PNG.
@@ -13,7 +20,11 @@ public struct StickerImage: View {
         case ink
     }
 
+    @Environment(\.customStickerStore) private var customStickerStore
+
     private let ref: String
+
+    @State private var userBytes: Data?
 
     public init(libraryRef: String, tone: Tone = .ink) {
         self.ref = libraryRef
@@ -21,18 +32,40 @@ public struct StickerImage: View {
     }
 
     public var body: some View {
-        if let entry = StickerLibrary.entry(for: ref) {
+        if let id = CustomStickerAsset.id(fromLibraryRef: ref) {
+            userSticker(id: id)
+        } else if let entry = StickerLibrary.entry(for: ref) {
             Image(entry.assetName, bundle: .module)
                 .renderingMode(.original)
                 .resizable()
                 .aspectRatio(contentMode: .fit)
         } else {
-            // Forward-compat: unknown ref renders as a soft placeholder
-            // so a future pack reference doesn't crash an older build.
             Image(systemName: "questionmark.square.dashed")
                 .resizable()
                 .aspectRatio(contentMode: .fit)
                 .foregroundStyle(MiraPalette.primaryText.opacity(0.45))
+        }
+    }
+
+    @ViewBuilder
+    private func userSticker(id: UUID) -> some View {
+        if let userBytes, let ui = UIImage(data: userBytes) {
+            Image(uiImage: ui)
+                .resizable()
+                .aspectRatio(contentMode: .fit)
+        } else {
+            // Placeholder during the first load. Same footprint as the
+            // bundled images so layout doesn't jump when bytes arrive.
+            Color.clear
+                .aspectRatio(1, contentMode: .fit)
+                .task(id: id) {
+                    let relativePath = "Stickers/\(id.uuidString).png"
+                    userBytes = await CustomStickerByteCache.shared.data(
+                        for: id,
+                        relativePath: relativePath,
+                        loader: customStickerStore
+                    )
+                }
         }
     }
 }
