@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "drawstyle-feather.png",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}

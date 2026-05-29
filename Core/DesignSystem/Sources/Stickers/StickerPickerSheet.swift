@@ -23,9 +23,7 @@ public struct StickerPickerSheet: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 24) {
                 header
-                ForEach(StickerLibrary.packs) { pack in
-                    section(pack: pack)
-                }
+                grid
                 Color.clear.frame(height: 24)
             }
             .padding(.horizontal, 20)
@@ -51,18 +49,13 @@ public struct StickerPickerSheet: View {
         .padding(.top, 18)
     }
 
-    private func section(pack: StickerLibrary.Pack) -> some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text(pack.title)
-                .eyebrowStyle()
-
-            LazyVGrid(
-                columns: Array(repeating: GridItem(.flexible(), spacing: 8), count: 5),
-                spacing: 8
-            ) {
-                ForEach(pack.entries) { entry in
-                    cell(entry: entry)
-                }
+    private var grid: some View {
+        LazyVGrid(
+            columns: Array(repeating: GridItem(.flexible(), spacing: 8), count: 5),
+            spacing: 8
+        ) {
+            ForEach(StickerLibrary.pickerEntries) { entry in
+                cell(entry: entry)
             }
         }
     }

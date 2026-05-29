@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "drawstyle-brain.png",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}

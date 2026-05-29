@@ -40,15 +40,9 @@ public struct StickerImage: View {
 #Preview {
     ScrollView {
         LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 5), spacing: 16) {
-            ForEach(StickerLibrary.packs) { pack in
-                Section {
-                    ForEach(pack.entries) { entry in
-                        StickerImage(libraryRef: entry.id)
-                            .frame(width: 48, height: 48)
-                    }
-                } header: {
-                    Text(pack.title).font(.caption)
-                }
+            ForEach(StickerLibrary.pickerEntries) { entry in
+                StickerImage(libraryRef: entry.id)
+                    .frame(width: 48, height: 48)
             }
         }
         .padding()

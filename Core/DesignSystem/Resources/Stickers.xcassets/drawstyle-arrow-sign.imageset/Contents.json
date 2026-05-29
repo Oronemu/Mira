@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "drawstyle-arrow-sign.png",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}
