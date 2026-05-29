@@ -19,7 +19,7 @@ public enum AIError: LocalizedError, Sendable {
         case .rateLimited:
             String(localized: "AI provider rate limit reached. Try again later.")
         case .invalidAPIKey:
-            String(localized: "API key is invalid. Check it in Settings.")
+            String(localized: "Couldn't authenticate with the AI provider. If you use your own API key, check it in Settings.")
         case .requestFailed(let message):
             message
         case .cancelled:

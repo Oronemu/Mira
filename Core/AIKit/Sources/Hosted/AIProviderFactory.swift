@@ -49,7 +49,16 @@ public enum AIProviderFactory {
         guard consentStore.load().hasGiven else {
             return fallback
         }
-        guard await subscriptionService.latestSignedTransaction() != nil else {
+        // Pro access can come from a verified StoreKit JWS *or* a custom
+        // redeem grant (which has no JWS, only a device-bound id). Both
+        // authenticate the hosted proxy — `HostedAIProvider` prefers the
+        // JWS and falls back to `redeemUserId` internally — so accept
+        // either here. Checking only the JWS silently routed redeem-code
+        // Pro users back to the BYOK/on-device fallback, which surfaced a
+        // misleading "invalid API key" error.
+        let hasJWS = await subscriptionService.latestSignedTransaction() != nil
+        let hasRedeem = await subscriptionService.redeemUserID != nil
+        guard hasJWS || hasRedeem else {
             return fallback
         }
         return HostedAIProvider(

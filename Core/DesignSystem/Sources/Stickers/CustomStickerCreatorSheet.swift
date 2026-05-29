@@ -23,6 +23,7 @@ public struct CustomStickerCreatorSheet: View {
     @State private var stickerBytes: Data?
     @State private var phase: Phase = .pickingPhoto
     @State private var errorMessage: String?
+    @State private var showPhotoPicker = false
 
     public init(onSaved: @escaping SaveHandler) {
         self.onSaved = onSaved
@@ -58,7 +59,13 @@ public struct CustomStickerCreatorSheet: View {
             .scrollIndicators(.hidden)
         }
         .frame(maxWidth: .infinity)
-        .miraSheet([.medium, .large])
+        .miraSheet([.medium])
+        .photosPicker(
+            isPresented: $showPhotoPicker,
+            selection: $pickerItem,
+            matching: .images,
+            photoLibrary: .shared()
+        )
         .onChange(of: pickerItem) { _, item in
             guard let item else { return }
             Task { await ingest(item) }
@@ -68,26 +75,36 @@ public struct CustomStickerCreatorSheet: View {
     // MARK: - Subviews
 
     private var preview: some View {
-        ZStack {
-            RoundedRectangle(cornerRadius: 24, style: .continuous)
-                .fill(MiraPalette.secondaryBackground.opacity(0.6))
-                .frame(height: 280)
-
+        // The whole tile is the affordance when there's nothing picked
+        // yet — tapping anywhere on the dashed area opens the photo
+        // library through the host-attached `.photosPicker` modifier.
+        // While processing or ready, the tile is non-interactive.
+        Group {
             switch phase {
             case .pickingPhoto:
-                emptyState
+                Button {
+                    showPhotoPicker = true
+                } label: {
+                    emptyState.previewTile()
+                }
+                .buttonStyle(.plain)
             case .processing:
                 ProgressView()
                     .controlSize(.large)
+                    .previewTile()
             case .ready, .saving:
-                if let stickerBytes, let ui = UIImage(data: stickerBytes) {
-                    Image(uiImage: ui)
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .padding(24)
-                        .frame(maxHeight: 280)
-                }
+                stickerPreview.previewTile()
             }
+        }
+    }
+
+    @ViewBuilder
+    private var stickerPreview: some View {
+        if let stickerBytes, let ui = UIImage(data: stickerBytes) {
+            Image(uiImage: ui)
+                .resizable()
+                .aspectRatio(contentMode: .fit)
+                .padding(24)
         }
     }
 
@@ -102,68 +119,57 @@ public struct CustomStickerCreatorSheet: View {
         }
     }
 
-    @ViewBuilder
     private var actions: some View {
-        switch phase {
-        case .pickingPhoto, .processing:
-            PhotosPicker(
-                selection: $pickerItem,
-                matching: .images,
-                photoLibrary: .shared()
-            ) {
-                Text(phase == .processing ? "Processing…" : "Choose photo")
-                    .font(MiraTypography.body)
-                    .foregroundStyle(MiraPalette.primaryText)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 14)
-                    .background(
-                        RoundedRectangle(cornerRadius: 18, style: .continuous)
-                            .fill(MiraPalette.secondaryBackground)
-                    )
-            }
-            .disabled(phase == .processing)
-        case .ready, .saving:
-            HStack(spacing: 12) {
-                Button {
-                    reset()
-                } label: {
-                    Text("Try another")
-                        .font(MiraTypography.body)
-                        .foregroundStyle(MiraPalette.primaryText)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 14)
-                        .background(
-                            RoundedRectangle(cornerRadius: 18, style: .continuous)
-                                .fill(MiraPalette.secondaryBackground.opacity(0.7))
-                        )
-                }
-                .buttonStyle(.plain)
-                .disabled(phase == .saving)
+        // Both buttons render in every phase so the action bar height
+        // stays stable. Both gate on having a finished sticker — Try
+        // another is meaningful only after the first photo turned into
+        // one (before that, the empty tile is the affordance). Save is
+        // styled the same neutral grey in every state; the disabled
+        // affordance is the dimmed label, not a colour swap.
+        let canSave = stickerBytes != nil && phase != .saving
+        let canSwap = stickerBytes != nil && phase != .saving
 
-                Button {
-                    Task { await save() }
-                } label: {
-                    Group {
-                        if phase == .saving {
-                            ProgressView()
-                                .controlSize(.regular)
-                                .tint(MiraPalette.background)
-                        } else {
-                            Text("Save sticker")
-                                .font(MiraTypography.body)
-                                .foregroundStyle(MiraPalette.background)
-                        }
-                    }
+        return HStack(spacing: 12) {
+            Button {
+                reset()
+                showPhotoPicker = true
+            } label: {
+                Text("Try another")
+                    .font(MiraTypography.body)
+                    .foregroundStyle(MiraPalette.primaryText.opacity(canSwap ? 1 : 0.4))
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 14)
                     .background(
                         RoundedRectangle(cornerRadius: 18, style: .continuous)
-                            .fill(MiraPalette.primaryText)
+                            .fill(MiraPalette.secondaryBackground.opacity(0.7))
                     )
-                }
-                .buttonStyle(.plain)
-                .disabled(phase == .saving)
             }
+            .buttonStyle(.plain)
+            .disabled(!canSwap)
+
+            Button {
+                Task { await save() }
+            } label: {
+                Group {
+                    if phase == .saving {
+                        ProgressView()
+                            .controlSize(.regular)
+                            .tint(MiraPalette.primaryText)
+                    } else {
+                        Text("Save sticker")
+                            .font(MiraTypography.body)
+                            .foregroundStyle(MiraPalette.primaryText.opacity(canSave ? 1 : 0.4))
+                    }
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 14)
+                .background(
+                    RoundedRectangle(cornerRadius: 18, style: .continuous)
+                        .fill(MiraPalette.secondaryBackground.opacity(0.7))
+                )
+            }
+            .buttonStyle(.plain)
+            .disabled(!canSave)
         }
     }
 
@@ -209,6 +215,24 @@ public struct CustomStickerCreatorSheet: View {
             phase = .ready
         }
     }
+}
+
+// MARK: - Preview tile chrome
+
+private struct PreviewTileModifier: ViewModifier {
+    func body(content: Content) -> some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: 24, style: .continuous)
+                .fill(MiraPalette.secondaryBackground.opacity(0.6))
+            content
+        }
+        .frame(height: 220)
+        .contentShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+    }
+}
+
+private extension View {
+    func previewTile() -> some View { modifier(PreviewTileModifier()) }
 }
 
 #Preview("CustomStickerCreatorSheet") {

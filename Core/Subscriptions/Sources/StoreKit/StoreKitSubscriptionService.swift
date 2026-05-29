@@ -197,12 +197,98 @@ public actor StoreKitSubscriptionService: SubscriptionService {
     }
 
     public func refresh() async {
-        var resolved = await currentEntitlement()
-        if !resolved.isPro, let code = try? await keychain.string(for: Self.redeemCodeKey),
-           await redeemUserID != nil {
-            resolved = .pro(.init(plan: .yearly, renewalDate: nil, isInTrial: false, source: .redeemCode(code)))
+        let storeKit = await currentEntitlement()
+        if storeKit.isPro {
+            publish(storeKit)
+            return
         }
-        publish(resolved)
+
+        // StoreKit has no entitlement. Fall back to a custom redeem grant
+        // — but re-validate it against the backend instead of trusting
+        // the local Keychain blindly. Keychain survives app reinstall, so
+        // a self-grant from its mere presence would make a revoked or
+        // expired grant impossible to turn off. We treat the server as
+        // the source of truth and clear the Keychain when it disagrees.
+        guard let code = try? await keychain.string(for: Self.redeemCodeKey),
+              let userID = await redeemUserID else {
+            publish(storeKit) // .free or .unknown
+            return
+        }
+
+        switch await validateRedeem(userID: userID) {
+        case .active(let status):
+            publish(status)
+        case .revoked:
+            try? await clearRedeemGrant()
+            publish(storeKit)
+        case .indeterminate:
+            // Transient network/backend failure — keep the last-known
+            // grant so legitimate offline users aren't locked out. The
+            // next online refresh re-checks and revokes if needed.
+            publish(.pro(.init(plan: .yearly, renewalDate: nil, isInTrial: false, source: .redeemCode(code))))
+        }
+    }
+
+    private enum RedeemValidation {
+        case active(CoreKit.SubscriptionStatus)
+        case revoked
+        case indeterminate
+    }
+
+    /// Asks the backend whether a stored redeem grant is still valid.
+    /// `.revoked` means the server authoritatively downgraded the user
+    /// (unknown id, deleted KV entry, or past `renewalDate`); the caller
+    /// should purge the local grant. `.indeterminate` means we couldn't
+    /// reach a verdict (network/backend error) and should preserve state.
+    private func validateRedeem(userID: String) async -> RedeemValidation {
+        let url = MiraBackendURL.resolve().appendingPathComponent("v1/entitlements/redeem")
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        do {
+            request.httpBody = try JSONSerialization.data(withJSONObject: ["redeemUserId": userID])
+        } catch {
+            return .indeterminate
+        }
+
+        let data: Data
+        let response: URLResponse
+        do {
+            (data, response) = try await URLSession.shared.data(for: request)
+        } catch {
+            return .indeterminate
+        }
+        guard let http = response as? HTTPURLResponse else { return .indeterminate }
+        guard http.statusCode == 200 else {
+            // 4xx here means a malformed request we won't recover from by
+            // retrying, but it isn't a clean "free" verdict either — leave
+            // the grant alone rather than risk locking out a paid user on
+            // a server bug. Only an explicit `isPro: false` revokes.
+            return .indeterminate
+        }
+        guard let dto = try? JSONDecoder().decode(EntitlementCheckDTO.self, from: data) else {
+            return .indeterminate
+        }
+        guard dto.isPro else { return .revoked }
+
+        let plan: SubscriptionPlan = dto.plan == "monthly" ? .monthly : .yearly
+        let renewalDate = dto.renewalDate.flatMap { Self.iso8601.date(from: $0) }
+        let code = (try? await keychain.string(for: Self.redeemCodeKey)) ?? ""
+        return .active(.pro(.init(
+            plan: plan,
+            renewalDate: renewalDate,
+            isInTrial: dto.isInTrial ?? false,
+            source: .redeemCode(code)
+        )))
+    }
+
+    /// Purges the device-bound redeem credentials. Called when the
+    /// backend revokes a grant so the next launch starts clean instead of
+    /// resurrecting Pro from a stale Keychain item (which survives
+    /// reinstall).
+    private func clearRedeemGrant() async throws {
+        try await keychain.remove(Self.redeemCodeKey)
+        try await keychain.remove(Self.redeemUserIDKey)
     }
 
     public func latestSignedTransaction() async -> String? {
@@ -285,6 +371,16 @@ public actor StoreKitSubscriptionService: SubscriptionService {
         let plan: String
         let renewalDate: String?
         let isInTrial: Bool
+    }
+
+    /// Response of `POST /v1/entitlements/redeem`. Unlike the redeem DTO
+    /// this can describe a downgraded (`isPro: false`) grant, so `plan`,
+    /// `renewalDate` and `isInTrial` are all optional.
+    private struct EntitlementCheckDTO: Decodable, Sendable {
+        let isPro: Bool
+        let plan: String?
+        let renewalDate: String?
+        let isInTrial: Bool?
     }
 
     private struct UsageWireDTO: Decodable, Sendable {
