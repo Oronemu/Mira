@@ -48,17 +48,20 @@ public actor AIService: AIProvider {
     public func stream(_ request: AIRequest) async throws -> AsyncThrowingStream<AIResponseChunk, Error> {
         if await primary.isAvailable {
             do {
-                return try await primary.stream(request)
+                let upstream = try await primary.stream(request)
+                return await primary.requiresStrictPrompts ? OutputGuard.wrap(upstream) : upstream
             } catch AIError.cancelled {
                 throw AIError.cancelled
             } catch {
                 // Primary failed — try fallback if it is a different provider.
                 guard await fallback.isAvailable else { throw error }
-                return try await fallback.stream(request)
+                let upstream = try await fallback.stream(request)
+                return await fallback.requiresStrictPrompts ? OutputGuard.wrap(upstream) : upstream
             }
         }
         guard await fallback.isAvailable else { throw AIError.providerUnavailable }
-        return try await fallback.stream(request)
+        let upstream = try await fallback.stream(request)
+        return await fallback.requiresStrictPrompts ? OutputGuard.wrap(upstream) : upstream
     }
 
     private static func providers(

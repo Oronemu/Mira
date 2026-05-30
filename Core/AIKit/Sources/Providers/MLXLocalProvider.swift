@@ -24,6 +24,10 @@ public actor MLXLocalProvider: AIProvider {
         }
     }
 
+    public var requiresStrictPrompts: Bool {
+        get async { true }
+    }
+
     public func stream(_ request: AIRequest) async throws -> AsyncThrowingStream<AIResponseChunk, Error> {
         let modelID = manager.currentModelID
         guard let model = await manager.resolveModel(id: modelID) else {
