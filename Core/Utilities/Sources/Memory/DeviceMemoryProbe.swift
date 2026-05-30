@@ -27,6 +27,15 @@ public enum DeviceMemoryProbe {
         Int64(Double(weightsBytes) * 1.2)
     }
 
+    /// Free allocation headroom (in bytes) we want available when the model
+    /// is ALREADY resident in memory. The weights are already allocated, so
+    /// a follow-up request only needs room for the growing KV cache and
+    /// activation buffers of this single turn — not another copy of the
+    /// weights. Checking the full `requiredBytesForModel` here would
+    /// double-count the resident weights and reject perfectly valid
+    /// follow-up turns (the available budget shrinks once the model loads).
+    public static let loadedModelHeadroomBytes: Int64 = 512 * 1024 * 1024
+
     public enum Feasibility: Sendable, Equatable {
         case ok
         case insufficientRAM(deviceGB: Double, requiredGB: Int)
@@ -56,6 +65,22 @@ public enum DeviceMemoryProbe {
             let availGB = Double(available) / 1_073_741_824.0
             let requiredGB = Double(required) / 1_073_741_824.0
             log.warning("Process budget \(availGB, format: .fixed(precision: 2), privacy: .public) GB < required \(requiredGB, format: .fixed(precision: 2), privacy: .public) GB")
+            return .insufficientBudget(availableGB: availGB, requiredGB: requiredGB)
+        }
+        return .ok
+    }
+
+    /// Evaluates whether there is enough per-process budget to run one more
+    /// request against a model that is ALREADY loaded. Skips the physical-RAM
+    /// and full-weights checks (the model proved it fits when it loaded) and
+    /// only verifies a small headroom for this turn's KV cache / buffers.
+    public static func feasibilityForLoadedModel() -> Feasibility {
+        let available = availableBytes
+        let required = loadedModelHeadroomBytes
+        if available > 0 && Int64(available) < required {
+            let availGB = Double(available) / 1_073_741_824.0
+            let requiredGB = Double(required) / 1_073_741_824.0
+            log.warning("Loaded-model budget \(availGB, format: .fixed(precision: 2), privacy: .public) GB < headroom \(requiredGB, format: .fixed(precision: 2), privacy: .public) GB")
             return .insufficientBudget(availableGB: availGB, requiredGB: requiredGB)
         }
         return .ok

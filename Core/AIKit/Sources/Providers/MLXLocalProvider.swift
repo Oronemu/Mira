@@ -37,7 +37,7 @@ public actor MLXLocalProvider: AIProvider {
             throw AIError.providerUnavailable
         }
 
-        try Self.preflightMemory(for: model)
+        try preflightMemory(for: model)
 
         let container = try await ensureLoaded(model: model)
         let chat = Self.toChatMessages(request.messages)
@@ -113,11 +113,19 @@ public actor MLXLocalProvider: AIProvider {
     /// the device physically can't host the model or the per-process
     /// budget is already too small. Called before we touch MLX/Metal so
     /// users see a readable error instead of a jetsam-induced crash.
-    private static func preflightMemory(for model: LocalModel) throws {
-        switch DeviceMemoryProbe.feasibility(
-            requiredRAMGB: model.minimumRAMGB,
-            weightsBytes: model.sizeBytes
-        ) {
+    ///
+    /// When the model is already resident, we only check headroom for this
+    /// turn's KV cache instead of the full weights — otherwise the resident
+    /// weights get double-counted and valid follow-up turns are rejected.
+    private func preflightMemory(for model: LocalModel) throws {
+        let alreadyLoaded = loadedContainer != nil && loadedModelID == model.id
+        let feasibility = alreadyLoaded
+            ? DeviceMemoryProbe.feasibilityForLoadedModel()
+            : DeviceMemoryProbe.feasibility(
+                requiredRAMGB: model.minimumRAMGB,
+                weightsBytes: model.sizeBytes
+            )
+        switch feasibility {
         case .ok:
             return
         case .insufficientRAM(let deviceGB, let requiredGB):
