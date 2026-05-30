@@ -85,8 +85,7 @@ struct StickerInstanceView: View {
     }
 
     var body: some View {
-        transformedSticker
-            .contextMenu { if interactive { contextMenuItems } }
+        stickerWithMenu
             .accessibilityElement(children: .ignore)
             .accessibilityLabel(accessibilityLabel)
             .accessibilityAddTraits(isSelected ? .isSelected : [])
@@ -103,6 +102,76 @@ struct StickerInstanceView: View {
             // transform — animating live transforms re-introduces the
             // rubber-band jitter on every gesture event.
             .animation(.spring(response: 0.32, dampingFraction: 0.85), value: isSelected)
+    }
+
+    /// Visible side length at the committed scale. `scaleEffect` makes the
+    /// sticker *look* this big but never grows its layout bounds (those stay
+    /// `baseSize`). Anything that needs the real on-screen size — the
+    /// context-menu source frame, the preview — uses this instead.
+    private var committedSide: CGFloat {
+        Self.baseSize * EntryStickerInstance.clampScale(instance.scale)
+    }
+
+    /// Approximate extent of the dashed selection ring beyond the sticker
+    /// edge, per side, in screen points.
+    private static let ringExtent: CGFloat = 10
+    /// Source-frame margin: ring + the corner handles (badge + overhang),
+    /// so the lifted snapshot doesn't clip the chrome of a selected sticker.
+    private static let chromeExtent: CGFloat = 22
+
+    /// Axis-aligned bounding side that fully contains a `committedSide`
+    /// square — expanded by `extent` on every side — after it is rotated
+    /// by the committed rotation. For a square of side `L` rotated by θ the
+    /// bounding box side is `L·(|cos θ| + |sin θ|)`. Both the context-menu
+    /// source frame and the preview size themselves with this so neither
+    /// clips a rotated sticker or its dashed ring.
+    private func rotatedBoundingSide(extent: CGFloat) -> CGFloat {
+        let side = committedSide + extent * 2
+        let r = instance.rotation
+        return side * (abs(cos(r)) + abs(sin(r)))
+    }
+
+    /// Attaches the context menu only in interactive mode.
+    ///
+    /// The `.frame(rotatedBoundingSide…)` is what stops the "tiny square"
+    /// flash. iOS lifts the menu's *source* view during the long-press and
+    /// the dismiss animation, snapshotting it by its *layout* bounds — but
+    /// `scaleEffect`/`rotationEffect` are geometry effects that never grow
+    /// those bounds (they stay at the fixed `baseSize`). Sizing the frame to
+    /// the rotated bounding box of the scaled sticker + chrome makes the
+    /// snapshot match what's on screen, so a scaled-up or rotated sticker no
+    /// longer flashes clipped. Committed `instance.scale`/`rotation` (not the
+    /// live values) are used so the frame never re-lays-out mid-gesture — a
+    /// long-press can't fire during an active pinch/drag anyway.
+    @ViewBuilder
+    private var stickerWithMenu: some View {
+        if interactive {
+            transformedSticker
+                .frame(
+                    width: rotatedBoundingSide(extent: Self.chromeExtent),
+                    height: rotatedBoundingSide(extent: Self.chromeExtent)
+                )
+                .contextMenu {
+                    contextMenuItems
+                } preview: {
+                    previewSticker
+                }
+        } else {
+            transformedSticker
+        }
+    }
+
+    /// Snapshot of the sticker for the floating menu platter — rendered at
+    /// its real rotation (no selection chrome) and sized to the rotated
+    /// bounding box so the artwork isn't clipped. Padded so the platter
+    /// leaves a little breathing room around the artwork.
+    private var previewSticker: some View {
+        let side = rotatedBoundingSide(extent: Self.ringExtent)
+        return StickerImage(libraryRef: instance.libraryRef, tone: .ink)
+            .frame(width: committedSide, height: committedSide)
+            .rotationEffect(.radians(Double(instance.rotation)))
+            .frame(width: side, height: side)
+            .padding(16)
     }
 
     /// The rendered sticker (with its scale + rotation transform) plus
