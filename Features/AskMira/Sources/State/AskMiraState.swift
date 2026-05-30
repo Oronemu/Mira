@@ -181,6 +181,27 @@ public final class AskMiraState {
         }
     }
 
+    /// Deletes a user-selected subset of chats. Mirrors the journal's
+    /// bulk-delete: each id is removed independently so a single failure
+    /// doesn't abort the rest, and the active chat resets if it was
+    /// among the deleted.
+    public func deleteChats(ids: Set<UUID>) async {
+        guard !ids.isEmpty else { return }
+        let count = ids.count
+        for id in ids {
+            do {
+                try await repository.deleteChat(id: id)
+                if activeChatID == id { startNewChat() }
+            } catch {
+                errorMessage = error.localizedDescription
+            }
+        }
+        analyticsService.log(
+            event: "ask_mira_chats_bulk_deleted",
+            parameters: ["count": .int(count)]
+        )
+    }
+
     public func renameChat(id: UUID, title: String) async {
         let trimmed = title.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return }

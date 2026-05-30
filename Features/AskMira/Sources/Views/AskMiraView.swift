@@ -92,6 +92,7 @@ public struct AskMiraView: View {
                 onOpen: { id in state.openChat(id: id) },
                 onNewChat: { state.startNewChat() },
                 onDelete: { id in Task { await state.deleteChat(id: id) } },
+                onDeleteChats: { ids in Task { await state.deleteChats(ids: ids) } },
                 onRename: { id, title in Task { await state.renameChat(id: id, title: title) } }
             )
         }

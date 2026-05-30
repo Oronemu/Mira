@@ -6,6 +6,9 @@ import DesignSystem
 /// AskMira screen. Lists past conversations newest-first and lets the
 /// user open, rename, or delete them. A "New chat" shortcut in the
 /// top-right resets the active conversation.
+///
+/// A selection mode (mirroring the journal's bulk-delete) lets the user
+/// tick several chats and remove them in one confirmed action.
 public struct AskMiraHistorySheet: View {
     @Environment(\.dismiss) private var dismiss
 
@@ -14,11 +17,15 @@ public struct AskMiraHistorySheet: View {
     private let onOpen: (UUID) -> Void
     private let onNewChat: () -> Void
     private let onDelete: (UUID) -> Void
+    private let onDeleteChats: (Set<UUID>) -> Void
     private let onRename: (UUID, String) -> Void
 
     @State private var renameTarget: AskMiraChatSnapshot?
     @State private var renameDraft: String = ""
     @State private var pendingDeletion: AskMiraChatSnapshot?
+    @State private var isSelectionMode = false
+    @State private var selection: Set<UUID> = []
+    @State private var showBulkDeleteConfirm = false
 
     public init(
         chats: [AskMiraChatSnapshot],
@@ -26,6 +33,7 @@ public struct AskMiraHistorySheet: View {
         onOpen: @escaping (UUID) -> Void,
         onNewChat: @escaping () -> Void,
         onDelete: @escaping (UUID) -> Void,
+        onDeleteChats: @escaping (Set<UUID>) -> Void,
         onRename: @escaping (UUID, String) -> Void
     ) {
         self.chats = chats
@@ -33,6 +41,7 @@ public struct AskMiraHistorySheet: View {
         self.onOpen = onOpen
         self.onNewChat = onNewChat
         self.onDelete = onDelete
+        self.onDeleteChats = onDeleteChats
         self.onRename = onRename
     }
 
@@ -40,34 +49,10 @@ public struct AskMiraHistorySheet: View {
         MiraSheetChrome(moodLevels: [3, 4], intensity: 0.4) {
             NavigationStack {
                 content
-                    .navigationTitle(Text("Chats"))
+                    .navigationTitle(navigationTitle)
                     .toolbarTitleDisplayMode(.inline)
                     .toolbarBackground(.hidden, for: .navigationBar)
-                    .toolbar {
-                        ToolbarItem(placement: .topBarLeading) {
-                            Button {
-                                dismiss()
-                            } label: {
-                                Image(systemName: "xmark")
-                                    .font(.system(size: 16, weight: .semibold))
-                                    .foregroundStyle(MiraPalette.secondaryText)
-                            }
-                            .buttonStyle(.plain)
-                            .accessibilityLabel(Text("Close"))
-                        }
-                        ToolbarItem(placement: .topBarTrailing) {
-                            Button {
-                                onNewChat()
-                                dismiss()
-                            } label: {
-                                Image(systemName: "square.and.pencil")
-                                    .font(.system(size: 18, weight: .regular))
-                                    .foregroundStyle(MiraPalette.primaryText.opacity(0.85))
-                            }
-                            .buttonStyle(.plain)
-                            .accessibilityLabel(Text("New chat"))
-                        }
-                    }
+                    .toolbar { toolbarContent }
             }
         }
         .miraSheet([.large])
@@ -109,7 +94,119 @@ public struct AskMiraHistorySheet: View {
         } message: {
             Text("This conversation will be permanently removed.")
         }
+        .confirmationDialog(
+            bulkDeleteTitle,
+            isPresented: $showBulkDeleteConfirm,
+            titleVisibility: .visible
+        ) {
+            Button(String(localized: "Delete"), role: .destructive) {
+                onDeleteChats(selection)
+                exitSelection()
+            }
+            Button(String(localized: "Cancel"), role: .cancel) {}
+        } message: {
+            Text("This can't be undone.")
+        }
     }
+
+    private var navigationTitle: Text {
+        if isSelectionMode {
+            return selection.isEmpty
+                ? Text("Select chats")
+                : Text("\(selection.count) selected")
+        }
+        return Text("Chats")
+    }
+
+    // MARK: - Toolbar
+
+    @ToolbarContentBuilder
+    private var toolbarContent: some ToolbarContent {
+        if isSelectionMode {
+            ToolbarItem(placement: .topBarLeading) {
+                Button(String(localized: "Cancel")) {
+                    exitSelection()
+                }
+                .foregroundStyle(MiraPalette.primaryText)
+            }
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    if allSelected {
+                        selection.removeAll()
+                    } else {
+                        selection = Set(chats.map(\.id))
+                    }
+                } label: {
+                    Text(allSelected ? "Deselect All" : "Select All")
+                        .foregroundStyle(MiraPalette.primaryText)
+                }
+            }
+
+            ToolbarSpacer(.fixed, placement: .topBarTrailing)
+
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    showBulkDeleteConfirm = true
+                } label: {
+                    Image(systemName: "trash")
+                        .font(.system(size: 18, weight: .regular))
+                        .foregroundStyle(selection.isEmpty ? MiraPalette.secondaryText.opacity(0.5) : Color.red)
+                }
+                .buttonStyle(.plain)
+                .disabled(selection.isEmpty)
+                .accessibilityLabel(Text("Delete selected"))
+            }
+        } else {
+            ToolbarItem(placement: .topBarLeading) {
+                Button {
+                    dismiss()
+                } label: {
+                    Image(systemName: "xmark")
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundStyle(MiraPalette.secondaryText)
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel(Text("Close"))
+            }
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    onNewChat()
+                    dismiss()
+                } label: {
+                    Image(systemName: "square.and.pencil")
+                        .font(.system(size: 18, weight: .regular))
+                        .foregroundStyle(MiraPalette.primaryText.opacity(0.85))
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel(Text("New chat"))
+            }
+        }
+    }
+
+    private var allSelected: Bool {
+        !chats.isEmpty && selection.count == chats.count
+    }
+
+    private var bulkDeleteTitle: Text {
+        selection.count > 1
+            ? Text("Delete selected chats?")
+            : Text("Delete chat?")
+    }
+
+    private func exitSelection() {
+        isSelectionMode = false
+        selection.removeAll()
+    }
+
+    private func toggle(_ id: UUID) {
+        if selection.contains(id) {
+            selection.remove(id)
+        } else {
+            selection.insert(id)
+        }
+    }
+
+    // MARK: - Content
 
     @ViewBuilder
     private var content: some View {
@@ -122,9 +219,19 @@ public struct AskMiraHistorySheet: View {
                         ChatRow(
                             chat: chat,
                             isActive: chat.id == activeChatID,
+                            isSelectionMode: isSelectionMode,
+                            isSelected: selection.contains(chat.id),
                             onOpen: {
-                                onOpen(chat.id)
-                                dismiss()
+                                if isSelectionMode {
+                                    toggle(chat.id)
+                                } else {
+                                    onOpen(chat.id)
+                                    dismiss()
+                                }
+                            },
+                            onEnterSelection: {
+                                isSelectionMode = true
+                                selection.insert(chat.id)
                             },
                             onRename: {
                                 renameDraft = chat.title
@@ -139,6 +246,7 @@ public struct AskMiraHistorySheet: View {
                 .padding(.horizontal, 16)
                 .padding(.top, 8)
                 .padding(.bottom, 24)
+                .animation(.spring(duration: 0.25), value: isSelectionMode)
             }
             .scrollIndicators(.hidden)
         }
@@ -167,14 +275,23 @@ public struct AskMiraHistorySheet: View {
 private struct ChatRow: View {
     let chat: AskMiraChatSnapshot
     let isActive: Bool
+    let isSelectionMode: Bool
+    let isSelected: Bool
     let onOpen: () -> Void
+    let onEnterSelection: () -> Void
     let onRename: () -> Void
     let onDelete: () -> Void
 
     var body: some View {
         Button(action: onOpen) {
             HStack(alignment: .top, spacing: 12) {
-                accent
+                if isSelectionMode {
+                    checkbox
+                        .padding(.top, 2)
+                        .transition(.scale(scale: 0.6).combined(with: .opacity))
+                } else {
+                    accent
+                }
                 VStack(alignment: .leading, spacing: 4) {
                     Text(chat.title)
                         .font(.system(.body, design: .serif).weight(.medium))
@@ -196,24 +313,47 @@ private struct ChatRow: View {
             }
             .padding(14)
             .frame(maxWidth: .infinity, alignment: .leading)
+            .contentShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
             .glassEffect(
-                .regular.interactive(),
+                .regular,
                 in: RoundedRectangle(cornerRadius: 16, style: .continuous)
             )
+            .overlay {
+                if isSelectionMode && isSelected {
+                    RoundedRectangle(cornerRadius: 16, style: .continuous)
+                        .stroke(MiraPalette.mood(level: 4), lineWidth: 1.5)
+                }
+            }
+            .animation(.spring(duration: 0.25), value: isSelectionMode)
+            .animation(.spring(duration: 0.2), value: isSelected)
         }
-        .buttonStyle(.plain)
+        .buttonStyle(PressableCardStyle())
         .contextMenu {
-            Button {
-                onRename()
-            } label: {
-                Label(String(localized: "Rename"), systemImage: "pencil")
-            }
-            Button(role: .destructive) {
-                onDelete()
-            } label: {
-                Label(String(localized: "Delete"), systemImage: "trash")
+            if !isSelectionMode {
+                Button {
+                    onEnterSelection()
+                } label: {
+                    Label(String(localized: "Select"), systemImage: "checkmark.circle")
+                }
+                Button {
+                    onRename()
+                } label: {
+                    Label(String(localized: "Rename"), systemImage: "pencil")
+                }
+                Button(role: .destructive) {
+                    onDelete()
+                } label: {
+                    Label(String(localized: "Delete"), systemImage: "trash")
+                }
             }
         }
+    }
+
+    private var checkbox: some View {
+        Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
+            .font(.system(size: 22, weight: .regular))
+            .symbolRenderingMode(.hierarchical)
+            .foregroundStyle(isSelected ? MiraPalette.mood(level: 4) : MiraPalette.secondaryText)
     }
 
     @ViewBuilder
