@@ -19,6 +19,10 @@ public struct AskMiraView: View {
     @State private var isLowPowerMode = ProcessInfo.processInfo.isLowPowerModeEnabled
     @State private var isLocalAI = false
     @State private var lowPowerBannerDismissed = false
+    /// Name of the active persona, or `nil` when the built-in default
+    /// voice is in use — in that case the navigation subtitle is hidden
+    /// rather than showing an untranslated "Default" label.
+    @State private var personaName: String?
     @FocusState private var inputFocused: Bool
 
     private let onSelectEntry: (UUID) -> Void
@@ -56,6 +60,15 @@ public struct AskMiraView: View {
                 .buttonStyle(.plain)
                 .accessibilityLabel(Text("About Ask Mira"))
             }
+            if hasConversation {
+                ToolbarItem(placement: .principal) {
+                    CollapsibleHeroInlineTitle(
+                        title: Text(activeChatTitle),
+                        subtitle: personaName.map(Text.init)
+                    )
+                    .lineLimit(1)
+                }
+            }
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
                     isHistoryPresented = true
@@ -92,12 +105,14 @@ public struct AskMiraView: View {
         }
         .task {
             refreshAISettings()
+            refreshPersona()
             await state.refreshAIReadiness()
         }
         .onAppear {
             // Re-evaluate readiness on every reappear so flipping the
             // provider in Settings (and tabbing back) immediately swaps
             // the empty-state CTA for the suggestions strip.
+            refreshPersona()
             Task { await state.refreshAIReadiness() }
         }
         .onReceive(NotificationCenter.default.publisher(for: .NSProcessInfoPowerStateDidChange)) { _ in
@@ -113,6 +128,7 @@ public struct AskMiraView: View {
                 if !enabled { lowPowerBannerDismissed = false }
                 isLowPowerMode = enabled
                 refreshAISettings()
+                refreshPersona()
                 Task { await state.refreshAIReadiness() }
             }
         }
@@ -122,8 +138,38 @@ public struct AskMiraView: View {
         isLocalAI && isLowPowerMode && !lowPowerBannerDismissed
     }
 
+    /// `true` once the screen shows real conversation content rather
+    /// than the empty state with example prompts. The navigation title
+    /// and persona subtitle stay hidden until then.
+    private var hasConversation: Bool {
+        !state.activeTurns.isEmpty
+            || state.isAnswering
+            || !state.streamingAnswer.isEmpty
+    }
+
+    /// Resolves the navigation title for the currently open chat.
+    /// Falls back to a "New chat" placeholder when no chat is active
+    /// or its title has not been generated yet.
+    private var activeChatTitle: String {
+        guard let id = state.activeChatID,
+              let chat = state.chats.first(where: { $0.id == id }),
+              !chat.title.isEmpty
+        else {
+            return String(localized: "New chat")
+        }
+        return chat.title
+    }
+
     private func refreshAISettings() {
         isLocalAI = AISettingsStore().load().provider == .local
+    }
+
+    private func refreshPersona() {
+        let persona = AskMiraPersonaStore().active()
+        // Hide the subtitle for the built-in default voice — its name
+        // ("Default") is not localized and reads as noise; a custom
+        // persona is the only thing worth surfacing here.
+        personaName = persona.isBuiltIn ? nil : persona.name
     }
 
     /// Wraps `state.ask()` with the Pro gate. Free users on the on-device
