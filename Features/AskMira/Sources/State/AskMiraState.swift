@@ -41,6 +41,7 @@ public final class AskMiraState {
 
     private var chatsObservationTask: Task<Void, Never>?
     private var turnsObservationTask: Task<Void, Never>?
+    private var askTask: Task<Void, Never>?
 
     public init(
         repository: any AskMiraRepository,
@@ -215,6 +216,23 @@ public final class AskMiraState {
 
     // MARK: - Asking
 
+    /// Launches a question as a cancellable task the view can interrupt via
+    /// `stopAnswering()`. Any in-flight ask is cancelled first so a fresh
+    /// send never races a previous stream.
+    public func beginAsk(locale: Locale = .autoupdatingCurrent) {
+        askTask?.cancel()
+        askTask = Task { [weak self] in
+            await self?.ask(locale: locale)
+        }
+    }
+
+    /// Stops the in-flight answer. Whatever text was generated so far is
+    /// kept and saved as the turn; if the model hadn't produced anything
+    /// yet the send unwinds quietly without surfacing an error.
+    public func stopAnswering() {
+        askTask?.cancel()
+    }
+
     public func ask(locale: Locale = .autoupdatingCurrent) async {
         guard canAsk else { return }
         let question = draftQuestion.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -244,6 +262,7 @@ public final class AskMiraState {
             do {
                 chatID = try await repository.createChat(title: seedTitle)
             } catch {
+                if Task.isCancelled { return }
                 errorMessage = error.localizedDescription
                 return
             }
@@ -260,6 +279,7 @@ public final class AskMiraState {
         do {
             fullHistory = try await repository.fetchTurns(chatID: chatID)
         } catch {
+            if Task.isCancelled { return }
             errorMessage = error.localizedDescription
             return
         }
@@ -285,6 +305,11 @@ public final class AskMiraState {
         do {
             retrieval = try await rag.retrieve(query: retrievalQuery, k: 5)
         } catch {
+            // A stop during retrieval (embedding/model download can be the
+            // long pole) surfaces as a cancellation — and the wrapped error's
+            // localized text reads like "Download failed: cancelled". Bail
+            // quietly instead of showing it.
+            if Task.isCancelled { return }
             errorMessage = error.localizedDescription
             return
         }
@@ -307,24 +332,43 @@ public final class AskMiraState {
         )
 
         var accumulated = ""
+        var stopped = false
         do {
             let stream = try await provider.stream(request)
             for try await chunk in stream {
+                if Task.isCancelled { stopped = true; break }
                 accumulated += chunk.textDelta
                 streamingAnswer = accumulated
                 if chunk.isFinal { break }
             }
+        } catch is CancellationError {
+            stopped = true
+        } catch AIError.cancelled {
+            // The provider reports a user-initiated stop as AIError.cancelled.
+            // Treat it as a silent stop, not an error to surface.
+            stopped = true
         } catch let error as AIError {
-            errorMessage = error.errorDescription
-            return
+            // Any failure that lands here while the task is cancelled is a
+            // consequence of the user's stop, not a real error.
+            if Task.isCancelled { stopped = true } else {
+                errorMessage = error.errorDescription
+                return
+            }
         } catch {
-            errorMessage = error.localizedDescription
-            return
+            if Task.isCancelled { stopped = true } else {
+                errorMessage = error.localizedDescription
+                return
+            }
         }
 
         let trimmedAnswer = accumulated.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmedAnswer.isEmpty else {
-            errorMessage = String(localized: "Mira returned an empty answer.")
+            // A deliberate stop before the model produced any text isn't an
+            // error — unwind quietly. Only surface the empty-answer message
+            // when generation finished on its own with nothing to show.
+            if !stopped {
+                errorMessage = String(localized: "Mira returned an empty answer.")
+            }
             return
         }
 
@@ -344,14 +388,17 @@ public final class AskMiraState {
                 ]
             )
         } catch {
+            if Task.isCancelled { return }
             errorMessage = error.localizedDescription
             HapticsService().play(.error)
             return
         }
 
         // After the first successful exchange, ask the model for a
-        // polished title. Failure silently falls back to the seed.
-        if isFirstTurn {
+        // polished title. Failure silently falls back to the seed. Skipped
+        // when the user stopped generation — they likely did so because
+        // on-device inference was heavy, and a second call would compound it.
+        if isFirstTurn && !stopped {
             Task { [weak self] in
                 await self?.generateTitle(chatID: chatID, question: question, answer: trimmedAnswer, locale: locale)
             }

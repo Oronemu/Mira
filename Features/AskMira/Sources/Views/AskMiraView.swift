@@ -99,7 +99,7 @@ public struct AskMiraView: View {
         .sheet(isPresented: $isConsentPresented) {
             RemoteAIConsentSheet(
                 onAllow: {
-                    Task { await state.ask() }
+                    state.beginAsk()
                 },
                 onDeny: {}
             )
@@ -204,7 +204,7 @@ public struct AskMiraView: View {
                     return
                 }
             }
-            await state.ask()
+            state.beginAsk()
         }
     }
 
@@ -386,12 +386,24 @@ public struct AskMiraView: View {
             .onSubmit { askWithProGate(state: state) }
 
             Button {
-                askWithProGate(state: state)
+                if state.isAnswering {
+                    state.stopAnswering()
+                } else {
+                    askWithProGate(state: state)
+                }
             } label: {
                 Group {
                     if state.isAnswering {
-                        ProgressView()
-                            .controlSize(.small)
+                        // A spinning ring around a stop glyph: keeps the
+                        // "working" feedback the old loader gave while making
+                        // it clearly tappable to interrupt generation.
+                        ZStack {
+                            ProgressView()
+                                .controlSize(.small)
+                            Image(systemName: "stop.fill")
+                                .font(.system(size: 11, weight: .semibold))
+                                .foregroundStyle(MiraPalette.primaryText)
+                        }
                     } else {
                         Image(systemName: "arrow.up")
                             .font(.system(size: 15, weight: .semibold))
@@ -403,11 +415,13 @@ public struct AskMiraView: View {
             }
             .buttonStyle(.plain)
             .background {
-                Circle().fill(MiraPalette.mood(level: 4).opacity(state.canAsk ? 0.28 : 0))
+                Circle().fill(MiraPalette.mood(level: 4).opacity(state.canAsk || state.isAnswering ? 0.28 : 0))
             }
             .glassEffect(.regular.interactive(), in: Circle())
-            .disabled(!state.canAsk)
+            .disabled(!state.canAsk && !state.isAnswering)
             .animation(.spring(duration: 0.3, bounce: 0.2), value: state.canAsk)
+            .animation(.spring(duration: 0.3, bounce: 0.2), value: state.isAnswering)
+            .accessibilityLabel(state.isAnswering ? Text("Stop generating") : Text("Send"))
             .sensoryFeedback(.impact(weight: .light), trigger: state.isAnswering)
         }
         .padding(.horizontal, 20)
